@@ -1,17 +1,22 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useRef, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { CheckoutConfirmClient } from "./CheckoutConfirmClient";
+import { ContractUploadForm } from "@/components/ContractUploadForm";
 
 type ContractAnalysisRow = {
   id: string;
-  tipo_contratto: string | null;
-  valutazione_rischio: string | null;
-  motivazione_rischio: string | null;
   created_at: string;
+  from_slug: string | null;
+  analysis_json: {
+    tipo_contratto?: string | null;
+    valutazione_rischio?: string | null;
+    motivazione_rischio?: string | null;
+    [key: string]: any;
+  } | null;
 };
 
 export default function DashboardPage() {
@@ -25,6 +30,10 @@ export default function DashboardPage() {
   const [file, setFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [isHighlighted, setIsHighlighted] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [analyses, setAnalyses] = useState<ContractAnalysisRow[]>([]);
   const [loadingAnalyses, setLoadingAnalyses] = useState(true);
@@ -77,9 +86,7 @@ export default function DashboardPage() {
         // carica ultime analisi
         const { data: analysesData, error: analysesError } = await supabase
           .from("contract_analyses")
-          .select(
-            "id, tipo_contratto, valutazione_rischio, motivazione_rischio, created_at"
-          )
+          .select("id, created_at, from_slug, analysis_json")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(5);
@@ -156,9 +163,7 @@ export default function DashboardPage() {
       // refresh storico
       const { data: analysesData } = await supabase
         .from("contract_analyses")
-        .select(
-          "id, tipo_contratto, valutazione_rischio, motivazione_rischio, created_at"
-        )
+        .select("id, created_at, from_slug, analysis_json")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(5);
@@ -209,6 +214,12 @@ export default function DashboardPage() {
       ? "Standard"
       : "Pro";
 
+  const baseDropzoneClasses =
+    "relative rounded-2xl border border-dashed px-6 py-6 text-center shadow-sm transition";
+  const inactiveClasses =
+    "border-slate-300 bg-slate-50 hover:border-slate-400 hover:bg-slate-100";
+  const activeClasses = "border-sky-400 bg-sky-50";
+
   return (
     <>
       <CheckoutConfirmClient />
@@ -216,9 +227,13 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-slate-50">
         {/* Header */}
         <header className="flex items-center justify-between px-8 py-4 border-b border-slate-200 bg-white">
-          <div className="text-lg font-semibold text-slate-900">
-            Contratti Chiari
-          </div>
+          <a href="/" className="inline-flex items-center">
+            <img
+              src="/logo.png"
+              alt="ContrattoChiaro"
+              className="h-9 w-auto"
+            />
+          </a>
           <div className="flex items-center gap-4 text-sm text-slate-700">
             <div className="flex flex-col items-end">
               {userEmail && <span className="font-medium">{userEmail}</span>}
@@ -239,45 +254,63 @@ export default function DashboardPage() {
         {/* Main */}
         <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
           {/* Blocco upload */}
-          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
-            <h1 className="text-xl font-semibold text-slate-900 mb-1">
-              Analizza un nuovo contratto
-            </h1>
-            <p className="text-sm text-slate-600 mb-4">
-              Carica un PDF. Leggeremo il contratto e ti restituiremo un’analisi
-              chiara, con le clausole critiche evidenziate.
-            </p>
 
-            <form onSubmit={handleAnalyze} className="space-y-4">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <input
-                  type="file"
-                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                  className="text-sm"
-                />
-                <button
-                  type="submit"
-                  disabled={analyzing}
-                  className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-50"
-                >
-                  {analyzing ? "Analisi in corso…" : "Analizza contratto"}
-                </button>
-              </div>
+          <ContractUploadForm
+            bottomLeftText="Analisi da area personale · accesso completo con il tuo piano"
+            bottomRightText={
+              plan === "free"
+                ? "Free: 1 sola analisi. Aggiorna per averne di più."
+                : ""
+            }
+            submitLabel={
+              analyzing ? "Analisi in corso..." : "Analizza contratto"
+            }
+            onAnalyze={async (file) => {
+              if (!userId) {
+                throw new Error(
+                  "Utente non trovato, effettua nuovamente il login."
+                );
+              }
 
-              {analysisError && (
-                <p className="text-sm text-red-600">{analysisError}</p>
-              )}
+              const formData = new FormData();
+              formData.append("file", file);
+              formData.append("userId", userId);
 
-              {plan === "free" && (
-                <p className="text-xs text-slate-500">
-                  Con il piano Free puoi effettuare una sola analisi.
-                  Successivamente potrai passare a un piano a pagamento per
-                  analisi illimitate.
-                </p>
-              )}
-            </form>
-          </section>
+              const res = await fetch("/api/contracts/analyze", {
+                method: "POST",
+                body: formData,
+              });
+
+              const data = await res.json();
+
+              if (!res.ok) {
+                if (data.code === "FREE_LIMIT_REACHED") {
+                  router.push("/pricing");
+                  return;
+                } else if (data.code === "NO_TEXT_IN_PDF") {
+                  throw new Error(
+                    "Non siamo riusciti a leggere testo dal PDF. Se è una scansione, l’OCR arriverà in una prossima versione."
+                  );
+                } else if (data.code === "SUB_INACTIVE") {
+                  throw new Error(
+                    "Il tuo abbonamento non è attivo. Aggiorna il piano per continuare a usare il servizio."
+                  );
+                } else {
+                  throw new Error(data.error || "Errore durante l’analisi.");
+                }
+              }
+
+              // refresh storico
+              const { data: analysesData } = await supabase
+                .from("contract_analyses")
+                .select("id, created_at, from_slug, analysis_json")
+                .eq("user_id", userId)
+                .order("created_at", { ascending: false })
+                .limit(5);
+
+              setAnalyses(analysesData || []);
+            }}
+          />
 
           {/* Storico analisi */}
           <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
@@ -296,35 +329,45 @@ export default function DashboardPage() {
               </p>
             ) : (
               <ul className="space-y-3">
-                {analyses.map((a) => (
-                  <li key={a.id}>
-                    <Link
-                      href={`/analysis/${a.id}`}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between border border-slate-100 rounded-xl px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-slate-900">
-                            {a.tipo_contratto || "Contratto senza titolo"}
-                          </span>
-                          {riskBadge(a.valutazione_rischio)}
+                {analyses.map((a) => {
+                  const aj = a.analysis_json || {};
+                  const tipoContratto =
+                    aj.tipo_contratto ||
+                    a.from_slug ||
+                    "Contratto senza titolo";
+                  const valutazioneRischio = aj.valutazione_rischio || null;
+                  const motivazioneRischio =
+                    aj.motivazione_rischio ||
+                    "Analisi disponibile. Apri il dettaglio per maggiori informazioni.";
+                  return (
+                    <li key={a.id}>
+                      <Link
+                        href={`/analysis/${a.id}`}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between border border-slate-100 rounded-xl px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-slate-900">
+                              {tipoContratto}
+                            </span>
+                            {riskBadge(valutazioneRischio)}
+                          </div>
+                          <p className="text-xs text-slate-600 line-clamp-2">
+                            {motivazioneRischio}
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {new Date(a.created_at).toLocaleString("it-IT")}
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-600 line-clamp-2">
-                          {a.motivazione_rischio ||
-                            "Analisi disponibile. Apri il dettaglio per maggiori informazioni."}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {new Date(a.created_at).toLocaleString("it-IT")}
-                        </p>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>
         </main>
       </div>
-  </>
+    </>
   );
 }

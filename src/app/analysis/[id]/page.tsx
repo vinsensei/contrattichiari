@@ -40,11 +40,12 @@ type AnalysisJson = {
 
 type AnalysisRow = {
   id: string;
-  tipo_contratto: string | null;
-  valutazione_rischio: string | null;
-  motivazione_rischio: string | null;
   created_at: string;
-  analisi: AnalysisJson;
+  from_slug: string | null;
+  analysis_json: AnalysisJson | null;
+  source: string | null;
+  is_full_unlocked: boolean | null;
+  user_id: string | null;
 };
 
 export default function AnalysisDetailPage() {
@@ -56,6 +57,7 @@ export default function AnalysisDetailPage() {
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState<AnalysisRow | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [hasPaidSubscription, setHasPaidSubscription] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -77,12 +79,35 @@ export default function AnalysisDetailPage() {
           return;
         }
 
-        // 2) fetch analisi
+        // 2) recupero abbonamento utente
+        let paid = false;
+        try {
+          const { data: subscription, error: subError } = await supabase
+            .from('user_subscriptions')
+            .select('plan, is_active')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (subError) {
+            console.error('Errore nel recupero abbonamento:', subError);
+          } else if (
+            subscription &&
+            subscription.is_active &&
+            subscription.plan &&
+            subscription.plan !== 'free'
+          ) {
+            paid = true;
+          }
+        } catch (subErr) {
+          console.error('Errore imprevisto nel recupero abbonamento:', subErr);
+        }
+
+        setHasPaidSubscription(paid);
+
+        // 3) fetch analisi
         const { data, error } = await supabase
           .from('contract_analyses')
-          .select(
-            'id, tipo_contratto, valutazione_rischio, motivazione_rischio, created_at, analisi'
-          )
+          .select('id, created_at, from_slug, analysis_json, source, is_full_unlocked, user_id')
           .eq('id', id)
           .maybeSingle();
 
@@ -95,6 +120,46 @@ export default function AnalysisDetailPage() {
         if (!data) {
           setErrorMsg('Analisi non trovata.');
           return;
+        }
+
+        // Se l'analisi proviene da landing anonima e non è ancora assegnata a nessun utente,
+        // la leghiamo all'utente corrente (così compare in dashboard).
+        if (!data.user_id && data.source === 'anonymous_landing') {
+          const { error: linkError } = await supabase
+            .from('contract_analyses')
+            .update({ user_id: user.id })
+            .eq('id', id);
+
+          if (linkError) {
+            console.error(
+              'Errore nel collegare l’analisi all’utente:',
+              linkError
+            );
+          } else {
+            (data as any).user_id = user.id;
+          }
+        }
+
+        // Se l'utente ha un abbonamento pagato e l'analisi arriva da landing anonima,
+        // sblocchiamo l'analisi completa impostando is_full_unlocked = true.
+        if (
+          paid &&
+          data.source === 'anonymous_landing' &&
+          data.is_full_unlocked !== true
+        ) {
+          const { error: unlockError } = await supabase
+            .from('contract_analyses')
+            .update({ is_full_unlocked: true })
+            .eq('id', id);
+
+          if (unlockError) {
+            console.error(
+              'Errore nello sbloccare l’analisi completa:',
+              unlockError
+            );
+          } else {
+            (data as any).is_full_unlocked = true;
+          }
         }
 
         setAnalysis(data as AnalysisRow);
@@ -111,8 +176,8 @@ export default function AnalysisDetailPage() {
 
   const riskBadge = (risk: string | null | undefined) => {
     if (!risk) return null;
-    const base =
-      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium';
+     const base =
+      'inline-flex items-center px-3 py-1 rounded-full text-[11px] font-medium';
     if (risk === 'alto')
       return (
         <span className={`${base} bg-red-100 text-red-700`}>Rischio alto</span>
@@ -152,64 +217,302 @@ export default function AnalysisDetailPage() {
     );
   }
 
-  const a = analysis.analisi || {};
+  const a = (analysis.analysis_json as AnalysisJson) || {};
   const createdAt = new Date(analysis.created_at).toLocaleString('it-IT');
 
+  const summary =
+    a.riassunto_semplice ||
+    // supporta il campo usato dalle analisi da landing
+    (a as any).summary ||
+    null;
+
+  const hasRawJsonPreview =
+    !summary && analysis.analysis_json && Object.keys(analysis.analysis_json as any).length > 0;
+
+  const isLanding = analysis.source === 'anonymous_landing';
+  const isFullUnlocked = analysis.is_full_unlocked ?? false;
+  const showFull = hasPaidSubscription || !isLanding || isFullUnlocked;
+
+  const hasClausoleCritiche =
+    Array.isArray(a.clausole_critiche) && a.clausole_critiche.length > 0;
+
+  const hasClausoleVessatorie =
+    Array.isArray(a.clausole_vessatorie_potenziali) &&
+    a.clausole_vessatorie_potenziali.length > 0;
+
+  const hasVersioneRiequilibrata =
+    typeof a.versione_riequilibrata === 'string' &&
+    a.versione_riequilibrata.trim().length > 0;
+
+  const hasGlossario = Array.isArray(a.glossario) && a.glossario.length > 0;
+
+  const hasAlertFinali =
+    Array.isArray(a.alert_finali) && a.alert_finali.length > 0;
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-slate-50">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-4 border-b border-slate-200 bg-white">
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="text-sm text-slate-600 hover:text-slate-900"
-        >
-          ← Torna alla dashboard
-        </button>
-        <div className="text-sm text-slate-500">
-          Analisi creata il {createdAt}
+      <header className="w-full border-b border-slate-200 bg-white/80 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="text-xs sm:text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
+            >
+              <span aria-hidden="true">←</span>
+              <span>Torna alla dashboard</span>
+            </button>
+            <span className="hidden text-[11px] text-slate-400 sm:inline">
+              Analisi creata il {createdAt}
+            </span>
+          </div>
+          <a href="/" className="inline-flex items-center">
+            <img
+              src="/logo.png"
+              alt="ContrattoChiaro"
+              className="h-8 w-auto"
+            />
+          </a>
         </div>
       </header>
 
       {/* Main */}
-      <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10 space-y-8">
         {/* Titolo + rischio */}
-        <section className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-semibold text-slate-900">
-                {analysis.tipo_contratto || a.tipo_contratto || 'Contratto'}
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-1">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                Risultato analisi contratto
+              </p>
+              <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">
+                {a.tipo_contratto || analysis.from_slug || 'Contratto'}
               </h1>
-              <p className="text-sm text-slate-500">
-                ID analisi: <span className="font-mono text-xs">{analysis.id}</span>
+              <p className="text-xs text-slate-500">
+                ID analisi:{' '}
+                <span className="font-mono text-[11px] bg-slate-100 px-1.5 py-0.5 rounded">
+                  {analysis.id}
+                </span>
               </p>
             </div>
-            <div>{riskBadge(analysis.valutazione_rischio || a.valutazione_rischio)}</div>
+            <div className="flex items-start justify-end">
+              {riskBadge(a.valutazione_rischio)}
+            </div>
           </div>
 
           {a.motivazione_rischio && (
-            <p className="text-sm text-slate-600 max-w-2xl">
+            <p className="text-[13px] md:text-sm text-slate-600 leading-relaxed">
               {a.motivazione_rischio}
             </p>
           )}
         </section>
 
-        {/* Riassunto semplice */}
-        {a.riassunto_semplice && (
-          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
-            <h2 className="text-base font-semibold text-slate-900 mb-2">
-              📄 Riassunto semplice
+        {/* Navigazione ad ancore (sticky) */}
+        <nav className="sticky top-0 z-10 -mx-4 sm:-mx-6 bg-slate-50/95 backdrop-blur border-b border-slate-200">
+          <div className="mx-auto flex w-full max-w-5xl gap-2 overflow-x-auto px-4 py-3 text-[11px] sm:text-xs">
+            {summary && (
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById('riassunto-semplice')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+              >
+                Riassunto semplice
+              </button>
+            )}
+            {hasClausoleCritiche && (
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById('clausole-problematiche')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+              >
+                Clausole problematiche
+              </button>
+            )}
+            {hasClausoleVessatorie && (
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById('clausole-vessatorie')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+              >
+                Clausole potenzialmente vessatorie
+              </button>
+            )}
+            {hasVersioneRiequilibrata && (
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById('versione-riequilibrata')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+              >
+                Versione riequilibrata
+              </button>
+            )}
+            {hasGlossario && (
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById('glossario')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+              >
+                Glossario
+              </button>
+            )}
+            {hasAlertFinali && (
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById('alert-finali')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+              >
+                Alert finali
+              </button>
+            )}
+          </div>
+        </nav>
+
+        {/* Riassunto semplice / preview */}
+        {summary && (
+          <section id="riassunto-semplice" className="bg-white rounded-2xl shadow-md p-6 border border-slate-100">
+            <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+              <span>📄</span>
+              <span>Riassunto semplice</span>
             </h2>
-            <p className="text-sm text-slate-700 leading-relaxed">
-              {a.riassunto_semplice}
+            <p className="text-[15px] text-slate-800 leading-relaxed">
+              {summary}
             </p>
           </section>
         )}
 
-        {/* Clausole critiche */}
-        {a.clausole_critiche && a.clausole_critiche.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-4">
+        {/* Anteprima clausole critiche (solo versione parziale) */}
+        {!showFull &&
+          a.clausole_critiche &&
+          a.clausole_critiche.length > 0 && (
+            <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
+              <h2 className="text-base font-semibold text-slate-900">
+                🔍 Alcune clausole da tenere d’occhio
+              </h2>
+              <p className="text-xs text-slate-600">
+                Questa è una selezione ridotta delle clausole che potrebbero
+                richiedere attenzione. Con l’analisi completa vedrai il dettaglio
+                completo e tutti i suggerimenti di modifica.
+              </p>
+              <div className="space-y-3">
+                {a.clausole_critiche.slice(0, 2).map((c, idx) => (
+                  <div
+                    key={idx}
+                    className="border border-slate-100 rounded-xl bg-slate-50 px-4 py-3 space-y-1"
+                  >
+                    <h3 className="text-sm font-semibold text-slate-900">
+                      {c.titolo || `Clausola ${idx + 1}`}
+                    </h3>
+                    {c.estratto_originale && (
+                      <p className="text-[11px] text-slate-700 line-clamp-3">
+                        {c.estratto_originale}
+                      </p>
+                    )}
+                    {c.perche_critica && (
+                      <p className="text-[11px] text-slate-600">
+                        <span className="font-semibold">Perché è rilevante: </span>
+                        {c.perche_critica}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+        {/* Anteprima clausole potenzialmente vessatorie (solo versione parziale) */}
+        {!showFull &&
+          a.clausole_vessatorie_potenziali &&
+          a.clausole_vessatorie_potenziali.length > 0 && (
+            <section id="clausole-vessatorie" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
+              <h2 className="text-base font-semibold text-slate-900">
+                ⚠️ Possibili clausole vessatorie
+              </h2>
+              <p className="text-xs text-slate-600">
+                Qui vedi solo un assaggio delle clausole potenzialmente
+                vessatorie. L’analisi completa ti mostra il quadro completo,
+                con riferimenti normativi e suggerimenti pratici.
+              </p>
+              <ul className="space-y-2">
+                {a.clausole_vessatorie_potenziali.slice(0, 1).map((c, idx) => (
+                  <li key={idx} className="text-sm text-slate-700">
+                    <span className="font-semibold">
+                      {c.clausola || `Clausola ${idx + 1}`}:
+                    </span>{" "}
+                    {c.perche_vessatoria}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+        {/* Fallback: mostra JSON grezzo se non c'è un riassunto strutturato */}
+        {!summary && hasRawJsonPreview && (
+          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
+            <h2 className="text-base font-semibold text-slate-900 mb-2">
+              📄 Anteprima analisi (formato tecnico)
+            </h2>
+            <p className="text-xs text-slate-600 mb-2">
+              Stiamo ancora perfezionando il layout di questa sezione. Nel frattempo puoi vedere il contenuto completo dell’analisi in formato tecnico.
+            </p>
+            <pre className="text-[11px] bg-slate-900/95 text-slate-50 rounded-lg p-3 overflow-x-auto">
+              {JSON.stringify(analysis.analysis_json, null, 2)}
+            </pre>
+          </section>
+        )}
+
+        {!showFull && (
+          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
             <h2 className="text-base font-semibold text-slate-900">
-              🔍 Clausole problematiche
+              Vuoi l’analisi completa?
+            </h2>
+            <p className="text-[15px] text-slate-700">
+              Al momento stai visualizzando una versione ridotta dell’analisi,
+              generata a partire dal caricamento rapido del contratto.
+              Con l’abbonamento ContrattiChiari puoi sbloccare:
+            </p>
+            <ul className="list-disc pl-5 text-sm text-slate-700 space-y-1">
+              <li>clausole critiche spiegate nel dettaglio</li>
+              <li>clausole potenzialmente vessatorie evidenziate</li>
+              <li>una versione riequilibrata del contratto</li>
+              <li>alert finali e glossario dei termini complessi</li>
+            </ul>
+            <button
+              onClick={() => router.push('/pricing')}
+              className="mt-2 inline-flex items-center px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800"
+            >
+              Vedi piani e sblocca l’analisi completa
+            </button>
+          </section>
+        )}
+
+        {showFull && a.clausole_critiche && a.clausole_critiche.length > 0 && (
+          <section id="clausole-problematiche" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-4">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Clausole problematiche
             </h2>
             <div className="space-y-3">
               {a.clausole_critiche.map((c, idx) => (
@@ -260,12 +563,12 @@ export default function AnalysisDetailPage() {
           </section>
         )}
 
-        {/* Clausole vessatorie */}
-        {a.clausole_vessatorie_potenziali &&
+        {showFull &&
+          a.clausole_vessatorie_potenziali &&
           a.clausole_vessatorie_potenziali.length > 0 && (
-            <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-4">
-              <h2 className="text-base font-semibold text-slate-900">
-                ⚠️ Clausole potenzialmente vessatorie
+            <section id="clausole-vessatorie" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-4">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Clausole potenzialmente vessatorie
               </h2>
               <div className="space-y-3">
                 {a.clausole_vessatorie_potenziali.map((c, idx) => (
@@ -298,23 +601,23 @@ export default function AnalysisDetailPage() {
             </section>
           )}
 
-        {/* Versione riequilibrata */}
-        {a.versione_riequilibrata && a.versione_riequilibrata.trim().length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
-            <h2 className="text-base font-semibold text-slate-900">
-              ✍️ Versione riequilibrata
-            </h2>
-            <p className="text-sm text-slate-700 whitespace-pre-line">
-              {a.versione_riequilibrata}
-            </p>
-          </section>
-        )}
+        {showFull &&
+          a.versione_riequilibrata &&
+          a.versione_riequilibrata.trim().length > 0 && (
+            <section id="versione-riequilibrata" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
+              <h2 className="text-lg font-semibold text-slate-900">
+                Versione riequilibrata
+              </h2>
+              <p className="text-[15px] text-slate-700 whitespace-pre-line leading-relaxed">
+                {a.versione_riequilibrata}
+              </p>
+            </section>
+          )}
 
-        {/* Glossario */}
-        {a.glossario && a.glossario.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
-            <h2 className="text-base font-semibold text-slate-900">
-              📚 Glossario
+        {showFull && a.glossario && a.glossario.length > 0 && (
+          <section id="glossario" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Glossario
             </h2>
             <ul className="space-y-2">
               {a.glossario.map((g, idx) => (
@@ -329,11 +632,10 @@ export default function AnalysisDetailPage() {
           </section>
         )}
 
-        {/* Alert finali */}
-        {a.alert_finali && a.alert_finali.length > 0 && (
-          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
-            <h2 className="text-base font-semibold text-slate-900">
-              🚨 Alert finali
+        {showFull && a.alert_finali && a.alert_finali.length > 0 && (
+          <section id="alert-finali" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Alert finali
             </h2>
             <ul className="list-disc pl-5 space-y-1">
               {a.alert_finali.map((al, idx) => (

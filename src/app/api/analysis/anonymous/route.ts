@@ -32,79 +32,46 @@ function parseAnalysisJson(rawText: string) {
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File | null;
-    const userId = formData.get("userId") as string | null;
+    const file = formData.get("file");
     const from = formData.get("from") as string | null;
 
-    if (!file || !(file instanceof File) || !userId) {
+    if (!file || !(file instanceof File)) {
       return NextResponse.json(
-        { error: "File o userId mancanti/non validi." },
+        { error: "File mancante o non valido." },
         { status: 400 }
       );
     }
 
     const supabase = supabaseAdmin();
 
-    // 1) Leggi piano utente
-    const { data: sub, error: subError } = await supabase
-      .from("user_subscriptions")
-      .select("plan, is_active")
-      .eq("user_id", userId)
-      .maybeSingle();
+    // Genera un id per l'analisi
+    const analysisId = randomUUID();
 
-    if (subError) {
-      console.error("Error fetching subscription", subError);
+    // 1) Crea subito un record pending, marcando la sorgente come landing anonima
+    const { error: insertError } = await supabase
+      .from("contract_analyses")
+      .insert({
+        id: analysisId,
+        from_slug: from,
+        status: "pending", // pending | completed | failed
+        source: "anonymous_landing",
+        is_full_unlocked: false,
+        created_at: new Date().toISOString(),
+      });
+
+    if (insertError) {
+      console.error("Errore insert contract_analyses", insertError);
       return NextResponse.json(
-        { error: "Subscription lookup failed" },
+        { error: "Errore interno durante la creazione dell'analisi." },
         { status: 500 }
       );
     }
 
-    const plan: string = sub?.plan ?? "free";
-    const isActive: boolean = sub?.is_active ?? false;
-
-    // 2) Se free → controlla se ha già usato l’analisi gratuita
-    if (plan === "free") {
-      const { count, error: analysesError } = await supabase
-        .from("contract_analyses")
-        .select("id", { count: "exact" })
-        .eq("user_id", userId);
-
-      if (analysesError) {
-        console.error("Error counting analyses", analysesError);
-        return NextResponse.json(
-          { error: "Analysis lookup failed" },
-          { status: 500 }
-        );
-      }
-
-      const alreadyUsedFree = (count ?? 0) > 0;
-      if (alreadyUsedFree) {
-        return NextResponse.json(
-          {
-            error: "Free analysis already used",
-            code: "FREE_LIMIT_REACHED",
-          },
-          { status: 402 }
-        );
-      }
-    } else {
-      // se piano a pagamento ma non attivo → blocca
-      if (!isActive) {
-        return NextResponse.json(
-          { error: "Subscription inactive", code: "SUB_INACTIVE" },
-          { status: 402 }
-        );
-      }
-    }
-
-    // 3) Leggi il file in Buffer (vale per .pdf, .txt, ecc.)
-    const arrayBuffer = await file.arrayBuffer();
+    // 2) Leggi il file in Buffer
+    const arrayBuffer = await (file as File).arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    console.log("File size bytes:", buffer.byteLength);
-
-    const originalName = file.name || "contratto";
+    const originalName = (file as File).name || "contratto";
     const lowerName = originalName.toLowerCase();
 
     const isPdf = lowerName.endsWith(".pdf");
@@ -116,18 +83,30 @@ export async function POST(req: NextRequest) {
       lowerName.endsWith(".markdown");
 
     if (!isPdf && !isDocx && !isPlainText) {
-      console.warn("Unsupported file extension for analysis:", originalName);
+      console.warn("Unsupported file extension for anonymous analysis:", originalName);
+
+      await supabase
+        .from("contract_analyses")
+        .update({
+          status: "failed",
+          analysis_json: {
+            error:
+              "Formato file non supportato. Puoi caricare solo PDF, file di testo (.txt, .md) o documenti Word salvati in formato .docx.",
+          },
+        })
+        .eq("id", analysisId);
+
       return NextResponse.json(
         {
           error:
-            "Formato file non supportato. Puoi caricare solo PDF, file di testo (.txt, .md) o documenti Word salvati in formato .docx.",
+            "Formato file non supportato. Per ora puoi caricare solo PDF, file di testo (.txt, .md) o documenti Word salvati in formato .docx.",
           code: "UNSUPPORTED_FILE_TYPE",
         },
         { status: 400 }
       );
     }
 
-    // 4) Prompt comune
+    // 3) Prompt comune (stesso di /api/contracts/analyze)
     const userPrompt = `
 Analizza il seguente contratto (testo o file allegato) e restituisci SOLO un JSON con la seguente struttura:
 
@@ -175,7 +154,7 @@ Regole IMPORTANTI:
 
     if (isPdf) {
       const uploadFile = new File([buffer], originalName, {
-        type: file.type || "application/pdf",
+        type: (file as File).type || "application/pdf",
       });
 
       const uploadedFile = await openai.files.create({
@@ -206,6 +185,17 @@ Regole IMPORTANTI:
       }
 
       if (!contractText || contractText.length < 50) {
+        await supabase
+          .from("contract_analyses")
+          .update({
+            status: "failed",
+            analysis_json: {
+              error:
+                "Il file non contiene abbastanza testo leggibile per una analisi. Assicurati che il documento contenga il testo del contratto.",
+            },
+          })
+          .eq("id", analysisId);
+
         return NextResponse.json(
           {
             error:
@@ -238,7 +228,18 @@ ${contractText}`;
         (response.output[0] as any)?.content?.[0]?.text?.value);
 
     if (!textResult) {
-      console.error("No text output from responses API:", response);
+      console.error("No text output from responses API (anonymous):", response);
+
+      await supabase
+        .from("contract_analyses")
+        .update({
+          status: "failed",
+          analysis_json: {
+            error: "Il motore di analisi non ha restituito contenuto.",
+          },
+        })
+        .eq("id", analysisId);
+
       return NextResponse.json(
         { error: "LLM returned empty content" },
         { status: 500 }
@@ -249,47 +250,49 @@ ${contractText}`;
     try {
       analysisJson = parseAnalysisJson(textResult);
     } catch (e) {
-      console.error("JSON parse error from LLM:", textResult);
+      console.error("JSON parse error from LLM (anonymous):", textResult);
+
+      await supabase
+        .from("contract_analyses")
+        .update({
+          status: "failed",
+          analysis_json: {
+            error: "Il motore di analisi ha restituito un risultato non valido.",
+            raw: textResult,
+          },
+        })
+        .eq("id", analysisId);
+
       return NextResponse.json(
         { error: "LLM output is not valid JSON" },
         { status: 500 }
       );
     }
 
-    // 5) Salva analisi in Supabase
-    const analysisId = randomUUID();
-
-    const { data: inserted, error: insertError } = await supabase
+    // 4) Aggiorna l'analisi con il JSON completo
+    const { error: updateError } = await supabase
       .from("contract_analyses")
-      .insert({
-        id: analysisId,
-        user_id: userId,
-        from_slug: from,
-        source: "dashboard",
+      .update({
         status: "completed",
-        is_full_unlocked: true,
         analysis_json: analysisJson,
       })
-      .select("id")
-      .single();
+      .eq("id", analysisId);
 
-    if (insertError) {
-      console.error("Error inserting analysis", insertError);
-      return NextResponse.json({ error: "Insert failed" }, { status: 500 });
+    if (updateError) {
+      console.error("Errore update contract_analyses (anonymous)", updateError);
+      return NextResponse.json(
+        { error: "Errore interno durante l'aggiornamento dell'analisi." },
+        { status: 500 }
+      );
     }
 
+    // Restituisci solo l'id per collegare il funnel upload → register → analysis
+    return NextResponse.json({ analysisId }, { status: 200 });
+  } catch (err) {
+    console.error("Errore in /api/analysis/anonymous", err);
     return NextResponse.json(
-      {
-        id: inserted.id,
-        analysis: analysisJson,
-      },
-      { status: 200 }
+      { error: "Errore interno durante l'analisi anonima." },
+      { status: 500 }
     );
-  } catch (err: any) {
-    console.error("Analyze error", err);
-    if (err?.error) {
-      console.error("OpenAI error payload:", err.error);
-    }
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
