@@ -395,7 +395,6 @@ export default function AnalysisDetailPage() {
         {summary && (
           <section id="riassunto-semplice" className="bg-white rounded-2xl shadow-md p-6 border border-slate-100">
             <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-              <span>📄</span>
               <span>Riassunto semplice</span>
             </h2>
             <p className="text-[15px] text-slate-800 leading-relaxed">

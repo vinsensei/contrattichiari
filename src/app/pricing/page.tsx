@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
+import { gaEvent } from "@/lib/gtag";
 
 export default function PricingPage() {
   const supabase = supabaseBrowser();
@@ -31,11 +32,19 @@ export default function PricingPage() {
     setErrorMsg(null);
     setLoadingCheckout(true);
 
+    // piano scelto (per ora fisso)
+    const plan = "standard";
+
+    // GA4: evento di inizio checkout
+    gaEvent("subscription_started", {
+      plan,
+    });
+
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: "standard", userId }), // 👈 userId qui
+        body: JSON.stringify({ plan, userId }), // 👈 usa la stessa variabile
       });
 
       const data = await res.json();

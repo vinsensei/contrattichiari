@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { ContractUploadForm } from "@/components/ContractUploadForm";
+import ContractUploadForm from "@/components/ContractUploadForm";
+import HeaderPublic from "@/components/HeaderPublic";
+import { gaEvent } from "@/lib/gtag";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -11,32 +13,7 @@ export default function UploadPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* HEADER comune */}
-      <header className="w-full border-b border-zinc-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <a href="/" className="flex items-center">
-            <img
-              src="/logo.png"
-              alt="ContrattoChiaro"
-              className="h-8 w-auto"
-            />
-          </a>
-
-          <nav className="flex items-center gap-3 text-sm">
-            <a
-              href="/login"
-              className="rounded-full border border-zinc-300 px-4 py-1.5 text-xs font-medium text-zinc-900 transition hover:border-zinc-900 hover:bg-zinc-900 hover:text-white"
-            >
-              Accedi
-            </a>
-            <a
-              href="/register"
-              className="rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-medium text-zinc-50 shadow-sm transition hover:bg-zinc-800"
-            >
-              Registrati
-            </a>
-          </nav>
-        </div>
-      </header>
+      <HeaderPublic />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
         
@@ -50,16 +27,35 @@ export default function UploadPage() {
               fd.set("file", file);
               if (fromSlug) fd.set("from", fromSlug);
 
+              // GA4: evento di inizio analisi anonima
+              gaEvent("anonymous_analysis_started", {
+                from_slug: fromSlug || "(none)",
+                file_size: file.size,
+                file_type: file.type || "(unknown)",
+              });
+
               const res = await fetch("/api/analysis/anonymous", {
                 method: "POST",
                 body: fd,
               });
 
               if (!res.ok) {
+                // GA4: analisi fallita
+                gaEvent("anonymous_analysis_failed", {
+                  from_slug: fromSlug || "(none)",
+                  http_status: res.status,
+                });
+
                 throw new Error("Errore durante l'analisi del contratto.");
               }
 
               const data = (await res.json()) as { analysisId: string };
+
+              // GA4: analisi creata
+              gaEvent("anonymous_analysis_created", {
+                analysis_id: data.analysisId,
+                from_slug: fromSlug || "(none)",
+              });
 
               const search = new URLSearchParams();
               search.set("analysisId", data.analysisId);

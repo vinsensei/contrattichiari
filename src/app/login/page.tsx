@@ -8,6 +8,7 @@ export default function LoginPage() {
   const supabase = supabaseBrowser();
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const analysisId = searchParams.get("analysisId");
   const redirectedFrom = searchParams.get("redirectedFrom") || "/dashboard";
 
@@ -22,21 +23,23 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
-      // QUI: decido dove mandare dopo il login
+      // Redirect dopo login:
+      // - se c'è un'analisi associata, porta l'utente a quella pagina
+      // - altrimenti vai alla pagina da cui è stato reindirizzato o alla dashboard
       if (analysisId) {
         router.push(`/analysis/${analysisId}`);
       } else {
         router.push(redirectedFrom || "/dashboard");
       }
     } catch (err: any) {
-      setErrorMsg(err.message ?? "Errore durante il login");
+      setErrorMsg(err.message ?? "Errore durante l'accesso");
     } finally {
       setLoading(false);
     }
@@ -60,14 +63,15 @@ export default function LoginPage() {
               Contratti chiari, amicizia lunga.
             </p>
             <p className="text-sm text-slate-600">
-              Accedi al tuo spazio per rivedere le analisi dei contratti, scaricare i report
-              e continuare da dove avevi lasciato.
+              Accedi al tuo account per rivedere le analisi dei contratti e continuare da dove eri rimasto.
             </p>
           </div>
 
           {/* Card form */}
           <div className="w-full bg-white rounded-2xl shadow-md p-8 space-y-6 border border-slate-100">
-            <h1 className="text-2xl font-semibold text-slate-900">Accedi</h1>
+            <h1 className="text-2xl font-semibold text-slate-900">
+              Accedi
+            </h1>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-1">
@@ -96,7 +100,11 @@ export default function LoginPage() {
                 />
               </div>
 
-              {errorMsg && <p className="text-sm text-red-600">{errorMsg}</p>}
+              {errorMsg && (
+                <p className="text-sm text-red-600">
+                  {errorMsg}
+                </p>
+              )}
 
               <button
                 type="submit"
@@ -109,8 +117,11 @@ export default function LoginPage() {
 
             <p className="text-center text-sm text-slate-600">
               Non hai un account?{" "}
-              <a href="/register" className="text-slate-900 underline font-medium">
-                Crea un account
+              <a
+                href="/register"
+                className="text-slate-900 underline font-medium"
+              >
+                Registrati
               </a>
             </p>
           </div>

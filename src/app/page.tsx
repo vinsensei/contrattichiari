@@ -1,35 +1,11 @@
+import HeaderPublic from "@/components/HeaderPublic";
 import Link from "next/link";
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900">
       {/* HEADER */}
-      <header className="w-full border-b border-zinc-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <a href="/" className="inline-flex items-center">
-            <img
-              src="/logo.png"
-              alt="ContrattoChiaro"
-              className="h-9 w-auto"
-            />
-          </a>
-
-          <nav className="flex items-center gap-3 text-sm">
-            <Link
-              href="/login"
-              className="rounded-full border border-zinc-300 px-4 py-1.5 text-xs font-medium text-zinc-900 transition hover:border-zinc-900 hover:bg-zinc-900 hover:text-white"
-            >
-              Accedi
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-medium text-zinc-50 shadow-sm transition hover:bg-zinc-800"
-            >
-              Registrati
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <HeaderPublic />
 
       {/* MAIN */}
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-12 sm:px-6 sm:py-16">
@@ -53,6 +29,7 @@ export default function Home() {
               modificare.
             </p>
 
+
             <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/upload"
@@ -60,11 +37,12 @@ export default function Home() {
               >
                 Carica un contratto
               </Link>
+            </div>
+            <br />
               <p className="text-xs text-zinc-500">
                 Prima analisi rapida, linguaggio umano, nessun gergo da codice
                 civile.
-              </p>
-            </div>
+              </p>             
 
             <div className="mt-6 flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
               <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-1">

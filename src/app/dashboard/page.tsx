@@ -4,8 +4,9 @@ import { useEffect, useRef, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import Link from "next/link";
-import { CheckoutConfirmClient } from "./CheckoutConfirmClient";
-import { ContractUploadForm } from "@/components/ContractUploadForm";
+import ContractUploadForm from "@/components/ContractUploadForm";
+import HeaderPrivate from "@/components/HeaderPrivate";
+import { gaEvent } from "@/lib/gtag";
 
 type ContractAnalysisRow = {
   id: string;
@@ -34,6 +35,7 @@ export default function DashboardPage() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [isHighlighted, setIsHighlighted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const hasTrackedActivationRef = useRef(false);
 
   const [analyses, setAnalyses] = useState<ContractAnalysisRow[]>([]);
   const [loadingAnalyses, setLoadingAnalyses] = useState(true);
@@ -106,6 +108,17 @@ export default function DashboardPage() {
 
     loadUserAndData();
   }, [supabase, router]);
+
+  // GA4: traccia attivazione abbonamento quando diventa attivo
+  useEffect(() => {
+    if (isActive && !hasTrackedActivationRef.current) {
+      gaEvent("subscription_activated", {
+        plan,
+        source: "dashboard",
+      });
+      hasTrackedActivationRef.current = true;
+    }
+  }, [isActive, plan]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -222,34 +235,16 @@ export default function DashboardPage() {
 
   return (
     <>
-      <CheckoutConfirmClient />
 
       <div className="min-h-screen bg-slate-50">
         {/* Header */}
-        <header className="flex items-center justify-between px-8 py-4 border-b border-slate-200 bg-white">
-          <a href="/" className="inline-flex items-center">
-            <img
-              src="/logo.png"
-              alt="ContrattoChiaro"
-              className="h-9 w-auto"
-            />
-          </a>
-          <div className="flex items-center gap-4 text-sm text-slate-700">
-            <div className="flex flex-col items-end">
-              {userEmail && <span className="font-medium">{userEmail}</span>}
-              <span className="text-xs text-slate-500">
-                Piano: {planLabel}
-                {!isActive && plan !== "free" && " (non attivo)"}
-              </span>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-100 text-xs"
-            >
-              Esci
-            </button>
-          </div>
-        </header>
+        <HeaderPrivate
+          userEmail={userEmail}
+          planLabel={planLabel}
+          plan={plan}
+          isActive={isActive}
+          onLogout={handleLogout}
+        />
 
         {/* Main */}
         <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
@@ -261,9 +256,6 @@ export default function DashboardPage() {
               plan === "free"
                 ? "Free: 1 sola analisi. Aggiorna per averne di più."
                 : ""
-            }
-            submitLabel={
-              analyzing ? "Analisi in corso..." : "Analizza contratto"
             }
             onAnalyze={async (file) => {
               if (!userId) {

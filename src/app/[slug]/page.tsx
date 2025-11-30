@@ -8,6 +8,7 @@ import {
   getLandingBySlug,
   type LandingConfig,
 } from "@/lib/landingConfig";
+import HeaderPublic from "@/components/HeaderPublic";
 
 // Static params per generare tutte le landing a build-time
 export function generateStaticParams() {
@@ -75,32 +76,7 @@ export default async function LandingPage({
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900">
       {/* HEADER comune con la home */}
-      <header className="w-full border-b border-zinc-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center">
-            <img
-              src="/logo.png"
-              alt="ContrattoChiaro"
-              className="h-9 w-auto"
-            />
-          </Link>
-
-          <nav className="flex items-center gap-3 text-sm">
-            <Link
-              href="/login"
-              className="rounded-full border border-zinc-300 px-4 py-1.5 text-xs font-medium text-zinc-900 transition hover:border-zinc-900 hover:bg-zinc-900 hover:text-white"
-            >
-              Accedi
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-medium text-zinc-50 shadow-sm transition hover:bg-zinc-800"
-            >
-              Registrati
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <HeaderPublic />
 
       {/* MAIN landing */}
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-12 sm:px-6 sm:py-16 space-y-14">

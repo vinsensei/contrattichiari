@@ -1,87 +1,63 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { supabaseAdmin } from "@/lib/supabaseClient";
 
-export const runtime = "nodejs";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-11-17.clover",
+});
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: "2024-06-20",
-} as any);
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    console.log("[CHECKOUT] body ricevuto:", body);
+    const { plan, userId } = await req.json();
 
-    const plan = body.plan as "standard" | "pro";
-
-    if (!plan) {
-      console.error("[CHECKOUT] Missing plan nel body");
+    if (!plan || !userId) {
       return NextResponse.json(
-        { error: "Missing plan" },
+        { error: "Missing plan or userId" },
         { status: 400 }
       );
     }
 
-    const { userId } = body as { userId?: string };
-    console.log("[CHECKOUT] plan/userId:", plan, userId);
+    // Determina la base URL dell'app:
+    // 1) usa NEXT_PUBLIC_SITE_URL se valida (inizia con http)
+    // 2) altrimenti usa l'origin ricavato dalla request (funziona in localhost)
+    const envAppUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    const requestOrigin = new URL(req.url).origin;
 
-    if (!userId) {
-      console.error("[CHECKOUT] Missing userId nel body");
-      return NextResponse.json(
-        { error: "Missing userId" },
-        { status: 400 }
-      );
-    }
+    const appUrl =
+      envAppUrl && envAppUrl.startsWith("http") ? envAppUrl : requestOrigin;
 
-    // URL base dell'app (deve avere http:// o https://)
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (!appUrl || !appUrl.startsWith("http")) {
-      console.error("Invalid NEXT_PUBLIC_APP_URL:", appUrl);
-      return NextResponse.json(
-        { error: "Server misconfigured: invalid NEXT_PUBLIC_APP_URL" },
-        { status: 500 }
-      );
-    }
+    const successUrl = `${appUrl}/pricing/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${appUrl}/pricing`;
 
     const priceId =
       plan === "standard"
-        ? process.env.STRIPE_PRICE_STANDARD_ID
-        : process.env.STRIPE_PRICE_PRO_ID;
+        ? process.env.STRIPE_PRICE_STANDARD
+        : process.env.STRIPE_PRICE_PRO;
 
     if (!priceId) {
-      console.error("[CHECKOUT] Missing priceId per plan", plan);
+      console.error(
+        "Stripe checkout error: missing price ID for plan",
+        plan
+      );
       return NextResponse.json(
-        { error: "Stripe price ID not configured" },
+        { error: "Server misconfigured: missing Stripe price ID" },
         { status: 500 }
       );
     }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ],
-    metadata: {
-      userId,
-      plan,
-    },
-    // 👇 Stripe sostituirà {CHECKOUT_SESSION_ID} con l'id reale
-    success_url: `${appUrl}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/pricing?checkout=cancel`,
-  });
-
-    console.log("[CHECKOUT] session creata:", session.id, session.metadata);
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      customer_email: undefined,
+      metadata: { userId, plan },
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    });
 
     return NextResponse.json({ url: session.url });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Stripe checkout error:", err);
     return NextResponse.json(
-      { error: "Stripe checkout failed" },
+      { error: "Stripe checkout failure" },
       { status: 500 }
     );
   }
