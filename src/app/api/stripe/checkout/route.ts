@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-11-17.clover",
-});
+// Niente apiVersion qui: Stripe usa quella di default collegata alla chiave
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
   try {
@@ -16,9 +15,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Determina la base URL dell'app:
-    // 1) usa NEXT_PUBLIC_SITE_URL se valida (inizia con http)
-    // 2) altrimenti usa l'origin ricavato dalla request (funziona in localhost)
+    // Base URL app:
+    // 1) NEXT_PUBLIC_SITE_URL se valida
+    // 2) altrimenti origin della request (funziona in localhost)
     const envAppUrl = process.env.NEXT_PUBLIC_SITE_URL;
     const requestOrigin = new URL(req.url).origin;
 
@@ -46,9 +45,19 @@ export async function POST(req: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer_email: undefined,
-      metadata: { userId, plan },
-      line_items: [{ price: priceId, quantity: 1 }],
+      // opzionale: potresti passare customer_email dal client se vuoi
+      // customer_email,
+      metadata: {
+        userId,
+        plan,
+      },
+      client_reference_id: userId, // comodo da vedere in Stripe
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
       success_url: successUrl,
       cancel_url: cancelUrl,
     });

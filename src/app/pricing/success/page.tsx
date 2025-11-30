@@ -1,82 +1,161 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import Stripe from "stripe";
+import { supabaseAdmin } from "@/lib/supabaseClient";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
-import { gaEvent } from "@/lib/gtag";
 
-export default function PricingSuccessPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [confirming, setConfirming] = useState(false);
-  const [confirmError, setConfirmError] = useState<string | null>(null);
+type SuccessPageProps = {
+  searchParams: Promise<{
+    session_id?: string;
+  }>;
+};
 
-  useEffect(() => {
-    const sessionId = searchParams.get("session_id");
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2024-06-20",
+} as any);
 
-    if (!sessionId) {
-      return;
-    }
+export default async function PricingSuccessPage({
+  searchParams,
+}: SuccessPageProps) {
+  // 👇 NUOVO: unwrap della Promise
+  const params = await searchParams;
+  const sessionId = params.session_id;
 
-    // Evita di ripetere la chiamata se l'utente ricarica senza param
-    setConfirming(true);
-    (async () => {
-      try {
-        await fetch(`/api/stripe/confirm?session_id=${sessionId}`, {
-          method: "POST",
-        });
+  if (!sessionId) {
+    return (
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4 text-center">
+          <h1 className="text-lg font-semibold text-slate-900">
+            Nessuna sessione di pagamento trovata
+          </h1>
+          <p className="text-sm text-slate-600">
+            Non abbiamo trovato i dettagli del pagamento. Se hai completato il
+            checkout, prova ad accedere alla dashboard per verificare il tuo
+            piano.
+          </p>
+          <div className="flex justify-center gap-3 pt-2">
+            <Link
+              href="/dashboard"
+              className="rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800"
+            >
+              Vai alla dashboard
+            </Link>
+            <Link
+              href="/pricing"
+              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Torna ai piani
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
-        gaEvent("subscription_completed", {
-          source: "stripe_checkout",
-        });
+  let plan: "standard" | "pro" | "free" = "free";
+  let updateOk = false;
 
-        // pulisco l'URL dal session_id
-        const url = new URL(window.location.href);
-        url.searchParams.delete("session_id");
-        window.history.replaceState({}, "", url.toString());
-      } catch (e) {
-        console.error("Errore conferma abbonamento:", e);
-        setConfirmError(
-          "Il pagamento sembra completato, ma si è verificato un errore durante l'attivazione dell'abbonamento. Riprova ad accedere alla dashboard tra pochi minuti."
-        );
-      } finally {
-        setConfirming(false);
+  try {
+    // 1) Recupera la sessione Stripe
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    const metadata = session.metadata || {};
+    const userId = metadata.userId;
+    const planMeta = (metadata.plan as "standard" | "pro") || "standard";
+
+    plan = planMeta;
+
+    if (!userId) {
+      console.error("[SUCCESS] Nessun userId in session.metadata", {
+        sessionId,
+        metadata,
+      });
+    } else {
+      // 2) customerId da session.customer
+      const customerId =
+        typeof session.customer === "string"
+          ? session.customer
+          : session.customer?.id;
+
+      // 3) current_period_end dalla subscription, se c'è
+      let currentPeriodEnd: string | null = null;
+      const subscriptionId = session.subscription;
+
+      if (typeof subscriptionId === "string") {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(
+            subscriptionId
+          );
+
+          // TS non vede current_period_end sul tipo, lo leggiamo via any
+          const cpe = (subscription as any)
+            .current_period_end as number | undefined;
+
+          if (cpe) {
+            currentPeriodEnd = new Date(cpe * 1000).toISOString();
+          }
+        } catch (err) {
+          console.error("[SUCCESS] Errore nel recupero subscription:", err);
+        }
       }
-    })();
-  }, [searchParams]);
+
+      // 4) Upsert su user_subscriptions, includendo stripe_customer_id
+      const supabase = supabaseAdmin();
+      const { error } = await supabase.from("user_subscriptions").upsert(
+        {
+          user_id: userId,
+          plan: planMeta,
+          is_active: true,
+          current_period_end: currentPeriodEnd,
+          stripe_customer_id: customerId ?? null,
+        },
+        { onConflict: "user_id" }
+      );
+
+      if (error) {
+        console.error("[SUCCESS] Errore upsert user_subscriptions:", error);
+      } else {
+        updateOk = true;
+      }
+    }
+  } catch (err) {
+    console.error("[SUCCESS] Errore nel recupero sessione Stripe:", err);
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4 text-center">
         <h1 className="text-lg font-semibold text-slate-900">
-          Pagamento completato ✅
+          {updateOk
+            ? "Abbonamento attivato con successo"
+            : "Pagamento completato"}
         </h1>
+        <p className="text-sm text-slate-600">
+          {updateOk
+            ? "Il tuo piano è stato aggiornato. Puoi ora usare ContrattoChiaro senza limiti, secondo il piano scelto."
+            : "Abbiamo ricevuto il pagamento. Se il tuo piano non risulta ancora aggiornato, potrebbe volerci qualche istante."}
+        </p>
+        <p className="text-xs text-slate-500">
+          Piano:{" "}
+          <span className="font-medium">
+            {plan === "standard"
+              ? "Standard"
+              : plan === "pro"
+              ? "Pro"
+              : "Free"}
+          </span>
+        </p>
 
-        {confirming && (
-          <p className="text-sm text-slate-600">
-            Stiamo attivando il tuo abbonamento… qualche istante e sarà tutto pronto.
-          </p>
-        )}
-
-        {!confirming && !confirmError && (
-          <p className="text-sm text-slate-600">
-            Il tuo abbonamento a ContrattoChiaro è stato attivato. Ora puoi vedere le analisi complete
-            dei tuoi contratti nella dashboard.
-          </p>
-        )}
-
-        {confirmError && (
-          <p className="text-sm text-red-600">
-            {confirmError}
-          </p>
-        )}
-
-        <div className="pt-2">
+        <div className="flex justify-center gap-3 pt-2">
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-slate-50 hover:bg-slate-800"
+            className="rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800"
           >
             Vai alla dashboard
+          </Link>
+          <Link
+            href="/dashboard/account"
+            className="rounded-full border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
+          >
+            Gestisci account
           </Link>
         </div>
       </div>

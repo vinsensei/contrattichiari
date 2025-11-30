@@ -14,6 +14,9 @@ export default function PricingPage() {
   const [loadingCheckout, setLoadingCheckout] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const [plan, setPlan] = useState<"free" | "standard" | "pro">("free");
+  const [isActive, setIsActive] = useState(false);
+
   useEffect(() => {
     const check = async () => {
       const { data } = await supabase.auth.getUser();
@@ -21,7 +24,32 @@ export default function PricingPage() {
         router.replace("/login");
         return;
       }
+
       setUserId(data.user.id);
+
+      // carica piano corrente
+      try {
+        const { data: sub, error: subError } = await supabase
+          .from("user_subscriptions")
+          .select("plan, is_active")
+          .eq("user_id", data.user.id)
+          .maybeSingle();
+
+        if (subError) {
+          console.error("Errore nel recupero abbonamento:", subError);
+        }
+
+        if (sub) {
+          setPlan((sub.plan as any) ?? "free");
+          setIsActive(sub.is_active ?? false);
+        } else {
+          setPlan("free");
+          setIsActive(false);
+        }
+      } catch (e) {
+        console.error("Errore imprevisto nel recupero abbonamento:", e);
+      }
+
       setCheckingUser(false);
     };
     check();
@@ -33,18 +61,18 @@ export default function PricingPage() {
     setLoadingCheckout(true);
 
     // piano scelto (per ora fisso)
-    const plan = "standard";
+    const selectedPlan = "standard";
 
     // GA4: evento di inizio checkout
     gaEvent("subscription_started", {
-      plan,
+      plan: selectedPlan,
     });
 
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, userId }), // 👈 usa la stessa variabile
+        body: JSON.stringify({ plan: selectedPlan, userId }),
       });
 
       const data = await res.json();
@@ -74,6 +102,8 @@ export default function PricingPage() {
       </div>
     );
   }
+
+  const standardIsActive = isActive && plan === "standard";
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -123,7 +153,14 @@ export default function PricingPage() {
 
           {/* Piano Standard */}
           <div className="bg-slate-900 text-white rounded-2xl p-6 flex flex-col gap-3 border border-slate-900">
-            <h2 className="text-base font-semibold">Standard</h2>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-base font-semibold">Standard</h2>
+              {standardIsActive && (
+                <span className="inline-flex items-center rounded-full bg-emerald-400/20 text-emerald-100 px-3 py-0.5 text-[11px] font-medium">
+                  Piano attivo
+                </span>
+              )}
+            </div>
             <p className="text-2xl font-semibold">4,99€/mese</p>
             <p className="text-sm text-slate-100">
               Analisi illimitate per privati, freelance e piccoli studi.
@@ -136,13 +173,22 @@ export default function PricingPage() {
             {errorMsg && (
               <p className="text-xs text-red-300 mt-2">{errorMsg}</p>
             )}
-            <button
-              onClick={startCheckout}
-              disabled={loadingCheckout}
-              className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 disabled:opacity-60"
-            >
-              {loadingCheckout ? "Reindirizzamento…" : "Attiva Standard"}
-            </button>
+            {standardIsActive ? (
+              <button
+                onClick={() => router.push("/dashboard/account")}
+                className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-slate-900 text-sm font-medium hover:bg-slate-100"
+              >
+                Gestisci il tuo abbonamento
+              </button>
+            ) : (
+              <button
+                onClick={startCheckout}
+                disabled={loadingCheckout}
+                className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 disabled:opacity-60"
+              >
+                {loadingCheckout ? "Reindirizzamento…" : "Attiva Standard"}
+              </button>
+            )}
           </div>
 
           {/* Piano Pro */}

@@ -235,7 +235,6 @@ export default function DashboardPage() {
 
   return (
     <>
-
       <div className="min-h-screen bg-slate-50">
         {/* Header */}
         <HeaderPrivate
@@ -310,7 +309,12 @@ export default function DashboardPage() {
               <h2 className="text-lg font-semibold text-slate-900">
                 Le tue ultime analisi
               </h2>
-              {/* In futuro: link allo storico completo */}
+              <Link
+                href="/dashboard/analyses"
+                className="text-xs font-medium text-slate-700 underline-offset-2 hover:underline"
+              >
+                Vedi tutte
+              </Link>
             </div>
 
             {loadingAnalyses ? (

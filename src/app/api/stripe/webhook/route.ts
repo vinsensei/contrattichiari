@@ -44,7 +44,8 @@ export async function POST(req: NextRequest) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.userId;
-        const plan = (session.metadata?.plan as "standard" | "pro") || "standard";
+        const plan =
+          (session.metadata?.plan as "standard" | "pro") || "standard";
 
         console.log("[WEBHOOK] checkout.session.completed metadata:", {
           userId,
@@ -56,6 +57,32 @@ export async function POST(req: NextRequest) {
           break;
         }
 
+        const customerId =
+          typeof session.customer === "string"
+            ? session.customer
+            : session.customer?.id;
+
+        // current_period_end dalla subscription se presente
+        let currentPeriodEnd: string | null = null;
+        const subscriptionId = session.subscription;
+        if (typeof subscriptionId === "string") {
+          try {
+            const subscription = await stripe.subscriptions.retrieve(
+              subscriptionId
+            );
+            const cpe = (subscription as any)
+              .current_period_end as number | undefined;
+            if (cpe) {
+              currentPeriodEnd = new Date(cpe * 1000).toISOString();
+            }
+          } catch (err) {
+            console.error(
+              "[WEBHOOK] Error retrieving subscription for checkout.session.completed:",
+              err
+            );
+          }
+        }
+
         const { error } = await supabase
           .from("user_subscriptions")
           .upsert(
@@ -63,6 +90,8 @@ export async function POST(req: NextRequest) {
               user_id: userId,
               plan,
               is_active: true,
+              stripe_customer_id: customerId ?? null,
+              current_period_end: currentPeriodEnd,
             },
             { onConflict: "user_id" }
           );
@@ -71,6 +100,85 @@ export async function POST(req: NextRequest) {
           console.error("[WEBHOOK] Supabase upsert error:", error);
         } else {
           console.log("[WEBHOOK] Subscription upserted for user:", userId);
+        }
+
+        break;
+      }
+
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
+
+        const status = subscription.status;
+        const isActive =
+          status === "active" || status === "trialing";
+
+        const cpe = (subscription as any)
+          .current_period_end as number | undefined;
+        const currentPeriodEnd = cpe
+          ? new Date(cpe * 1000).toISOString()
+          : null;
+
+        // deduci il piano dal price ID (se attivo), altrimenti 'free'
+        let plan: "free" | "standard" | "pro" = "free";
+        if (isActive) {
+          const priceId = subscription.items.data[0]?.price?.id;
+          if (priceId === process.env.STRIPE_PRICE_STANDARD) {
+            plan = "standard";
+          } else if (priceId === process.env.STRIPE_PRICE_PRO) {
+            plan = "pro";
+          }
+        }
+
+        console.log("[WEBHOOK] customer.subscription.updated:", {
+          customerId,
+          status,
+          isActive,
+          currentPeriodEnd,
+          plan,
+        });
+
+        const { error } = await supabase
+          .from("user_subscriptions")
+          .update({
+            is_active: isActive,
+            current_period_end: currentPeriodEnd,
+            plan, // se non attivo → 'free'
+          })
+          .eq("stripe_customer_id", customerId);
+
+        if (error) {
+          console.error(
+            "[WEBHOOK] Supabase update error (subscription.updated):",
+            error
+          );
+        }
+
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as string;
+
+        console.log("[WEBHOOK] customer.subscription.deleted:", {
+          customerId,
+        });
+
+        const { error } = await supabase
+          .from("user_subscriptions")
+          .update({
+            is_active: false,
+            current_period_end: null,
+            plan: "free",
+          })
+          .eq("stripe_customer_id", customerId);
+
+        if (error) {
+          console.error(
+            "[WEBHOOK] Supabase update error (subscription.deleted):",
+            error
+          );
         }
 
         break;

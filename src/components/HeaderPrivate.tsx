@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 type HeaderPrivateProps = {
   userEmail?: string | null;
   planLabel: string;
@@ -26,11 +28,13 @@ export default function HeaderPrivate({
       </a>
       <div className="flex items-center gap-4 text-sm text-slate-700">
         <div className="flex flex-col items-end">
+          <Link href="/dashboard/account" className="flex items-center">
           {userEmail && <span className="font-medium">{userEmail}</span>}
           <span className="text-xs text-slate-500">
             Piano: {planLabel}
             {!isActive && plan !== "free" && " (non attivo)"}
           </span>
+          </Link>
         </div>
         <button
           onClick={onLogout}
