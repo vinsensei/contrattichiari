@@ -27,7 +27,7 @@ export default function DashboardPage() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-
+  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export default function DashboardPage() {
         // carica piano
         const { data: sub, error: subError } = await supabase
           .from("user_subscriptions")
-          .select("plan, is_active")
+          .select("plan, is_active, current_period_end")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -80,6 +80,7 @@ export default function DashboardPage() {
         if (sub) {
           setPlan((sub.plan as any) ?? "free");
           setIsActive(sub.is_active ?? false);
+          setCurrentPeriodEnd(sub.current_period_end ?? null);
         } else {
           setPlan("free");
           setIsActive(false);
@@ -242,6 +243,7 @@ export default function DashboardPage() {
           planLabel={planLabel}
           plan={plan}
           isActive={isActive}
+          currentPeriodEnd={currentPeriodEnd}
           onLogout={handleLogout}
         />
 
@@ -254,7 +256,7 @@ export default function DashboardPage() {
             bottomRightText={
               plan === "free"
                 ? "Free: 1 sola analisi. Aggiorna per averne di più."
-                : ""
+                : "Piano standard e Pro: analisi illimitate."
             }
             onAnalyze={async (file) => {
               if (!userId) {

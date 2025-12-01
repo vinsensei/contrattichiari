@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
           ? new Date(cpe * 1000).toISOString()
           : null;
 
-        // deduci il piano dal price ID (se attivo), altrimenti 'free'
+        // deduci il piano dal priceId SOLO se è attivo
         let plan: "free" | "standard" | "pro" = "free";
         if (isActive) {
           const priceId = subscription.items.data[0]?.price?.id;
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
           .update({
             is_active: isActive,
             current_period_end: currentPeriodEnd,
-            plan, // se non attivo → 'free'
+            plan,
           })
           .eq("stripe_customer_id", customerId);
 

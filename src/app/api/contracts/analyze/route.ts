@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     // 1) Leggi piano utente
     const { data: sub, error: subError } = await supabase
       .from("user_subscriptions")
-      .select("plan, is_active")
+      .select("plan, is_active, current_period_end")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -63,8 +63,15 @@ export async function POST(req: NextRequest) {
     const plan: string = sub?.plan ?? "free";
     const isActive: boolean = sub?.is_active ?? false;
 
-    // 2) Se free → controlla se ha già usato l’analisi gratuita
+    const currentPeriodEnd = sub?.current_period_end
+      ? new Date(sub.current_period_end as string)
+      : null;
+
+    const now = new Date();
+
+    // 2) Regole piano: free vs a pagamento + scadenza periodo
     if (plan === "free") {
+      // piano free → controlla se ha già usato l’analisi gratuita
       const { count, error: analysesError } = await supabase
         .from("contract_analyses")
         .select("id", { count: "exact" })
@@ -89,10 +96,36 @@ export async function POST(req: NextRequest) {
         );
       }
     } else {
-      // se piano a pagamento ma non attivo → blocca
-      if (!isActive) {
+      // piano a pagamento → deve essere attivo e non scaduto
+      const isExpired =
+        currentPeriodEnd !== null &&
+        currentPeriodEnd.getTime() < now.getTime();
+
+      if (!isActive || isExpired) {
+        // opzionale: se scaduto, facciamo un downgrade veloce lato DB
+        if (isExpired) {
+          const { error: downgradeError } = await supabase
+            .from("user_subscriptions")
+            .update({
+              is_active: false,
+              plan: "free",
+            })
+            .eq("user_id", userId);
+
+          if (downgradeError) {
+            console.error(
+              "[ANALYZE] errore downgrade piano scaduto:",
+              downgradeError
+            );
+          }
+        }
+
         return NextResponse.json(
-          { error: "Subscription inactive", code: "SUB_INACTIVE" },
+          {
+            error:
+              "Il tuo abbonamento non è più attivo. Aggiorna il piano per continuare a usare il servizio.",
+            code: "SUB_INACTIVE",
+          },
           { status: 402 }
         );
       }

@@ -111,7 +111,7 @@ export default function ContractUploadForm({
           {isLoading && (
             <div className="mt-4 flex items-center gap-3 text-xs text-slate-500">
               <div className="h-5 w-5 animate-spin rounded-full border-[2px] border-slate-300 border-t-slate-900" />
-              <span>L’intelligenza artificiale sta leggendo il tuo contratto…</span>
+              <span>Sto leggendo il tuo contratto</span>
             </div>
           )}
         </div>
