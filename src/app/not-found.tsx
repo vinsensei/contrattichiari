@@ -1,21 +1,20 @@
-// app/not-found.tsx
+// src/app/not-found.tsx
+
 import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-[60vh] flex-col items-center justify-center px-4 py-16 text-center">
-      <h1 className="text-2xl font-semibold text-zinc-900 mb-2">
-        Pagina non trovata
-      </h1>
-      <p className="text-sm text-zinc-600 mb-6 max-w-md">
-        La pagina che stai cercando non esiste o è stata spostata.
+    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 text-zinc-900 px-4">
+      <h1 className="text-2xl font-semibold mb-2">Pagina non trovata</h1>
+      <p className="text-sm text-zinc-600 mb-4 text-center max-w-md">
+        La pagina che stai cercando non esiste. Controlla l&apos;indirizzo oppure torna alla home.
       </p>
       <Link
         href="/"
-        className="inline-flex items-center rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-zinc-50 hover:bg-zinc-800"
+        className="rounded-full bg-zinc-900 px-4 py-2 text-sm text-zinc-50 hover:bg-zinc-800 transition"
       >
         Torna alla home
       </Link>
-    </main>
+    </div>
   );
 }

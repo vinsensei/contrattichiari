@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import { gaEvent } from "@/lib/gtag";
 import { trackActivity } from "@/lib/trackActivity";
 
-export default function RegisterPage() {
+function RegisterPageInner() {
   const supabase = supabaseBrowser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -181,5 +181,13 @@ export default function RegisterPage() {
         <div className="h-full w-full" />
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterPageInner />
+    </Suspense>
   );
 }

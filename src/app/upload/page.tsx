@@ -1,11 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ContractUploadForm from "@/components/ContractUploadForm";
 import HeaderPublic from "@/components/HeaderPublic";
 import { gaEvent } from "@/lib/gtag";
 
-export default function UploadPage() {
+function UploadPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fromSlug = searchParams.get("from");
@@ -66,5 +67,14 @@ export default function UploadPage() {
           />
       </main>
     </div>
+  );
+}
+
+
+export default function UploadPage() {
+  return (
+    <Suspense fallback={null}>
+      <UploadPageInner />
+    </Suspense>
   );
 }
