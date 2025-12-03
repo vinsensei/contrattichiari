@@ -285,6 +285,42 @@ export default function AnalysisDetailPage() {
               <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
                 Risultato analisi contratto
               </p>
+              <button
+  onClick={async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) return alert("Devi essere autenticato.");
+
+      const res = await fetch(`/api/analysis/${id}/pdf`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        return alert("Errore nella generazione del PDF");
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `analisi-${id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("Errore imprevisto");
+    }
+  }}
+  className="mt-2 inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-900 text-white text-sm hover:bg-slate-800"
+>
+  Scarica PDF
+</button>
               <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">
                 {a.tipo_contratto || analysis.from_slug || 'Contratto'}
               </h1>

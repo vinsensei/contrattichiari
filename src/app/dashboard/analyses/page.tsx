@@ -10,6 +10,8 @@ type ContractAnalysisRow = {
   id: string;
   created_at: string;
   from_slug: string | null;
+  source: string | null;
+  is_full_unlocked: boolean | null;
   analysis_json: {
     tipo_contratto?: string | null;
     valutazione_rischio?: string | null;
@@ -29,6 +31,7 @@ export default function AnalysesListPage() {
   const [analyses, setAnalyses] = useState<ContractAnalysisRow[]>([]);
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingAnalyses, setLoadingAnalyses] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -75,7 +78,7 @@ export default function AnalysesListPage() {
         // tutte le analisi
         const { data: analysesData, error: analysesError } = await supabase
           .from("contract_analyses")
-          .select("id, created_at, from_slug, analysis_json")
+          .select("id, created_at, from_slug, source, is_full_unlocked, analysis_json")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
@@ -130,6 +133,29 @@ export default function AnalysesListPage() {
     );
   };
 
+  const filteredAnalyses = analyses.filter((a) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+
+    const aj = a.analysis_json || {};
+    const tipoContratto = (
+      aj.tipo_contratto ||
+      a.from_slug ||
+      "Contratto senza titolo"
+    )
+      .toString()
+      .toLowerCase();
+
+    const motivazioneRischio = (aj.motivazione_rischio || "")
+      .toString()
+      .toLowerCase();
+
+    return (
+      tipoContratto.includes(q) ||
+      motivazioneRischio.includes(q)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-slate-50">
       <HeaderPrivate
@@ -155,6 +181,15 @@ export default function AnalysesListPage() {
             Torna alla dashboard
           </Link>
         </div>
+        <div className="mt-2">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cerca per tipo di contratto o motivazione…"
+            className="w-full sm:max-w-xs rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+          />
+        </div>
 
         <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
           {loadingAnalyses ? (
@@ -163,9 +198,13 @@ export default function AnalysesListPage() {
             <p className="text-sm text-slate-500">
               Non hai ancora analizzato nessun contratto.
             </p>
+          ) : filteredAnalyses.length === 0 && searchQuery.trim() ? (
+            <p className="text-sm text-slate-500">
+              Nessun risultato per &quot;{searchQuery.trim()}&quot;.
+            </p>
           ) : (
             <ul className="space-y-3">
-              {analyses.map((a) => {
+              {filteredAnalyses.map((a) => {
                 const aj = a.analysis_json || {};
                 const tipoContratto =
                   aj.tipo_contratto ||
@@ -175,6 +214,9 @@ export default function AnalysesListPage() {
                 const motivazioneRischio =
                   aj.motivazione_rischio ||
                   "Apri il dettaglio per vedere l’analisi completa.";
+                const isLanding = a.source === "anonymous_landing";
+                const isFullUnlocked = a.is_full_unlocked === true;
+                const showFull = !isLanding || isFullUnlocked;
 
                 return (
                   <li key={a.id}>
@@ -189,6 +231,11 @@ export default function AnalysesListPage() {
                           </span>
                           {riskBadge(valutazioneRischio)}
                         </div>
+                        <p className="text-[11px] text-slate-500">
+                          {showFull
+                            ? "Analisi completa"
+                            : "Versione ridotta dall’upload rapido"}
+                        </p>
                         <p className="text-xs text-slate-600 line-clamp-2">
                           {motivazioneRischio}
                         </p>

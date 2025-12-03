@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
+import { trackActivity } from "@/lib/trackActivity";
 
 export default function LoginPage() {
   const supabase = supabaseBrowser();
@@ -29,6 +30,8 @@ export default function LoginPage() {
       });
 
       if (error) throw error;
+
+      trackActivity();
 
       // Redirect dopo login:
       // - se c'è un'analisi associata, porta l'utente a quella pagina
@@ -122,6 +125,16 @@ export default function LoginPage() {
                 className="text-slate-900 underline font-medium"
               >
                 Registrati
+              </a>
+            </p>
+
+             <p className="text-center text-sm text-slate-600">
+              Password dimenticata? {" "}
+              <a
+                href="/password/forgot"
+                className="text-slate-900 underline font-medium"
+              >
+                Reimpostala
               </a>
             </p>
           </div>

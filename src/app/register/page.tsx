@@ -4,6 +4,7 @@ import { useState, FormEvent, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import { gaEvent } from "@/lib/gtag";
+import { trackActivity } from "@/lib/trackActivity";
 
 export default function RegisterPage() {
   const supabase = supabaseBrowser();
@@ -34,12 +35,24 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // 1) Crea l’account
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
+      // 1) Chiamata alla nostra API di signup (con protezioni anti-abuso)
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          // TODO: sostituire con il token reale del captcha quando integrato
+          captchaToken: null,
+        }),
       });
-      if (signUpError) throw signUpError;
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Errore durante la registrazione");
+      }
 
       // 2) Login automatico dopo la registrazione
       const { error: loginError } = await supabase.auth.signInWithPassword({
@@ -47,6 +60,8 @@ export default function RegisterPage() {
         password,
       });
       if (loginError) throw loginError;
+      
+      trackActivity();
 
       // 3) Evento GA: registrazione completata
       gaEvent("sign_up_completed", {
