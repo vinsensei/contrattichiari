@@ -1,12 +1,11 @@
 // src/lib/emailTemplate.ts
 
-export function renderEmailTemplate({
-  title,
-  content,
-}: {
+export type EmailTemplateParams = {
   title: string;
   content: string; // HTML già formattato
-}) {
+};
+
+export function renderEmailTemplate({ title, content }: EmailTemplateParams) {
   return `
   <!DOCTYPE html>
   <html lang="it">

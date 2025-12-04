@@ -350,7 +350,10 @@ export async function sendPasswordResetEmail(to: string, resetLink: string) {
     <p>A presto,<br />Il team di Contratti Chiari</p>
   `;
 
-  const html = renderEmailTemplate(subject, htmlContent);
+  const html = renderEmailTemplate({
+    title: subject,
+    content: htmlContent,
+  });
 
   await sendEmail({ to, subject, text, html });
 }
