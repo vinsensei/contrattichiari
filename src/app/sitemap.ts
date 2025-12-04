@@ -1,6 +1,7 @@
 // app/sitemap.ts
 import { LANDINGS } from "@/lib/landingConfig";
 
+
 export default function sitemap() {
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://contrattochiaro.it";
