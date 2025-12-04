@@ -34,7 +34,7 @@ export async function generateMetadata({
   }
 
   const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://contrattochiaro.it";
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://contrattichiari.it";
 
   const url = new URL(landing.path, baseUrl).toString();
 
