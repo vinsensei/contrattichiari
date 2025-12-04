@@ -66,7 +66,7 @@ export function renderEmailTemplate({
     <body>
       <div class="container">
         <div class="logo">
-          <img src="https://contrattichiari.it/logo_email.png" width="180" alt="Contratti Chiari" />
+          <img src="https://contrattichiari.it/logo_email.png" width="100" alt="Contratti Chiari" />
         </div>
 
         <h1 class="title">${title}</h1>
