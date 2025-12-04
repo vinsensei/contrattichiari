@@ -1,5 +1,5 @@
 // src/lib/emails.ts
-
+import { resend } from "@/lib/resendClient";
 export type PlanName = "free" | "standard" | "pro";
 
 type SendEmailArgs = {
@@ -9,14 +9,25 @@ type SendEmailArgs = {
   html?: string;
 };
 
+
+
 /**
- * Entry point unico: qui poi colleghi il provider reale (Resend, Mailersend, ecc.)
+ * ENTRY POINT UNICO — qui ora integriamo Resend
  */
 async function sendEmail({ to, subject, text, html }: SendEmailArgs) {
-  // TODO: integra provider email qui
-  console.log("[EMAIL:DEBUG]", { to, subject, text });
-  // esempio Resend:
-  // await resend.emails.send({ from: "...", to, subject, text, html });
+  try {
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM ?? "ContrattoChiaro <noreply@contrattichiari.it>",
+      to,
+      subject,
+      text,
+      html,
+    });
+
+    console.log("[EMAIL:OK]", { to, subject });
+  } catch (err) {
+    console.error("[EMAIL:ERROR]", err);
+  }
 }
 
 /**
