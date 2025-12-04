@@ -312,3 +312,45 @@ export async function sendTrialEndingEmail(to: string, daysLeft: number) {
 
   await sendEmail({ to, subject, text, html });
 }
+
+export async function sendPasswordResetEmail(to: string, resetLink: string) {
+  const subject = "Reimposta la tua password su Contratti Chiari";
+
+  const text = [
+    "Ciao,",
+    "",
+    "hai richiesto di reimpostare la password del tuo account Contratti Chiari.",
+    "Se non hai effettuato tu questa richiesta, puoi ignorare questa email.",
+    "",
+    `Per scegliere una nuova password, clicca su questo link: ${resetLink}`,
+    "",
+    "Il link è valido per 60 minuti.",
+    "",
+    "A presto,",
+    "Il team di Contratti Chiari",
+  ].join("\n");
+
+  const htmlContent = `
+    <p>Ciao,</p>
+    <p>
+      hai richiesto di reimpostare la password del tuo account <strong>Contratti Chiari</strong>.
+      Se non hai effettuato tu questa richiesta, puoi ignorare questa email.
+    </p>
+    <p>
+      Per scegliere una nuova password, clicca sul pulsante qui sotto:
+    </p>
+    <p>
+      <a href="${resetLink}" class="button">Reimposta la password</a>
+    </p>
+    <p style="font-size: 12px; color: #6b7280;">
+      Il link è valido per 60 minuti.<br/>
+      Se il pulsante non dovesse funzionare, copia e incolla questo indirizzo nel browser:<br/>
+      <span style="word-break: break-all;">${resetLink}</span>
+    </p>
+    <p>A presto,<br />Il team di Contratti Chiari</p>
+  `;
+
+  const html = renderEmailTemplate(subject, htmlContent);
+
+  await sendEmail({ to, subject, text, html });
+}

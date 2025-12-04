@@ -54,7 +54,7 @@ function LoginInner() {
           <div className="space-y-3 text-center">
             <a href="/" className="inline-flex items-center">
               <img
-                src="/logo.png"
+                src="/logo_email.png"
                 alt="ContrattiChiari"
                 className="h-13 w-auto"
               />
@@ -80,7 +80,7 @@ function LoginInner() {
                 </label>
                 <input
                   type="email"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -93,7 +93,7 @@ function LoginInner() {
                 </label>
                 <input
                   type="password"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required

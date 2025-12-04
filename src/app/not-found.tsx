@@ -5,7 +5,7 @@ export default function NotFound() {
     <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4 text-center">
         <h1 className="text-lg font-semibold text-slate-900">
-          Pagina non trovata
+          Errore 404
         </h1>
         <p className="text-sm text-slate-600">
           La pagina che stai cercando non esiste o è stata spostata.
