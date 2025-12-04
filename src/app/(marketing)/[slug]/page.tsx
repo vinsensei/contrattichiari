@@ -1,7 +1,8 @@
 // app/(marketing)/[slug]/page.tsx
-import type { Metadata } from "next";
+import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react"; // 👈 AGGIUNGI QUESTO
 import {
   LANDINGS,
   landingSlugs,
@@ -10,12 +11,12 @@ import {
 } from "@/lib/landingConfig";
 import HeaderPublic from "@/components/HeaderPublic";
 
-// Static params per generare tutte le landing a build-time
+// Static params...
 export function generateStaticParams() {
   return landingSlugs.map((slug) => ({ slug }));
 }
 
-// SEO + OG dinamici per ogni slug
+// SEO + OG dinamici...
 export async function generateMetadata({
   params,
 }: {
@@ -74,6 +75,7 @@ export default async function LandingPage({
   if (!landing) return notFound();
 
   return (
+    <Suspense fallback={null}>
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900">
       {/* HEADER comune con la home */}
       <HeaderPublic />
@@ -269,5 +271,6 @@ export default async function LandingPage({
         </div>
       </footer>
     </div>
+    </Suspense>
   );
 }
