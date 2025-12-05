@@ -24,11 +24,19 @@ export default function HeaderPrivate({
     <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3">
       <div className="flex items-center gap-4 shrink-0">
         <Link href="/dashboard" className="font-semibold text-slate-900">
-          <img
-            src="/logo.png"
-            alt="ContrattoChiaro"
-            className="h-8 w-auto"
-          />
+          {/* Logo Mobile */}
+            <img
+              src="/logo_mobile.png"
+              alt="ContrattoChiaro"
+              className="h-8 w-auto shrink-0 block md:hidden"
+            />
+
+            {/* Logo Desktop */}
+            <img
+              src="/logo.png"
+              alt="ContrattoChiaro"
+              className="h-8 w-auto shrink-0 hidden md:block"
+            />
         </Link>
       </div>
 

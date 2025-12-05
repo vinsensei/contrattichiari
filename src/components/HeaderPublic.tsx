@@ -18,11 +18,19 @@ export default function HeaderPublic() {
     <header className="w-full border-b border-zinc-200 bg-white/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-5xl shrink-0 items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center">
-          <img
-            src="/logo.png"
-            alt="ContrattoChiaro"
-            className="h-9 w-auto"
-          />
+          {/* Logo Mobile */}
+            <img
+              src="/logo_mobile.png"
+              alt="ContrattoChiaro"
+              className="h-8 w-auto shrink-0 block md:hidden"
+            />
+
+            {/* Logo Desktop */}
+            <img
+              src="/logo.png"
+              alt="ContrattoChiaro"
+              className="h-8 w-auto shrink-0 hidden md:block"
+            />
         </Link>
 
         {loggedIn === null ? (
