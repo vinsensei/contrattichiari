@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://localhost:3001/sitemap.xml
+Sitemap: https://contrattichiari.it/sitemap.xml
