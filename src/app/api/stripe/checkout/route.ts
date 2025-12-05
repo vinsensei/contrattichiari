@@ -15,9 +15,15 @@ export async function POST(req: Request) {
       );
     }
 
+    // Per ora supportiamo SOLO il piano standard
+    if (plan !== "standard") {
+      return NextResponse.json(
+        { error: "Unsupported plan" },
+        { status: 400 }
+      );
+    }
+
     // Base URL app:
-    // 1) NEXT_PUBLIC_SITE_URL se valida
-    // 2) altrimenti origin della request (funziona in localhost)
     const envAppUrl = process.env.NEXT_PUBLIC_SITE_URL;
     const requestOrigin = new URL(req.url).origin;
 
@@ -27,10 +33,8 @@ export async function POST(req: Request) {
     const successUrl = `${appUrl}/pricing/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${appUrl}/pricing`;
 
-    const priceId =
-      plan === "standard"
-        ? process.env.STRIPE_PRICE_STANDARD
-        : process.env.STRIPE_PRICE_PRO;
+    // Usiamo solo il price STANDARD
+    const priceId = process.env.STRIPE_PRICE_STANDARD;
 
     if (!priceId) {
       console.error(
@@ -45,13 +49,11 @@ export async function POST(req: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      // opzionale: potresti passare customer_email dal client se vuoi
-      // customer_email,
       metadata: {
         userId,
         plan,
       },
-      client_reference_id: userId, // comodo da vedere in Stripe
+      client_reference_id: userId,
       line_items: [
         {
           price: priceId,

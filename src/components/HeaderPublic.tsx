@@ -16,7 +16,7 @@ export default function HeaderPublic() {
 
   return (
     <header className="w-full border-b border-zinc-200 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-5xl shrink-0 items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center">
           <img
             src="/logo.png"
