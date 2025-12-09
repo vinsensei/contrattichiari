@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import HeaderPrivate from "@/components/HeaderPrivate";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 type ContractAnalysisRow = {
   id: string;
@@ -19,6 +20,14 @@ type ContractAnalysisRow = {
     [key: string]: any;
   } | null;
 };
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
 
 export default function AnalysesListPage() {
   const supabase = supabaseBrowser();

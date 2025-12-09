@@ -1,6 +1,10 @@
 import HeaderPublic from "@/components/HeaderPublic";
 import Link from "next/link";
 
+export const metadata = {
+  title: "ContrattoChiaro – Analisi contratti con AI",
+};
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900">

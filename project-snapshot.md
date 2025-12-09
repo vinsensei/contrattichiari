@@ -14,19 +14,24 @@ src/app
 - src/app/api/auth/signup/route.ts
 - src/app/api/contracts/analyze/route.ts
 - src/app/api/cron/inactivityreminder/route.ts
+- src/app/api/password/forgot/route.ts
+- src/app/api/password/reset/route.ts
 - src/app/api/stripe/checkout/route.ts
 - src/app/api/stripe/confirm/route.ts
 - src/app/api/stripe/create-checkout-session/route.ts
 - src/app/api/stripe/portal/route.ts
 - src/app/api/stripe/webhook/route.ts
 - src/app/api/user/activity/route.ts
+- src/app/apple-icon.png
 - src/app/dashboard/account/page.tsx
 - src/app/dashboard/analyses/page.tsx
 - src/app/dashboard/page.tsx
 - src/app/favicon.ico
 - src/app/globals.css
+- src/app/icon.png
 - src/app/layout.tsx
 - src/app/login/page.tsx
+- src/app/manifest.ts
 - src/app/not-found.tsx
 - src/app/page.tsx
 - src/app/password/forgot/page.tsx
@@ -35,7 +40,7 @@ src/app
 - src/app/pricing/success/page.tsx
 - src/app/privacy/page.tsx
 - src/app/register/page.tsx
-- src/app/robots.txt
+- src/app/robots.ts
 - src/app/sitemap.ts
 - src/app/termini/page.tsx
 - src/app/upload/page.tsx
@@ -55,10 +60,12 @@ src/components
 
 ```
 src/lib
+- src/lib/emailTemplate.ts
 - src/lib/emails.ts
 - src/lib/gtag.ts
 - src/lib/landingConfig.ts
 - src/lib/openaiClient.ts
+- src/lib/resendClient.ts
 - src/lib/supabaseClient.ts
 - src/lib/trackActivity.ts
 ```
@@ -89,6 +96,7 @@ src/lib
     "pdfkit": "^0.17.2",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "resend": "^6.5.2",
     "stripe": "^20.0.0"
   },
   "devDependencies": {
@@ -1396,6 +1404,183 @@ export async function GET() {
 }
 ```
 
+### src/app/api/password/forgot/route.ts
+
+```
+// src/app/api/password/forgot/route.ts
+import { NextResponse } from "next/server";
+import crypto from "crypto";
+import { supabaseAdmin } from "@/lib/supabaseClient";
+import { sendPasswordResetEmail } from "@/lib/emails";
+
+export async function POST(req: Request) {
+  try {
+    const { email } = await req.json();
+
+    if (!email || typeof email !== "string") {
+      return NextResponse.json({ error: "Email non valida" }, { status: 400 });
+    }
+
+    const admin = supabaseAdmin();
+
+    // 1. Trova utente per email
+    const { data: userList, error: userError } = await admin.auth.admin.listUsers({
+      page: 1,
+      perPage: 1,
+      email
+    } as any); // tipizzazione un po' rognosa, ma funziona
+
+    if (userError) {
+      console.error("Errore listUsers:", userError);
+      // Risposta generica per non leakare info
+      return NextResponse.json(
+        {
+          message:
+            "Se l'indirizzo è corretto, ti abbiamo inviato un'email con le istruzioni per il reset.",
+        },
+        { status: 200 }
+      );
+    }
+
+    const user = userList?.users?.[0];
+    if (!user) {
+      // Risposta comunque 200 (per non dire se l'email esiste o no)
+      return NextResponse.json(
+        {
+          message:
+            "Se l'indirizzo è corretto, ti abbiamo inviato un'email con le istruzioni per il reset.",
+        },
+        { status: 200 }
+      );
+    }
+
+    // 2. Genera token + hash
+    const token = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1); // 1 ora di validità
+
+    // 3. Salva in tabella
+    const { error: insertError } = await admin
+      .from("password_reset_tokens")
+      .insert({
+        user_id: user.id,
+        token_hash: tokenHash,
+        expires_at: expiresAt.toISOString(),
+      });
+
+    if (insertError) {
+      console.error("Errore insert reset token:", insertError);
+      return NextResponse.json(
+        { error: "Errore interno" },
+        { status: 500 }
+      );
+    }
+
+    // 4. Costruisci link reset
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      "http://localhost:3000";
+
+    const resetLink = `${baseUrl.replace(/\/+$/, "")}/password/reset?token=${token}`;
+
+    // 5. Invia email
+    await sendPasswordResetEmail(email, resetLink);
+
+    return NextResponse.json(
+      {
+        message:
+          "Se l'indirizzo è corretto, ti abbiamo inviato un'email con il link per reimpostare la password.",
+      },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error("Errore in /api/password/forgot:", err);
+    return NextResponse.json(
+      { error: "Errore interno" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+### src/app/api/password/reset/route.ts
+
+```
+// src/app/api/password/reset/route.ts
+import { NextResponse } from "next/server";
+import crypto from "crypto";
+import { supabaseAdmin } from "@/lib/supabaseClient";
+
+export async function POST(req: Request) {
+  try {
+    const { token, password } = await req.json();
+
+    if (!token || typeof token !== "string" || !password || typeof password !== "string") {
+      return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const admin = supabaseAdmin();
+
+    // 1. Recupera token valido
+    const { data: rows, error: selectError } = await admin
+      .from("password_reset_tokens")
+      .select("*")
+      .eq("token_hash", tokenHash)
+      .is("used_at", null)
+      .limit(1);
+
+    if (selectError) {
+      console.error("Errore select reset token:", selectError);
+      return NextResponse.json({ error: "Link non valido o scaduto" }, { status: 400 });
+    }
+
+    const row = rows?.[0];
+    if (!row) {
+      return NextResponse.json({ error: "Link non valido o scaduto" }, { status: 400 });
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(row.expires_at);
+    if (expiresAt < now) {
+      return NextResponse.json({ error: "Link scaduto" }, { status: 400 });
+    }
+
+    const userId = row.user_id as string;
+
+    // 2. Aggiorna password via admin
+    const { error: updateError } = await admin.auth.admin.updateUserById(userId, {
+      password,
+    });
+
+    if (updateError) {
+      console.error("Errore updateUserById:", updateError);
+      return NextResponse.json(
+        { error: "Impossibile aggiornare la password" },
+        { status: 500 }
+      );
+    }
+
+    // 3. Marca token come usato
+    await admin
+      .from("password_reset_tokens")
+      .update({ used_at: new Date().toISOString() })
+      .eq("id", row.id);
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Errore in /api/password/reset:", err);
+    return NextResponse.json(
+      { error: "Errore interno" },
+      { status: 500 }
+    );
+  }
+}
+```
+
 ### src/app/api/stripe/checkout/route.ts
 
 ```
@@ -1416,9 +1601,15 @@ export async function POST(req: Request) {
       );
     }
 
+    // Per ora supportiamo SOLO il piano standard
+    if (plan !== "standard") {
+      return NextResponse.json(
+        { error: "Unsupported plan" },
+        { status: 400 }
+      );
+    }
+
     // Base URL app:
-    // 1) NEXT_PUBLIC_SITE_URL se valida
-    // 2) altrimenti origin della request (funziona in localhost)
     const envAppUrl = process.env.NEXT_PUBLIC_SITE_URL;
     const requestOrigin = new URL(req.url).origin;
 
@@ -1428,10 +1619,8 @@ export async function POST(req: Request) {
     const successUrl = `${appUrl}/pricing/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${appUrl}/pricing`;
 
-    const priceId =
-      plan === "standard"
-        ? process.env.STRIPE_PRICE_STANDARD
-        : process.env.STRIPE_PRICE_PRO;
+    // Usiamo solo il price STANDARD
+    const priceId = process.env.STRIPE_PRICE_STANDARD;
 
     if (!priceId) {
       console.error(
@@ -1446,13 +1635,11 @@ export async function POST(req: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      // opzionale: potresti passare customer_email dal client se vuoi
-      // customer_email,
       metadata: {
         userId,
         plan,
       },
-      client_reference_id: userId, // comodo da vedere in Stripe
+      client_reference_id: userId,
       line_items: [
         {
           price: priceId,

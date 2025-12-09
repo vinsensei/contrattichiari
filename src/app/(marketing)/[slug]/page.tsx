@@ -2,7 +2,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react"; // 👈 AGGIUNGI QUESTO
+import { Suspense } from "react";
 import {
   LANDINGS,
   landingSlugs,
@@ -20,9 +20,9 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug } = params;
 
   const landing = getLandingBySlug(slug);
 
@@ -67,9 +67,9 @@ export async function generateMetadata({
 export default async function LandingPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }) {
-  const { slug } = await params;
+  const { slug } = params;
   const landing = getLandingBySlug(slug);
 
   if (!landing) return notFound();
@@ -94,12 +94,12 @@ export default async function LandingPage({
             {landing.subtitle}
           </p>
           <div className="pt-4 flex flex-wrap items-center gap-3">
-            <a
+            <Link
               href={`/upload?from=${landing.slug}`}
               className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-6 py-2 text-sm font-medium text-zinc-50 shadow-sm transition hover:bg-zinc-800"
             >
               {landing.ctaLabel}
-            </a>
+            </Link>
             <p className="text-xs text-zinc-500">
               Carica il PDF, una scansione o una foto leggibile del contratto.
             </p>
