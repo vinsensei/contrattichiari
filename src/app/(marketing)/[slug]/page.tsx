@@ -36,7 +36,7 @@ export async function generateMetadata({
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://contrattichiari.it";
 
-  const url = new URL(landing.path, baseUrl).toString();
+  const url = `${baseUrl}/${slug}`;
 
   return {
     title: landing.seoTitle,
