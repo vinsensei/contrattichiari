@@ -4,12 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import { gaEvent } from "@/lib/gtag";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Prezzi – Contratti Chiari",
-  description: "Scegli il piano più adatto per analizzare i tuoi contratti.",
-};
 
 export default function PricingPage() {
   const supabase = supabaseBrowser();

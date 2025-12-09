@@ -4,6 +4,7 @@ import "./globals.css";
 import Script from "next/script";
 import { GA4_ID } from "@/lib/gtag";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
+import CookieBanner from "@/components/CookieBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -72,10 +73,9 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
+        <CookieBanner />
         <AnalyticsProvider />
       </body>
     </html>

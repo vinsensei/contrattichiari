@@ -7,7 +7,6 @@ import Link from "next/link";
 import ContractUploadForm from "@/components/ContractUploadForm";
 import HeaderPrivate from "@/components/HeaderPrivate";
 import { gaEvent } from "@/lib/gtag";
-import type { Metadata } from "next";
 
 type ContractAnalysisRow = {
   id: string;
@@ -19,13 +18,6 @@ type ContractAnalysisRow = {
     motivazione_rischio?: string | null;
     [key: string]: any;
   } | null;
-};
-
-export const metadata: Metadata = {
-  robots: {
-    index: false,
-    follow: false,
-  },
 };
 
 

@@ -1,12 +1,10 @@
-
-
 import type { Metadata } from "next";
 import HeaderPublic from "@/components/HeaderPublic";
 
 export const metadata: Metadata = {
-  title: "Privacy policy – ContrattoChiaro",
+  title: "Privacy policy – Contratti Chiari",
   description:
-    "Informativa sulla privacy di ContrattoChiaro: come trattiamo i tuoi dati personali quando utilizzi il servizio.",
+    "Informativa sulla privacy di Contratti Chiari: come trattiamo i tuoi dati personali quando utilizzi il servizio.",
 };
 
 export default function PrivacyPage() {
@@ -23,7 +21,7 @@ export default function PrivacyPage() {
             Privacy policy
           </h1>
           <p className="text-sm text-slate-600 max-w-2xl">
-            Questa pagina descrive in modo semplice come ContrattoChiaro tratta
+            Questa pagina descrive in modo semplice come Contratti Chiari tratta
             i tuoi dati personali quando ti registri, carichi un contratto o utilizzi
             il servizio.
           </p>
@@ -34,8 +32,7 @@ export default function PrivacyPage() {
             1. Titolare del trattamento
           </h2>
           <p className="text-sm text-slate-700 leading-relaxed">
-            Qui potrai inserire i dati del titolare del trattamento (nome o ragione sociale,
-            indirizzo, contatti). Per ora questo è un testo segnaposto.
+            Il titolare del trattamento è Booleans, ditta individuale (P.IVA 03380210793), con sede in Via Ignazio Pettinengo 72, 00159 Roma (RM). PEC: booleans@messaggipec.it. Il titolare garantisce che il trattamento dei dati avviene nel rispetto del GDPR e della normativa italiana vigente.
           </p>
         </section>
 
@@ -44,59 +41,54 @@ export default function PrivacyPage() {
             2. Tipologie di dati trattati
           </h2>
           <p className="text-sm text-slate-700 leading-relaxed">
-            In questa sezione descriverai i dati trattati: dati di registrazione,
-            contenuto dei contratti caricati, log tecnici di utilizzo del servizio,
-            dati di pagamento (se rilevanti e gestiti da provider terzi), ecc.
+            Trattiamo i dati necessari per l’erogazione del servizio: informazioni di registrazione (email), documenti caricati dall’utente (PDF, immagini, testo), cronologia analisi, log tecnici e identificatori di sessione, dati di pagamento gestiti tramite Stripe. L’utente mantiene piena proprietà e responsabilità sui documenti caricati.
           </p>
         </section>
 
         <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">
-            3. Finalità e base giuridica
+            4. Pagamenti gestiti tramite Stripe
           </h2>
           <p className="text-sm text-slate-700 leading-relaxed">
-            Qui potrai spiegare perché tratti i dati (erogazione del servizio,
-            gestione dell&apos;account, sicurezza, adempimenti legali) e su quale base giuridica
-            (contratto, obbligo di legge, legittimo interesse, consenso).
+            I pagamenti vengono elaborati tramite Stripe, Inc., che agisce come responsabile
+            esterno del trattamento ai sensi dell’art. 28 GDPR. Stripe riceve ed elabora i
+            dati necessari all’esecuzione del pagamento (dati della carta, indirizzo di
+            fatturazione, identificatori antifrode).
+          </p>
+          <p className="text-sm text-slate-700 leading-relaxed">
+            ContrattiChiari non raccoglie né memorizza i dati della carta di credito: tali
+            informazioni sono trattate esclusivamente da Stripe su connessione sicura (PCI-DSS).
+            Per maggiori informazioni sul trattamento effettuato da Stripe, è possibile consultare
+            l’informativa privacy all’indirizzo https://stripe.com/privacy.
           </p>
         </section>
 
         <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">
-            4. Conservazione dei dati
+            5. Conservazione dei dati
           </h2>
           <p className="text-sm text-slate-700 leading-relaxed">
-            Indica per quanto tempo vengono conservati i dati e quali criteri utilizzi
-            per definire i tempi di conservazione (ad esempio: durata dell&apos;account,
-            obblighi fiscali, log di sicurezza, ecc.).
+            I dati vengono conservati per: documenti caricati e analisi: fino alla cancellazione dell’account; dati di pagamento e fatturazione: 10 anni; log tecnici: 12 mesi; preferenze utente e impostazioni: fino alla chiusura dell’account. L’utente può richiedere la cancellazione anticipata dei propri documenti.
           </p>
         </section>
 
         <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">
-            5. Diritti degli interessati
+            6. Diritti degli interessati
           </h2>
           <p className="text-sm text-slate-700 leading-relaxed">
-            Qui spiegherai come gli utenti possono esercitare i loro diritti di accesso,
-            rettifica, cancellazione, limitazione, opposizione, portabilità e reclamo
-            all&apos;autorità di controllo competente.
+            L’utente può esercitare i diritti GDPR: accesso, rettifica, cancellazione, limitazione, portabilità, opposizione e reclamo al Garante Privacy. Le richieste possono essere inviate via PEC a booleans@messaggipec.it. Il titolare risponde entro 30 giorni.
           </p>
         </section>
 
         <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
           <h2 className="text-lg font-semibold text-slate-900">
-            6. Contatti
+            7. Contatti
           </h2>
           <p className="text-sm text-slate-700 leading-relaxed">
-            Inserisci qui l&apos;indirizzo email o il canale preferito attraverso cui gli utenti
-            possono contattarti per qualsiasi richiesta relativa alla privacy.
+            Per qualunque richiesta relativa alla privacy o per l’esercizio dei tuoi diritti, puoi contattare la PEC booleans@messaggipec.it o scrivere a Via Ignazio Pettinengo 72, 76125 Trani (BT).
           </p>
         </section>
-
-        <p className="text-[11px] text-slate-400">
-          Questa pagina è un placeholder di struttura. Puoi sostituire in qualsiasi momento
-          i testi con la tua informativa completa redatta con il supporto di un legale.
-        </p>
       </main>
     </div>
   );

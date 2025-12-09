@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabaseClient';
-import type { Metadata } from "next";
 
 type ClausolaCritica = {
   titolo: string;
@@ -47,15 +46,6 @@ type AnalysisRow = {
   source: string | null;
   is_full_unlocked: boolean | null;
   user_id: string | null;
-};
-
-
-
-export const metadata: Metadata = {
-  robots: {
-    index: false,
-    follow: false,
-  },
 };
 
 export default function AnalysisDetailPage() {
