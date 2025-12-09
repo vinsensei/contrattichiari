@@ -17,12 +17,8 @@ export function generateStaticParams() {
 }
 
 // SEO + OG dinamici...
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
-  const { slug } = params;
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
 
   const landing = getLandingBySlug(slug);
 
@@ -64,12 +60,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function LandingPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const { slug } = params;
+export default async function LandingPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const landing = getLandingBySlug(slug);
 
   if (!landing) return notFound();
@@ -238,7 +230,7 @@ export default async function LandingPage({
                 return (
                   <li key={slug}>
                     <a
-                      href={relatedLanding.path}
+                      href={`/${slug}`}
                       className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-3 py-1 hover:border-zinc-900 hover:text-zinc-900 transition"
                     >
                       {relatedLanding.h1}

@@ -1,6 +1,5 @@
 export type LandingConfig = {
   slug: string;
-  path: string;
 
   seoTitle: string;
   seoDescription: string;
@@ -25,7 +24,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   // Contratti di affitto
     "contratto-affitto": {
     slug: "contratto-affitto",
-    path: "/contratto-affitto",
 
     seoTitle: "Analisi contratto di affitto – Verifica rischi e clausole",
     seoDescription:
@@ -88,7 +86,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto affitto studenti
     "contratto-affitto-studenti": {
     slug: "contratto-affitto-studenti",
-    path: "/contratto-affitto-studenti",
 
     seoTitle: "Analisi contratto affitto studenti – Verifica clausole e spese",
     seoDescription:
@@ -145,7 +142,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //contratto transitorio
     "contratto-transitorio": {
     slug: "contratto-transitorio",
-    path: "/contratto-transitorio",
 
     seoTitle: "Analisi contratto transitorio – Verifica durata e clausole",
     seoDescription:
@@ -196,7 +192,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto stanza / co-living
     "contratto-stanza": {
     slug: "contratto-stanza",
-    path: "/contratto-stanza",
 
     seoTitle: "Analisi contratto stanza – Verifica costi e clausole",
     seoDescription:
@@ -244,7 +239,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto affitto commerciale
     "contratto-affitto-commerciale": {
     slug: "contratto-affitto-commerciale",
-    path: "/contratto-affitto-commerciale",
 
     seoTitle:
       "Analisi contratto affitto commerciale – Controllo rischi e clausole",
@@ -294,7 +288,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto a tempo determinato
     "contratto-tempo-determinato": {
     slug: "contratto-tempo-determinato",
-    path: "/contratto-tempo-determinato",
 
     seoTitle: "Analisi contratto a tempo determinato – Clausole e tutele",
     seoDescription:
@@ -350,7 +343,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto a tempo indeterminato
     "contratto-tempo-indeterminato": {
     slug: "contratto-tempo-indeterminato",
-    path: "/contratto-tempo-indeterminato",
 
     seoTitle: "Analisi contratto a tempo indeterminato – Tutele e clausole",
     seoDescription:
@@ -401,7 +393,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto di collaborazione (co.co.co.)
     "co-co-co": {
     slug: "co-co-co",
-    path: "/co-co-co",
 
     seoTitle: "Analisi contratto di collaborazione – Clausole e rischi",
     seoDescription:
@@ -450,7 +441,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto di consulenza / progetto
     "contratto-consulenza": {
     slug: "contratto-consulenza",
-    path: "/contratto-consulenza",
 
     seoTitle: "Analisi contratto di consulenza – Clausole e rischi",
     seoDescription:
@@ -499,7 +489,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto di stage / tirocinio
     "contratto-stage": {
     slug: "contratto-stage",
-    path: "/contratto-stage",
 
     seoTitle: "Analisi contratto di stage – Rischi e tutele",
     seoDescription:
@@ -547,7 +536,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Clausola di non concorrenza
     "clausola-non-concorrenza": {
     slug: "clausola-non-concorrenza",
-    path: "/clausola-non-concorrenza",
 
     seoTitle: "Analisi clausola di non concorrenza – Validità e rischi",
     seoDescription:
@@ -594,7 +582,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto di lavoro intermittente
     "contratto-intermittente": {
     slug: "contratto-intermittente",
-    path: "/contratto-intermittente",
 
     seoTitle: "Analisi contratto intermittente – Verifica clausole e rischi",
     seoDescription:
@@ -641,7 +628,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Assicurazione auto (RC + accessorie)
     "assicurazione-auto": {
     slug: "assicurazione-auto",
-    path: "/assicurazione-auto",
 
     seoTitle: "Analisi contratto assicurazione auto – Clausole e franchigie",
     seoDescription:
@@ -695,7 +681,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Assicurazione casa
    "assicurazione-casa": {
     slug: "assicurazione-casa",
-    path: "/assicurazione-casa",
 
     seoTitle: "Analisi assicurazione casa – Verifica clausole e coperture",
     seoDescription:
@@ -743,7 +728,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Assicurazione sanitaria
    "assicurazione-sanitaria": {
     slug: "assicurazione-sanitaria",
-    path: "/assicurazione-sanitaria",
 
     seoTitle:
       "Analisi assicurazione sanitaria – Esclusioni, massimali e carenze",
@@ -793,7 +777,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Polizza vita / infortuni
    "assicurazione-vita": {
     slug: "assicurazione-vita",
-    path: "/assicurazione-vita",
 
     seoTitle: "Analisi polizza vita – Clausole, beneficiari e esclusioni",
     seoDescription:
@@ -842,7 +825,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto telefonia mobile
     "contratto-telefonia-mobile": {
     slug: "contratto-telefonia-mobile",
-    path: "/contratto-telefonia-mobile",
 
     seoTitle:
       "Analisi contratto telefonia mobile – Costi nascosti e vincoli",
@@ -892,7 +874,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto fibra / internet
     "contratto-fibra": {
     slug: "contratto-fibra",
-    path: "/contratto-fibra",
 
     seoTitle: "Analisi contratto fibra e internet – Verifica costi e vincoli",
     seoDescription:
@@ -941,7 +922,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto pay TV / streaming
     "contratto-pay-tv": {
     slug: "contratto-pay-tv",
-    path: "/contratto-pay-tv",
 
     seoTitle:
       "Analisi contratto pay TV e streaming – Verifica costi e vincoli",
@@ -990,7 +970,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto SaaS / abbonamenti digitali
     "contratto-saas": {
     slug: "contratto-saas",
-    path: "/contratto-saas",
 
     seoTitle:
       "Analisi contratto SaaS – Termini di servizio e abbonamenti digitali",
@@ -1040,7 +1019,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto energia elettrica
   "contratto-energia-elettrica": {
     slug: "contratto-energia-elettrica",
-    path: "/contratto-energia-elettrica",
 
     seoTitle: "Analisi contratto energia elettrica – Costi e clausole",
     seoDescription:
@@ -1088,7 +1066,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto gas
   "contratto-gas": {
     slug: "contratto-gas",
-    path: "/contratto-gas",
 
     seoTitle: "Analisi contratto gas – Costi, tariffe e vincoli",
     seoDescription:
@@ -1137,7 +1114,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto acqua / condominio
   "contratto-acqua": {
     slug: "contratto-acqua",
-    path: "/contratto-acqua",
 
     seoTitle: "Analisi contratto acqua – Costi e condizioni",
     seoDescription:
@@ -1185,7 +1161,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto di mutuo
   "contratto-mutuo": {
     slug: "contratto-mutuo",
-    path: "/contratto-mutuo",
 
     seoTitle: "Analisi contratto di mutuo – Clausole, tassi, rischi",
     seoDescription:
@@ -1235,7 +1210,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Prestito personale
   "contratto-prestito-personale": {
     slug: "contratto-prestito-personale",
-    path: "/contratto-prestito-personale",
 
     seoTitle:
       "Analisi contratto prestito personale – Costi, tassi e condizioni",
@@ -1285,7 +1259,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Carta di credito
    "carta-di-credito": {
     slug: "carta-di-credito",
-    path: "/carta-di-credito",
 
     seoTitle:
       "Analisi contratto carta di credito – Costi, limiti e condizioni",
@@ -1335,7 +1308,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Conto corrente
    "conto-corrente": {
     slug: "conto-corrente",
-    path: "/conto-corrente",
 
     seoTitle:
       "Analisi contratto conto corrente – Costi, commissioni e condizioni",
@@ -1384,7 +1356,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Carta revolving
   "carta-revolving": {
     slug: "carta-revolving",
-    path: "/carta-revolving",
 
     seoTitle:
       "Analisi contratto carta revolving – Tassi, costi e rischi importanti",
@@ -1433,7 +1404,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto palestra
   "contratto-palestra": {
     slug: "contratto-palestra",
-    path: "/contratto-palestra",
 
     seoTitle: "Analisi contratto palestra – Abbonamenti, penali e rinnovi",
     seoDescription:
@@ -1482,7 +1452,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Noleggio auto lungo termine
    "contratto-noleggio-auto-lungo-termine": {
     slug: "contratto-noleggio-auto-lungo-termine",
-    path: "/contratto-noleggio-auto-lungo-termine",
 
     seoTitle:
       "Analisi contratto noleggio auto lungo termine – Costi e clausole",
@@ -1532,7 +1501,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Contratto coworking / ufficio flessibile
   "contratto-coworking": {
     slug: "contratto-coworking",
-    path: "/contratto-coworking",
 
     seoTitle:
       "Analisi contratto coworking – Costi, servizi inclusi e clausole",
@@ -1582,7 +1550,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Abbonamento trasporti (treni, bus, metro)
   "abbonamento-trasporti": {
     slug: "abbonamento-trasporti",
-    path: "/abbonamento-trasporti",
 
     seoTitle:
       "Analisi abbonamento trasporti – Condizioni, rimborsi e clausole",
@@ -1631,7 +1598,6 @@ export const LANDINGS: Record<string, LandingConfig> = {
   //Termini e condizioni e-commerce / acquisti online
   "contratto-ecommerce": {
     slug: "contratto-ecommerce",
-    path: "/contratto-ecommerce",
 
     seoTitle:
       "Analisi termini e condizioni e-commerce – Resi, rimborsi e garanzie",
