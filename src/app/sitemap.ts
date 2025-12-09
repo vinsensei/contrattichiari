@@ -41,7 +41,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       if (!landing) return null;
 
       return {
-        url: `${BASE_URL}${landing.path}`,
+        url: `${BASE_URL}/${slug}`,
         lastModified: now,
         changeFrequency: "weekly" as const,
         priority: 0.9,
