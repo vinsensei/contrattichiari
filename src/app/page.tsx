@@ -186,6 +186,9 @@ export default function Home() {
             © {new Date().getFullYear()} ContrattiChiari.
           </p>
           <div className="order-1 flex flex-wrap items-center justify-center gap-4 sm:order-2">
+            <Link href="/cookie" className="hover:text-zinc-800">
+              Cookie Policy
+            </Link>
             <Link href="/privacy" className="hover:text-zinc-800">
               Privacy policy
             </Link>
