@@ -176,18 +176,15 @@ export default function AccountPage() {
         onLogout={handleLogout}
       />
 
-      <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-slate-900">
-            Il mio profilo
-          </h1>
-          <Link
-            href="/dashboard"
-            className="text-xs text-slate-700 underline-offset-2 hover:underline"
-          >
-            Torna alla dashboard
-          </Link>
-        </div>
+      <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
+        <div className="text-center max-w-xl mx-auto space-y-2 animate-fade-in-up delay-1 mt-xs-0 mt-20">
+        <h1 className="text-3xl md:text-4xl tracking-tight text-slate-900">
+          Il mio profilo
+        </h1>
+        <p className="text-sm text-slate-500 mb-10">
+          Gestisci l'abbonamento, modifica il profilo o cambia piano.
+        </p>
+      </div>
 
         <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-2">
           <h2 className="text-sm font-semibold text-slate-900">Dati account</h2>

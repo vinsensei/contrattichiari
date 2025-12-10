@@ -21,15 +21,15 @@ export default function HeaderPublic() {
           {/* Logo Mobile */}
             <img
               src="/logo_mobile.png"
-              alt="ContrattoChiaro"
-              className="h-12 w-auto shrink-0 block md:hidden"
+              alt="Contratti Chiari"
+              className="h-8 w-auto shrink-0 block md:hidden"
             />
 
             {/* Logo Desktop */}
             <img
               src="/logo.png"
-              alt="ContrattoChiaro"
-              className="h-10 w-auto shrink-0 hidden md:block"
+              alt="Contratti Chiari"
+              className="h-8 w-auto shrink-0 hidden md:block"
             />
         </Link>
 

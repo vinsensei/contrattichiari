@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { supabaseBrowser } from '@/lib/supabaseClient';
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { supabaseBrowser } from "@/lib/supabaseClient";
 
 type ClausolaCritica = {
   titolo: string;
   estratto_originale: string;
   perche_critica: string;
-  rischio_specifico: 'basso' | 'medio' | 'alto' | string;
+  rischio_specifico: "basso" | "medio" | "alto" | string;
   suggerimento_modifica: string;
 };
 
@@ -26,7 +26,7 @@ type GlossarioItem = {
 
 type AnalysisJson = {
   tipo_contratto?: string;
-  valutazione_rischio?: 'basso' | 'medio' | 'alto' | string;
+  valutazione_rischio?: "basso" | "medio" | "alto" | string;
   motivazione_rischio?: string;
   clausole_critiche?: ClausolaCritica[];
   clausole_vessatorie_potenziali?: ClausolaVessatoria[];
@@ -69,13 +69,13 @@ export default function AnalysisDetailPage() {
         } = await supabase.auth.getUser();
 
         if (userError) {
-          console.error('Errore nel recupero utente:', userError);
-          router.replace('/login');
+          console.error("Errore nel recupero utente:", userError);
+          router.replace("/login");
           return;
         }
 
         if (!user) {
-          router.replace('/login');
+          router.replace("/login");
           return;
         }
 
@@ -83,56 +83,58 @@ export default function AnalysisDetailPage() {
         let paid = false;
         try {
           const { data: subscription, error: subError } = await supabase
-            .from('user_subscriptions')
-            .select('plan, is_active')
-            .eq('user_id', user.id)
+            .from("user_subscriptions")
+            .select("plan, is_active")
+            .eq("user_id", user.id)
             .maybeSingle();
 
           if (subError) {
-            console.error('Errore nel recupero abbonamento:', subError);
+            console.error("Errore nel recupero abbonamento:", subError);
           } else if (
             subscription &&
             subscription.is_active &&
             subscription.plan &&
-            subscription.plan !== 'free'
+            subscription.plan !== "free"
           ) {
             paid = true;
           }
         } catch (subErr) {
-          console.error('Errore imprevisto nel recupero abbonamento:', subErr);
+          console.error("Errore imprevisto nel recupero abbonamento:", subErr);
         }
 
         setHasPaidSubscription(paid);
 
         // 3) fetch analisi
         const { data, error } = await supabase
-          .from('contract_analyses')
-          .select('id, created_at, from_slug, analysis_json, source, is_full_unlocked, user_id')
-          .eq('id', id)
+          .from("contract_analyses")
+          .select(
+            "id, created_at, from_slug, analysis_json, source, is_full_unlocked, user_id"
+          )
+          .eq("id", id)
           .maybeSingle();
 
         if (error) {
-          console.error('Errore nel caricamento analisi:', error);
-          setErrorMsg('Errore nel caricamento dell’analisi.');
+          console.error("Errore nel caricamento analisi:", error);
+          setErrorMsg("Errore nel caricamento dell’analisi.");
           return;
         }
 
         if (!data) {
-          setErrorMsg('Analisi non trovata.');
+          setErrorMsg("Analisi non trovata.");
           return;
         }
 
         // Se l'analisi proviene da landing anonima e non è ancora assegnata a nessun utente,
         // la leghiamo all'utente corrente (così compare in dashboard).
-        if (!data.user_id && data.source === 'anonymous_landing') {
+        if (!data.user_id && data.source === "anonymous_landing") {
           const { error: linkError } = await supabase
-            .from('contract_analyses')
+            .from("contract_analyses")
             .update({ user_id: user.id })
-            .eq('id', id);
+            .eq("id", id);
 
           if (linkError) {
             console.error(
-              'Errore nel collegare l’analisi all’utente:',
+              "Errore nel collegare l’analisi all’utente:",
               linkError
             );
           } else {
@@ -144,17 +146,17 @@ export default function AnalysisDetailPage() {
         // sblocchiamo l'analisi completa impostando is_full_unlocked = true.
         if (
           paid &&
-          data.source === 'anonymous_landing' &&
+          data.source === "anonymous_landing" &&
           data.is_full_unlocked !== true
         ) {
           const { error: unlockError } = await supabase
-            .from('contract_analyses')
+            .from("contract_analyses")
             .update({ is_full_unlocked: true })
-            .eq('id', id);
+            .eq("id", id);
 
           if (unlockError) {
             console.error(
-              'Errore nello sbloccare l’analisi completa:',
+              "Errore nello sbloccare l’analisi completa:",
               unlockError
             );
           } else {
@@ -164,8 +166,8 @@ export default function AnalysisDetailPage() {
 
         setAnalysis(data as AnalysisRow);
       } catch (e) {
-        console.error('Errore imprevisto nel caricamento analisi:', e);
-        setErrorMsg('Errore nel caricamento dell’analisi.');
+        console.error("Errore imprevisto nel caricamento analisi:", e);
+        setErrorMsg("Errore nel caricamento dell’analisi.");
       } finally {
         setLoading(false);
       }
@@ -176,13 +178,15 @@ export default function AnalysisDetailPage() {
 
   const riskBadge = (risk: string | null | undefined) => {
     if (!risk) return null;
-     const base =
-      'inline-flex items-center px-3 py-1 rounded-full text-[11px] font-medium';
-    if (risk === 'alto')
+    const base =
+      "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium";
+    if (risk === "alto")
       return (
-        <span className={`${base} bg-red-100 text-red-700`}>Rischio alto</span>
+        <span className={`${base} bg-red-100 text-red-700`}>
+          Rischio alto
+        </span>
       );
-    if (risk === 'medio')
+    if (risk === "medio")
       return (
         <span className={`${base} bg-amber-100 text-amber-700`}>
           Rischio medio
@@ -206,9 +210,9 @@ export default function AnalysisDetailPage() {
   if (errorMsg || !analysis) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
-        <p className="text-sm text-red-600 mb-4">{errorMsg || 'Errore.'}</p>
+        <p className="text-sm text-red-600 mb-4">{errorMsg || "Errore."}</p>
         <button
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push("/dashboard")}
           className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm"
         >
           Torna alla dashboard
@@ -218,7 +222,7 @@ export default function AnalysisDetailPage() {
   }
 
   const a = (analysis.analysis_json as AnalysisJson) || {};
-  const createdAt = new Date(analysis.created_at).toLocaleString('it-IT');
+  const createdAt = new Date(analysis.created_at).toLocaleString("it-IT");
 
   const summary =
     a.riassunto_semplice ||
@@ -227,9 +231,11 @@ export default function AnalysisDetailPage() {
     null;
 
   const hasRawJsonPreview =
-    !summary && analysis.analysis_json && Object.keys(analysis.analysis_json as any).length > 0;
+    !summary &&
+    analysis.analysis_json &&
+    Object.keys(analysis.analysis_json as any).length > 0;
 
-  const isLanding = analysis.source === 'anonymous_landing';
+  const isLanding = analysis.source === "anonymous_landing";
   const isFullUnlocked = analysis.is_full_unlocked ?? false;
   const showFull = hasPaidSubscription || !isLanding || isFullUnlocked;
 
@@ -241,7 +247,7 @@ export default function AnalysisDetailPage() {
     a.clausole_vessatorie_potenziali.length > 0;
 
   const hasVersioneRiequilibrata =
-    typeof a.versione_riequilibrata === 'string' &&
+    typeof a.versione_riequilibrata === "string" &&
     a.versione_riequilibrata.trim().length > 0;
 
   const hasGlossario = Array.isArray(a.glossario) && a.glossario.length > 0;
@@ -256,103 +262,90 @@ export default function AnalysisDetailPage() {
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push("/dashboard")}
               className="text-xs sm:text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
             >
               <span aria-hidden="true">←</span>
               <span>Torna alla dashboard</span>
             </button>
-            <span className="hidden text-[11px] text-slate-400 sm:inline">
-              Analisi creata il {createdAt}
-            </span>
+            
           </div>
-          <a href="/" className="inline-flex items-center">
-            <img
-              src="/logo.png"
-              alt="ContrattoChiaro"
-              className="h-8 w-auto"
-            />
-          </a>
+          <div className="flex items-center gap-3">
+            {riskBadge(a.valutazione_rischio)}
+            <button
+              onClick={async () => {
+                try {
+                  const { data: sessionData } = await supabase.auth.getSession();
+                  const token = sessionData.session?.access_token;
+                  if (!token) return alert("Devi essere autenticato.");
+
+                  const res = await fetch(`/api/analysis/${id}/pdf`, {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                  });
+
+                  if (!res.ok) {
+                    return alert("Errore nella generazione del PDF");
+                  }
+
+                  const blob = await res.blob();
+                  const url = window.URL.createObjectURL(blob);
+
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.download = `analisi-${id}.pdf`;
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  window.URL.revokeObjectURL(url);
+                } catch (err) {
+                  console.error(err);
+                  alert("Errore imprevisto");
+                }
+              }}
+              className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-slate-800 transition"
+            >
+              Scarica PDF
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main */}
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10 space-y-8">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 sm:px-6 sm:py-12 space-y-10 md:space-y-12">
         {/* Titolo + rischio */}
         <section className="space-y-3">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-                Risultato analisi contratto
+              <p className="text-xs md:text-sm font-medium uppercase tracking-wide text-slate-500">
+                Risultato analisi contratto 
               </p>
-              <button
-  onClick={async () => {
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      if (!token) return alert("Devi essere autenticato.");
-
-      const res = await fetch(`/api/analysis/${id}/pdf`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        return alert("Errore nella generazione del PDF");
-      }
-
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `analisi-${id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-      alert("Errore imprevisto");
-    }
-  }}
-  className="mt-2 inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-900 text-white text-sm hover:bg-slate-800"
->
-  Scarica PDF
-</button>
-              <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">
-                {a.tipo_contratto || analysis.from_slug || 'Contratto'}
+              <h1 className="text-3xl md:text-5xl text-slate-900 mb-4">
+                {a.tipo_contratto || analysis.from_slug || "Contratto"}
               </h1>
-              <p className="text-xs text-slate-500">
-                ID analisi:{' '}
-                <span className="font-mono text-[11px] bg-slate-100 px-1.5 py-0.5 rounded">
-                  {analysis.id}
-                </span>
-              </p>
-            </div>
-            <div className="flex items-start justify-end">
-              {riskBadge(a.valutazione_rischio)}
             </div>
           </div>
-
           {a.motivazione_rischio && (
-            <p className="text-[13px] md:text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm md:text-base text-slate-800 leading-relaxed">
               {a.motivazione_rischio}
             </p>
           )}
+          <span className="hidden text-xs md:text-sm text-slate-500 sm:inline">
+              Analisi creata il {createdAt}
+          </span>
         </section>
 
         {/* Navigazione ad ancore (sticky) */}
         <nav className="sticky top-0 z-10 -mx-4 sm:-mx-6 bg-slate-50/95 backdrop-blur border-b border-slate-200">
-          <div className="mx-auto flex w-full max-w-5xl gap-2 overflow-x-auto px-4 py-3 text-[11px] sm:text-xs">
+          <div className="mx-auto flex w-full max-w-5xl gap-2 overflow-x-auto px-4 py-3 text-xs sm:text-sm">
             {summary && (
               <button
                 type="button"
                 onClick={() =>
                   document
-                    .getElementById('riassunto-semplice')
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    .getElementById("riassunto-semplice")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
                 }
                 className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
               >
@@ -364,8 +357,8 @@ export default function AnalysisDetailPage() {
                 type="button"
                 onClick={() =>
                   document
-                    .getElementById('clausole-problematiche')
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    .getElementById("clausole-problematiche")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
                 }
                 className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
               >
@@ -377,8 +370,8 @@ export default function AnalysisDetailPage() {
                 type="button"
                 onClick={() =>
                   document
-                    .getElementById('clausole-vessatorie')
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    .getElementById("clausole-vessatorie")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
                 }
                 className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
               >
@@ -390,8 +383,8 @@ export default function AnalysisDetailPage() {
                 type="button"
                 onClick={() =>
                   document
-                    .getElementById('versione-riequilibrata')
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    .getElementById("versione-riequilibrata")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
                 }
                 className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
               >
@@ -403,8 +396,8 @@ export default function AnalysisDetailPage() {
                 type="button"
                 onClick={() =>
                   document
-                    .getElementById('glossario')
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    .getElementById("glossario")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
                 }
                 className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
               >
@@ -416,8 +409,8 @@ export default function AnalysisDetailPage() {
                 type="button"
                 onClick={() =>
                   document
-                    .getElementById('alert-finali')
-                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    .getElementById("alert-finali")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
                 }
                 className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
               >
@@ -429,10 +422,14 @@ export default function AnalysisDetailPage() {
 
         {/* Riassunto semplice / preview */}
         {summary && (
-          <section id="riassunto-semplice" className="bg-white rounded-2xl shadow-md p-6 border border-slate-100">
-            <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+          <section
+            id="riassunto-semplice"
+            className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8"
+          >
+            <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-1 flex items-center gap-2">
               <span>Riassunto semplice</span>
             </h2>
+            
             <p className="text-[15px] text-slate-800 leading-relaxed">
               {summary}
             </p>
@@ -440,56 +437,59 @@ export default function AnalysisDetailPage() {
         )}
 
         {/* Anteprima clausole critiche (solo versione parziale) */}
-        {!showFull &&
-          a.clausole_critiche &&
-          a.clausole_critiche.length > 0 && (
-            <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
-              <h2 className="text-base font-semibold text-slate-900">
-                🔍 Alcune clausole da tenere d’occhio
-              </h2>
-              <p className="text-xs text-slate-600">
-                Questa è una selezione ridotta delle clausole che potrebbero
-                richiedere attenzione. Con l’analisi completa vedrai il dettaglio
-                completo e tutti i suggerimenti di modifica.
-              </p>
-              <div className="space-y-3">
-                {a.clausole_critiche.slice(0, 2).map((c, idx) => (
-                  <div
-                    key={idx}
-                    className="border border-slate-100 rounded-xl bg-slate-50 px-4 py-3 space-y-1"
-                  >
-                    <h3 className="text-sm font-semibold text-slate-900">
-                      {c.titolo || `Clausola ${idx + 1}`}
-                    </h3>
-                    {c.estratto_originale && (
-                      <p className="text-[11px] text-slate-700 line-clamp-3">
-                        {c.estratto_originale}
-                      </p>
-                    )}
-                    {c.perche_critica && (
-                      <p className="text-[11px] text-slate-600">
-                        <span className="font-semibold">Perché è rilevante: </span>
-                        {c.perche_critica}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+        {!showFull && a.clausole_critiche && a.clausole_critiche.length > 0 && (
+          <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-4">
+            <h2 className="text-base font-semibold text-slate-900">
+              Alcune clausole da tenere d’occhio
+            </h2>
+            <p className="text-xs text-slate-600">
+              Questa è una selezione ridotta delle clausole che potrebbero
+              richiedere attenzione. Con l’analisi completa vedrai il dettaglio
+              completo e tutti i suggerimenti di modifica.
+            </p>
+            <div className="space-y-4">
+              {a.clausole_critiche.slice(0, 2).map((c, idx) => (
+                <div
+                  key={idx}
+                  className="border border-slate-200 rounded-2xl bg-white px-5 py-4 space-y-2 shadow-xs"
+                >
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    {c.titolo || `Clausola ${idx + 1}`}
+                  </h3>
+                  {c.estratto_originale && (
+                    <p className="text-xs text-slate-700 line-clamp-3">
+                      {c.estratto_originale}
+                    </p>
+                  )}
+                  {c.perche_critica && (
+                    <p className="text-xs text-slate-600">
+                      <span className="font-semibold">
+                        Perché è rilevante:{" "}
+                      </span>
+                      {c.perche_critica}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Anteprima clausole potenzialmente vessatorie (solo versione parziale) */}
         {!showFull &&
           a.clausole_vessatorie_potenziali &&
           a.clausole_vessatorie_potenziali.length > 0 && (
-            <section id="clausole-vessatorie" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
+            <section
+              id="clausole-vessatorie"
+              className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-4"
+            >
               <h2 className="text-base font-semibold text-slate-900">
                 ⚠️ Possibili clausole vessatorie
               </h2>
               <p className="text-xs text-slate-600">
                 Qui vedi solo un assaggio delle clausole potenzialmente
-                vessatorie. L’analisi completa ti mostra il quadro completo,
-                con riferimenti normativi e suggerimenti pratici.
+                vessatorie. L’analisi completa ti mostra il quadro completo, con
+                riferimenti normativi e suggerimenti pratici.
               </p>
               <ul className="space-y-2">
                 {a.clausole_vessatorie_potenziali.slice(0, 1).map((c, idx) => (
@@ -506,12 +506,14 @@ export default function AnalysisDetailPage() {
 
         {/* Fallback: mostra JSON grezzo se non c'è un riassunto strutturato */}
         {!summary && hasRawJsonPreview && (
-          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
+          <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8">
             <h2 className="text-base font-semibold text-slate-900 mb-2">
               📄 Anteprima analisi (formato tecnico)
             </h2>
-            <p className="text-xs text-slate-600 mb-2">
-              Stiamo ancora perfezionando il layout di questa sezione. Nel frattempo puoi vedere il contenuto completo dell’analisi in formato tecnico.
+            <p className="text-sm text-slate-600 mb-2">
+              Stiamo ancora perfezionando il layout di questa sezione. Nel
+              frattempo puoi vedere il contenuto completo dell’analisi in
+              formato tecnico.
             </p>
             <pre className="text-[11px] bg-slate-900/95 text-slate-50 rounded-lg p-3 overflow-x-auto">
               {JSON.stringify(analysis.analysis_json, null, 2)}
@@ -520,23 +522,23 @@ export default function AnalysisDetailPage() {
         )}
 
         {!showFull && (
-          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
+          <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-4">
             <h2 className="text-base font-semibold text-slate-900">
               Vuoi l’analisi completa?
             </h2>
-            <p className="text-[15px] text-slate-700">
+            <p className="text-base text-slate-700">
               Al momento stai visualizzando una versione ridotta dell’analisi,
-              generata a partire dal caricamento rapido del contratto.
-              Con l’abbonamento ContrattiChiari puoi sbloccare:
+              generata a partire dal caricamento rapido del contratto. Con
+              l’abbonamento ContrattiChiari puoi sbloccare:
             </p>
-            <ul className="list-disc pl-5 text-sm text-slate-700 space-y-1">
+            <ul className="list-disc pl-5 text-sm text-slate-700 space-y-1.5">
               <li>clausole critiche spiegate nel dettaglio</li>
               <li>clausole potenzialmente vessatorie evidenziate</li>
               <li>una versione riequilibrata del contratto</li>
               <li>alert finali e glossario dei termini complessi</li>
             </ul>
             <button
-              onClick={() => router.push('/pricing')}
+              onClick={() => router.push("/pricing")}
               className="mt-2 inline-flex items-center px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800"
             >
               Vedi piani e sblocca l’analisi completa
@@ -545,38 +547,40 @@ export default function AnalysisDetailPage() {
         )}
 
         {showFull && a.clausole_critiche && a.clausole_critiche.length > 0 && (
-          <section id="clausole-problematiche" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-4">
-            <h2 className="text-lg font-semibold text-slate-900">
+          <section
+            id="clausole-problematiche"
+            className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-5"
+          >
+            <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-5">
               Clausole problematiche
             </h2>
-            <div className="space-y-3">
+            
+            <div className="space-y-10">
               {a.clausole_critiche.map((c, idx) => (
                 <div
                   key={idx}
-                  className="border border-slate-100 rounded-xl bg-slate-50 px-4 py-3 space-y-2"
+                  className="border border-slate-200 rounded-2xl bg-white px-5 py-4 space-y-3 shadow-xs"
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <h3 className="text-sm font-semibold text-slate-900">
                       {c.titolo || `Clausola ${idx + 1}`}
                     </h3>
-                    {c.rischio_specifico && (
-                      <span className="text-[10px] uppercase tracking-wide text-slate-500">
-                        Rischio: {c.rischio_specifico}
-                      </span>
-                    )}
+                    {c.rischio_specifico && riskBadge(c.rischio_specifico)}
                   </div>
 
                   {c.estratto_originale && (
                     <div className="text-xs">
-                      <div className="text-slate-500 mb-1">Estratto originale:</div>
-                      <div className="bg-white border border-slate-200 rounded-lg p-2 font-mono text-[11px] text-slate-700">
+                      <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500 mb-1">
+                        Estratto originale
+                      </div>
+                      <div className="bg-white border border-slate-300 rounded-lg p-3 font-mono text-sm text-slate-800">
                         {c.estratto_originale}
                       </div>
                     </div>
                   )}
 
                   {c.perche_critica && (
-                    <p className="text-xs text-slate-700">
+                    <p className="text-sm text-slate-700">
                       <span className="font-semibold">Perché è critica: </span>
                       {c.perche_critica}
                     </p>
@@ -584,10 +588,10 @@ export default function AnalysisDetailPage() {
 
                   {c.suggerimento_modifica && (
                     <div className="text-xs">
-                      <div className="text-slate-500 mb-1">
-                        Suggerimento di modifica:
+                      <div className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-slate-600 mb-1">
+                        <span>Suggerimento di modifica</span>
                       </div>
-                      <div className="bg-amber-50 border border-amber-100 rounded-lg p-2 text-[11px] text-amber-900">
+                      <div className="bg-slate-50 border border-slate-300 rounded-lg p-3 text-sm text-slate-800">
                         {c.suggerimento_modifica}
                       </div>
                     </div>
@@ -601,32 +605,38 @@ export default function AnalysisDetailPage() {
         {showFull &&
           a.clausole_vessatorie_potenziali &&
           a.clausole_vessatorie_potenziali.length > 0 && (
-            <section id="clausole-vessatorie" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-4">
-              <h2 className="text-lg font-semibold text-slate-900">
+            <section
+              id="clausole-vessatorie"
+              className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-5"
+            >
+              <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-5">
                 Clausole potenzialmente vessatorie
               </h2>
-              <div className="space-y-3">
+              
+              <div className="space-y-10">
                 {a.clausole_vessatorie_potenziali.map((c, idx) => (
                   <div
                     key={idx}
-                    className="border border-amber-100 rounded-xl bg-amber-50 px-4 py-3 space-y-2"
+                    className="border border-slate-200 rounded-2xl bg-white px-5 py-4 space-y-3 shadow-xs"
                   >
-                    <h3 className="text-sm font-semibold text-amber-900">
+                    <h3 className="text-sm font-semibold text-slate-900">
                       {c.clausola || `Clausola ${idx + 1}`}
                     </h3>
                     {c.estratto_originale && (
-                      <div className="text-xs bg-white/60 border border-amber-100 rounded-lg p-2 font-mono text-[11px] text-amber-900">
+                      <div className="text-sm bg-white border border-slate-300 rounded-lg p-3 font-mono text-sm text-slate-800">
                         {c.estratto_originale}
                       </div>
                     )}
                     {c.perche_vessatoria && (
-                      <p className="text-xs text-amber-900">
-                        <span className="font-semibold">Perché è vessatoria: </span>
+                      <p className="text-sm text-slate-800">
+                        <span className="font-semibold">
+                          Perché è vessatoria:{" "}
+                        </span>
                         {c.perche_vessatoria}
                       </p>
                     )}
                     {c.riferimento_normativo && (
-                      <p className="text-[11px] text-amber-800 italic">
+                      <p className="text-xs text-slate-600 italic">
                         Riferimento: {c.riferimento_normativo}
                       </p>
                     )}
@@ -639,27 +649,35 @@ export default function AnalysisDetailPage() {
         {showFull &&
           a.versione_riequilibrata &&
           a.versione_riequilibrata.trim().length > 0 && (
-            <section id="versione-riequilibrata" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
-              <h2 className="text-lg font-semibold text-slate-900">
+            <section
+              id="versione-riequilibrata"
+              className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-4"
+            >
+              <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-5">
                 Versione riequilibrata
               </h2>
-              <p className="text-[15px] text-slate-700 whitespace-pre-line leading-relaxed">
+              
+              <p className="text-base text-slate-700 whitespace-pre-line leading-relaxed">
                 {a.versione_riequilibrata}
               </p>
             </section>
           )}
 
         {showFull && a.glossario && a.glossario.length > 0 && (
-          <section id="glossario" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
-            <h2 className="text-lg font-semibold text-slate-900">
+          <section
+            id="glossario"
+            className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-4"
+          >
+            <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-5">
               Glossario
             </h2>
+            
             <ul className="space-y-2">
               {a.glossario.map((g, idx) => (
-                <li key={idx} className="text-sm">
+                <li key={idx} className="text-base">
                   <span className="font-semibold text-slate-900">
                     {g.termine}:
-                  </span>{' '}
+                  </span>{" "}
                   <span className="text-slate-700">{g.spiegazione}</span>
                 </li>
               ))}
@@ -668,13 +686,17 @@ export default function AnalysisDetailPage() {
         )}
 
         {showFull && a.alert_finali && a.alert_finali.length > 0 && (
-          <section id="alert-finali" className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-3">
-            <h2 className="text-lg font-semibold text-slate-900">
+          <section
+            id="alert-finali"
+            className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-4"
+          >
+            <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-5">
               Alert finali
             </h2>
+            
             <ul className="list-disc pl-5 space-y-1">
               {a.alert_finali.map((al, idx) => (
-                <li key={idx} className="text-sm text-slate-700">
+                <li key={idx} className="text-base text-slate-700">
                   {al}
                 </li>
               ))}

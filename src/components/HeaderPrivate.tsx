@@ -21,26 +21,32 @@ export default function HeaderPrivate({
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3">
-      <div className="flex items-center gap-4 shrink-0">
-        <Link href="/dashboard" className="font-semibold text-slate-900">
+    <header className="w-full border-b border-zinc-200 bg-white/80 backdrop-blur relative z-40">
+      <div className="mx-auto flex h-16 max-w-5xl shrink-0 items-center justify-between px-4 sm:px-6">
+        <Link href="/" className="flex items-center">
           {/* Logo Mobile */}
             <img
               src="/logo_mobile.png"
-              alt="ContrattoChiaro"
-              className="h-12 w-auto shrink-0 block md:hidden"
+              alt="Contratti Chiari"
+              className="h-9 w-auto shrink-0 block md:hidden"
             />
 
             {/* Logo Desktop */}
             <img
               src="/logo.png"
-              alt="ContrattoChiaro"
-              className="h-10 w-auto shrink-0 hidden md:block"
+              alt="Contratti Chiari"
+              className="h-8 w-auto shrink-0 hidden md:block"
             />
         </Link>
-      </div>
 
-      <div className="relative flex items-center gap-4 text-sm text-slate-700">
+         <nav className="flex items-center gap-3 text-sm">
+
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800 transition"
+        >
+          Avvia analisi
+        </Link>
 
         {/* Pulsante menu utente */}
         <div className="relative">
@@ -72,6 +78,18 @@ export default function HeaderPrivate({
                 )}
               </div>
               <div className="py-1">
+                 <Link
+                  href="/dashboard"
+                  className="block px-3 py-2 hover:bg-slate-50 text-slate-700"
+                >
+                  Analizza documento
+                </Link>
+                <Link
+                  href="/dashboard/analyses"
+                  className="block px-3 py-2 hover:bg-slate-50 text-slate-700"
+                >
+                  Le mie analisi
+                </Link>
                 <Link
                   href="/dashboard/account"
                   className="block px-3 py-2 hover:bg-slate-50 text-slate-700"
@@ -103,7 +121,11 @@ export default function HeaderPrivate({
             </div>
           )}
         </div>
+      </nav>
+
       </div>
+
+     
     </header>
   );
 }

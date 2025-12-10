@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
-import Link from "next/link";
 import ContractUploadForm from "@/components/ContractUploadForm";
 import HeaderPrivate from "@/components/HeaderPrivate";
 import { gaEvent } from "@/lib/gtag";
+import Link from "next/link";
 
 type ContractAnalysisRow = {
   id: string;
@@ -19,7 +19,6 @@ type ContractAnalysisRow = {
     [key: string]: any;
   } | null;
 };
-
 
 export default function DashboardPage() {
   const supabase = supabaseBrowser();
@@ -201,27 +200,6 @@ export default function DashboardPage() {
     );
   }
 
-  const riskBadge = (risk: string | null) => {
-    if (!risk) return null;
-    const base =
-      "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium";
-    if (risk === "alto")
-      return (
-        <span className={`${base} bg-red-100 text-red-700`}>Rischio alto</span>
-      );
-    if (risk === "medio")
-      return (
-        <span className={`${base} bg-amber-100 text-amber-700`}>
-          Rischio medio
-        </span>
-      );
-    return (
-      <span className={`${base} bg-emerald-100 text-emerald-700`}>
-        Rischio basso
-      </span>
-    );
-  };
-
   const planLabel =
     plan === "free"
       ? "Free (1 analisi)"
@@ -305,66 +283,7 @@ export default function DashboardPage() {
               setAnalyses(analysesData || []);
             }}
           />
-
-          {/* Storico analisi */}
-          <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Le tue ultime analisi
-              </h2>
-              <Link
-                href="/dashboard/analyses"
-                className="text-xs font-medium text-slate-700 underline-offset-2 hover:underline"
-              >
-                Vedi tutte
-              </Link>
-            </div>
-
-            {loadingAnalyses ? (
-              <p className="text-sm text-slate-500">Caricamento analisi…</p>
-            ) : analyses.length === 0 ? (
-              <p className="text-sm text-slate-500">
-                Non hai ancora analizzato nessun contratto.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {analyses.map((a) => {
-                  const aj = a.analysis_json || {};
-                  const tipoContratto =
-                    aj.tipo_contratto ||
-                    a.from_slug ||
-                    "Contratto senza titolo";
-                  const valutazioneRischio = aj.valutazione_rischio || null;
-                  const motivazioneRischio =
-                    aj.motivazione_rischio ||
-                    "Analisi disponibile. Apri il dettaglio per maggiori informazioni.";
-                  return (
-                    <li key={a.id}>
-                      <Link
-                        href={`/analysis/${a.id}`}
-                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between border border-slate-100 rounded-xl px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-slate-900">
-                              {tipoContratto}
-                            </span>
-                            {riskBadge(valutazioneRischio)}
-                          </div>
-                          <p className="text-xs text-slate-600 line-clamp-2">
-                            {motivazioneRischio}
-                          </p>
-                          <p className="text-xs text-slate-400">
-                            {new Date(a.created_at).toLocaleString("it-IT")}
-                          </p>
-                        </div>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
+      
         </main>
       </div>
     </>

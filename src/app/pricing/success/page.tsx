@@ -130,7 +130,7 @@ export default async function PricingSuccessPage({
         </h1>
         <p className="text-sm text-slate-600">
           {updateOk
-            ? "Il tuo piano è stato aggiornato. Puoi ora usare ContrattoChiaro senza limiti, secondo il piano scelto."
+            ? "Il tuo piano è stato aggiornato. Puoi ora usare Contratti Chiari senza limiti, secondo il piano scelto."
             : "Abbiamo ricevuto il pagamento. Se il tuo piano non risulta ancora aggiornato, potrebbe volerci qualche istante."}
         </p>
         <p className="text-xs text-slate-500">

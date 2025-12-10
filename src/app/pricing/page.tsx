@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import { gaEvent } from "@/lib/gtag";
-
+import Link from "next/link";
 
 export default function PricingPage() {
   const supabase = supabaseBrowser();
@@ -110,7 +110,21 @@ export default function PricingPage() {
     <div className="min-h-screen bg-slate-50">
       <header className="flex items-center justify-between px-8 py-4 border-b border-slate-200 bg-white">
         <div className="text-lg font-semibold text-slate-900">
-          Contratti Chiari
+          <Link href="/" className="flex items-center">
+            {/* Logo Mobile */}
+            <img
+              src="/logo_mobile.png"
+              alt="Contratti Chiari"
+              className="h-9 w-auto shrink-0 block md:hidden"
+            />
+
+            {/* Logo Desktop */}
+            <img
+              src="/logo.png"
+              alt="Contratti Chiari"
+              className="h-8 w-auto shrink-0 hidden md:block"
+            />
+          </Link>
         </div>
         <button
           onClick={() => router.push("/dashboard")}
@@ -121,15 +135,15 @@ export default function PricingPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-8">
-        <section className="space-y-2">
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Scegli il tuo piano
+        <div className="text-center max-w-xl mx-auto space-y-2 animate-fade-in-up delay-1 mt-xs-0 mt-20">
+          <h1 className="text-3xl md:text-4xl tracking-tight text-slate-900">
+            La certezza che ti serve, subito. 
           </h1>
-          <p className="text-sm text-slate-600">
-            La certezza che ti serve, subito. Parti gratis, passa allo Standard
+          <p className="text-sm text-slate-500 mb-10">
+            Parti gratis, passa allo Standard
             quando ti serve analizzare più contratti.
           </p>
-        </section>
+        </div>
 
         <section className="grid gap-6 md:grid-cols-3">
           {/* Piano Free */}

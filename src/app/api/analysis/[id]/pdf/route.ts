@@ -69,7 +69,7 @@ export async function GET(
     const valutazioneRischio = aj.valutazione_rischio || "Non disponibile";
     const motivazioneRischio =
       aj.motivazione_rischio ||
-      "Apri l'app ContrattoChiaro per vedere tutti i dettagli dell'analisi.";
+      "Apri l'app Contratti Chiari per vedere tutti i dettagli dell'analisi.";
 
     const createdAt = new Date(data.created_at).toLocaleString("it-IT");
 
@@ -189,7 +189,7 @@ export async function GET(
     doc.moveDown();
     doc.fontSize(10).fillColor("#888888");
     doc.text(
-      "Questo PDF è stato generato automaticamente da ContrattoChiaro sulla base dell'analisi effettuata.",
+      "Questo PDF è stato generato automaticamente da Contratti Chiari sulla base dell'analisi effettuata.",
       {
         width: 500,
         align: "left",

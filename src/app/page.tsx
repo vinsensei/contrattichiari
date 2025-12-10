@@ -2,7 +2,7 @@ import HeaderPublic from "@/components/HeaderPublic";
 import Link from "next/link";
 
 export const metadata = {
-  title: "ContrattoChiaro – Analisi contratti con AI",
+  title: "Contratti Chiari – Analisi contratti con AI",
 };
 
 export default function Home() {

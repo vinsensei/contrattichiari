@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import HeaderPrivate from "@/components/HeaderPrivate";
 import Link from "next/link";
+import AnalysisListItem from "@/components/AnalysisListItem";
 
 type ContractAnalysisRow = {
   id: string;
@@ -32,6 +33,9 @@ export default function AnalysesListPage() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingAnalyses, setLoadingAnalyses] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [riskFilter, setRiskFilter] = useState<"" | "alto" | "medio" | "basso">(
+    ""
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -78,7 +82,9 @@ export default function AnalysesListPage() {
         // tutte le analisi
         const { data: analysesData, error: analysesError } = await supabase
           .from("contract_analyses")
-          .select("id, created_at, from_slug, source, is_full_unlocked, analysis_json")
+          .select(
+            "id, created_at, from_slug, source, is_full_unlocked, analysis_json"
+          )
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
@@ -135,9 +141,8 @@ export default function AnalysesListPage() {
 
   const filteredAnalyses = analyses.filter((a) => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return true;
-
     const aj = a.analysis_json || {};
+
     const tipoContratto = (
       aj.tipo_contratto ||
       a.from_slug ||
@@ -150,10 +155,18 @@ export default function AnalysesListPage() {
       .toString()
       .toLowerCase();
 
-    return (
-      tipoContratto.includes(q) ||
-      motivazioneRischio.includes(q)
-    );
+    const valutazioneRischio = (aj.valutazione_rischio || "")
+      .toString()
+      .toLowerCase();
+
+    // filtro testo
+    const matchesText =
+      !q || tipoContratto.includes(q) || motivazioneRischio.includes(q);
+
+    // filtro rischio (se selezionato)
+    const matchesRisk = !riskFilter || valutazioneRischio === riskFilter;
+
+    return matchesText && matchesRisk;
   });
 
   return (
@@ -170,28 +183,48 @@ export default function AnalysesListPage() {
       />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-slate-900">
+        <div className="text-center max-w-xl mx-auto space-y-2 animate-fade-in-up delay-1 mt-xs-0 mt-20">
+          <h1 className="text-3xl md:text-4xl tracking-tight text-slate-900">
             Le mie analisi
           </h1>
-          <Link
-            href="/dashboard"
-            className="text-xs text-slate-700 underline-offset-2 hover:underline"
-          >
-            Torna alla dashboard
-          </Link>
+          <p className="text-sm text-slate-500 mb-10">
+            Consulta lo storico dei controlli effettuati
+          </p>
         </div>
-        <div className="mt-2">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cerca per tipo di contratto o motivazione…"
-            className="w-full sm:max-w-xs rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-          />
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between  animate-fade-in-up delay-2">
+          {/* search input styled */}
+          <div className="relative w-full sm:max-w-xs">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+              🔍
+            </span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cerca tra le tue analisi…"
+              className="w-full rounded-full border border-slate-200 bg-white pl-8 pr-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+            />
+          </div>
+
+          {/* risk filter select */}
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <span className="hidden sm:inline">Filtra per rischio:</span>
+            <select
+              value={riskFilter}
+              onChange={(e) =>
+                setRiskFilter(e.target.value as "" | "alto" | "medio" | "basso")
+              }
+              className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+            >
+              <option value="">Tutti i livelli</option>
+              <option value="alto">Solo rischio alto</option>
+              <option value="medio">Solo rischio medio</option>
+              <option value="basso">Solo rischio basso</option>
+            </select>
+          </div>
         </div>
 
-        <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
+        <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100  animate-fade-in-up delay-3">
           {loadingAnalyses ? (
             <p className="text-sm text-slate-500">Caricamento analisi…</p>
           ) : analyses.length === 0 ? (
@@ -207,9 +240,7 @@ export default function AnalysesListPage() {
               {filteredAnalyses.map((a) => {
                 const aj = a.analysis_json || {};
                 const tipoContratto =
-                  aj.tipo_contratto ||
-                  a.from_slug ||
-                  "Contratto senza titolo";
+                  aj.tipo_contratto || a.from_slug || "Contratto senza titolo";
                 const valutazioneRischio = aj.valutazione_rischio || null;
                 const motivazioneRischio =
                   aj.motivazione_rischio ||
@@ -219,32 +250,14 @@ export default function AnalysesListPage() {
                 const showFull = !isLanding || isFullUnlocked;
 
                 return (
-                  <li key={a.id}>
-                    <Link
-                      href={`/analysis/${a.id}`}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between border border-slate-100 rounded-xl px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-slate-900">
-                            {tipoContratto}
-                          </span>
-                          {riskBadge(valutazioneRischio)}
-                        </div>
-                        <p className="text-[11px] text-slate-500">
-                          {showFull
-                            ? "Analisi completa"
-                            : "Versione ridotta dall’upload rapido"}
-                        </p>
-                        <p className="text-xs text-slate-600 line-clamp-2">
-                          {motivazioneRischio}
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          {new Date(a.created_at).toLocaleString("it-IT")}
-                        </p>
-                      </div>
-                    </Link>
-                  </li>
+                  <AnalysisListItem
+                    key={a.id}
+                    id={a.id}
+                    tipoContratto={tipoContratto}
+                    valutazioneRischio={valutazioneRischio}
+                    motivazioneRischio={motivazioneRischio}
+                    createdAt={a.created_at}
+                  />
                 );
               })}
             </ul>
