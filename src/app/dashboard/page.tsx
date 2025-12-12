@@ -231,11 +231,11 @@ export default function DashboardPage() {
           {/* Blocco upload */}
 
           <ContractUploadForm
-            bottomLeftText="Analisi da area personale · accesso completo con il tuo piano"
+            bottomLeftText=""
             bottomRightText={
               plan === "free"
-                ? "Free: 1 sola analisi. Aggiorna per averne di più."
-                : "Piano standard e Pro: analisi illimitate."
+                ? ""
+                : ""
             }
             onAnalyze={async (file) => {
               if (!userId) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 import SectionHeader from "@/components/SectionHeader";
@@ -59,6 +59,45 @@ export default function AnalysisDetailPage() {
   const [analysis, setAnalysis] = useState<AnalysisRow | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [hasPaidSubscription, setHasPaidSubscription] = useState(false);
+
+  const [anchorOffsetPx, setAnchorOffsetPx] = useState(0);
+  const anchorNavRef = useRef<HTMLElement | null>(null);
+
+  const pageStyle = useMemo(() => {
+    return {
+      // Used by sticky SectionHeaders + scroll anchoring
+      ["--anchor-offset" as any]: `${anchorOffsetPx}px`,
+    } as React.CSSProperties;
+  }, [anchorOffsetPx]);
+  useLayoutEffect(() => {
+    if (loading) return;
+
+    const compute = () => {
+      const navEl = anchorNavRef.current;
+      if (!navEl) return;
+      const navH = navEl.offsetHeight;
+      setAnchorOffsetPx(navH);
+    };
+
+    // Measure once immediately and once on next frame (fonts/layout can settle)
+    compute();
+    const raf = window.requestAnimationFrame(() => compute());
+
+    const navEl = anchorNavRef.current;
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && navEl) {
+      ro = new ResizeObserver(() => compute());
+      ro.observe(navEl);
+    }
+
+    window.addEventListener("resize", compute);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener("resize", compute);
+      if (ro) ro.disconnect();
+    };
+  }, [loading]);
 
   useEffect(() => {
     const load = async () => {
@@ -204,23 +243,14 @@ export default function AnalysisDetailPage() {
     const el = document.getElementById(anchorId);
     if (!el) return;
 
-    const headerEl = document.querySelector("header[data-fixed-header='true']") as HTMLElement | null;
-    const navEl = document.querySelector("nav[data-anchor-nav='true']") as HTMLElement | null;
-
-    const offset =
-      (headerEl?.offsetHeight ?? 0) +
-      (navEl?.offsetHeight ?? 0) +
-      12; // piccolo respiro
-
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
-
+    const top = el.getBoundingClientRect().top + window.scrollY - (anchorOffsetPx || 0);
     window.scrollTo({ top, behavior: "smooth" });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-sky-50/40 to-indigo-50/40">
-        <p className="text-base text-slate-500">Caricamento analisi…</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <p className="text-sm text-slate-500">Caricamento…</p>
       </div>
     );
   }
@@ -274,11 +304,11 @@ export default function AnalysisDetailPage() {
     Array.isArray(a.alert_finali) && a.alert_finali.length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div style={pageStyle} className="min-h-screen flex flex-col bg-white">
       {/* Header */}
       <header
         data-fixed-header="true"
-        className="w-full border-b border-slate-200 bg-white/80 backdrop-blur"
+        className="w-full border-b border-slate-200 bg-white/95 backdrop-blur"
       >
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
@@ -359,8 +389,9 @@ export default function AnalysisDetailPage() {
 
       {/* Navigazione ad ancore (sticky) */}
       <nav
+        ref={anchorNavRef}
         data-anchor-nav="true"
-        className="sticky top-0 z-10 -mx-4 sm:-mx-6 bg-slate-50/95 backdrop-blur border-b border-slate-200"
+        className="sticky top-0 z-30 -mx-4 sm:-mx-6 bg-white/95 backdrop-blur border-b border-slate-200"
       >
         <div className="mx-auto flex w-full max-w-5xl gap-2 overflow-x-auto px-4 py-3 text-xs sm:text-sm">
           {summary && (
@@ -424,14 +455,18 @@ export default function AnalysisDetailPage() {
         {summary && (
           <section
             id="riassunto-semplice"
-            className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
+            className="scroll-mt-[var(--anchor-offset)] md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
           >
-            <SectionHeader
-              title="Riassunto semplice"
-              subtitle="Il contratto spiegato in poche frasi, senza linguaggio legale"
-              icon="uploadok.svg"
-            />
-            
+            <div
+              style={{ top: anchorOffsetPx }}
+              className="sticky z-10 bg-white/95 backdrop-blur border-b border-slate-200 pt-3"
+            >
+              <SectionHeader
+                title="Riassunto semplice"
+                subtitle="Il contratto spiegato in poche frasi, senza linguaggio legale"
+                icon="uploadok.svg"
+              />
+            </div>
             <p className="text-[15px] text-slate-800 leading-relaxed">
               {summary}
             </p>
@@ -551,14 +586,18 @@ export default function AnalysisDetailPage() {
         {showFull && a.clausole_critiche && a.clausole_critiche.length > 0 && (
           <section
             id="clausole-problematiche"
-            className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
+            className="scroll-mt-[var(--anchor-offset)] md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
           >
-            <SectionHeader
-              title="Clausole problematiche"
-              subtitle="Punti del contratto che possono creare rischi o ambiguità"
-              icon="uploadok.svg"
-            />
-            
+            <div
+              style={{ top: anchorOffsetPx }}
+              className="sticky z-10 bg-white/95 backdrop-blur border-b border-slate-200 pt-3"
+            >
+              <SectionHeader
+                title="Clausole problematiche"
+                subtitle="Punti del contratto che possono creare rischi o ambiguità"
+                icon="uploadok.svg"
+              />
+            </div>
             <div className="space-y-10">
               {a.clausole_critiche.map((c, idx) => (
                 <div
@@ -611,14 +650,18 @@ export default function AnalysisDetailPage() {
           a.clausole_vessatorie_potenziali.length > 0 && (
             <section
               id="clausole-vessatorie"
-              className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
+              className="scroll-mt-[var(--anchor-offset)] md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
             >
-              <SectionHeader
-              title="Clausole potenzialmente vessatorie"
-              subtitle="Clausole che potrebbero essere sfavorevoli o contestabili"
-              icon="uploadok.svg"
-            />
-              
+              <div
+                style={{ top: anchorOffsetPx }}
+                className="sticky z-10 bg-white/95 backdrop-blur border-b border-slate-200 pt-3"
+              >
+                <SectionHeader
+                  title="Clausole potenzialmente vessatorie"
+                  subtitle="Clausole che potrebbero essere sfavorevoli o contestabili"
+                  icon="uploadok.svg"
+                />
+              </div>
               <div className="space-y-10">
                 {a.clausole_vessatorie_potenziali.map((c, idx) => (
                   <div
@@ -665,14 +708,18 @@ export default function AnalysisDetailPage() {
           a.versione_riequilibrata.trim().length > 0 && (
             <section
               id="versione-riequilibrata"
-              className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
+              className="scroll-mt-[var(--anchor-offset)] md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
             >
-               <SectionHeader
-              title="Versione riequilibrata"
-              subtitle="Proposta di riscrittura più equa e bilanciata"
-              icon="uploadok.svg"
-            />
-              
+              <div
+                style={{ top: anchorOffsetPx }}
+                className="sticky z-10 bg-white/95 backdrop-blur border-b border-slate-200 pt-3"
+              >
+                <SectionHeader
+                  title="Versione riequilibrata"
+                  subtitle="Proposta di riscrittura più equa e bilanciata"
+                  icon="uploadok.svg"
+                />
+              </div>
               <p className="text-base text-slate-700 whitespace-pre-line leading-relaxed">
                 {a.versione_riequilibrata}
               </p>
@@ -682,14 +729,18 @@ export default function AnalysisDetailPage() {
         {showFull && a.glossario && a.glossario.length > 0 && (
           <section
             id="glossario"
-            className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
+            className="scroll-mt-[var(--anchor-offset)] md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
           >
-            <SectionHeader
-              title="Glossario"
-              subtitle="Significato semplice dei termini legali usati nel contratto"
-              icon="uploadok.svg"
-            />
-            
+            <div
+              style={{ top: anchorOffsetPx }}
+              className="sticky z-10 bg-white/95 backdrop-blur border-b border-slate-200 pt-3"
+            >
+              <SectionHeader
+                title="Glossario"
+                subtitle="Significato semplice dei termini legali usati nel contratto"
+                icon="uploadok.svg"
+              />
+            </div>
             <ul className="space-y-4">
               {a.glossario.map((g, idx) => (
                 <li
@@ -742,14 +793,18 @@ export default function AnalysisDetailPage() {
         {showFull && a.alert_finali && a.alert_finali.length > 0 && (
           <section
             id="alert-finali"
-            className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
+            className="scroll-mt-[var(--anchor-offset)] md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
           >
-            <SectionHeader
-              title="Alert finali"
-              subtitle="Cose importanti da sapere prima di firmare"
-              icon="uploadok.svg"
-            />
-            
+            <div
+              style={{ top: anchorOffsetPx }}
+              className="sticky z-10 bg-white/95 backdrop-blur border-b border-slate-200 pt-3"
+            >
+              <SectionHeader
+                title="Alert finali"
+                subtitle="Cose importanti da sapere prima di firmare"
+                icon="uploadok.svg"
+              />
+            </div>
             <ul className="space-y-4">
               {a.alert_finali.map((al, idx) => (
                 <li
