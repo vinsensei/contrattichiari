@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
+import SectionHeader from "@/components/SectionHeader";
 
 type ClausolaCritica = {
   titolo: string;
@@ -199,6 +200,23 @@ export default function AnalysisDetailPage() {
     );
   };
 
+  const scrollToAnchor = (anchorId: string) => {
+    const el = document.getElementById(anchorId);
+    if (!el) return;
+
+    const headerEl = document.querySelector("header[data-fixed-header='true']") as HTMLElement | null;
+    const navEl = document.querySelector("nav[data-anchor-nav='true']") as HTMLElement | null;
+
+    const offset =
+      (headerEl?.offsetHeight ?? 0) +
+      (navEl?.offsetHeight ?? 0) +
+      12; // piccolo respiro
+
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+
+    window.scrollTo({ top, behavior: "smooth" });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-sky-50/40 to-indigo-50/40">
@@ -258,7 +276,10 @@ export default function AnalysisDetailPage() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       {/* Header */}
-      <header className="w-full border-b border-slate-200 bg-white/80 backdrop-blur">
+      <header
+        data-fixed-header="true"
+        className="w-full border-b border-slate-200 bg-white/80 backdrop-blur"
+      >
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <button
@@ -336,99 +357,80 @@ export default function AnalysisDetailPage() {
           </span>
         </section>
 
-        {/* Navigazione ad ancore (sticky) */}
-        <nav className="sticky top-0 z-10 -mx-4 sm:-mx-6 bg-slate-50/95 backdrop-blur border-b border-slate-200">
-          <div className="mx-auto flex w-full max-w-5xl gap-2 overflow-x-auto px-4 py-3 text-xs sm:text-sm">
-            {summary && (
-              <button
-                type="button"
-                onClick={() =>
-                  document
-                    .getElementById("riassunto-semplice")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }
-                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
-              >
-                Riassunto semplice
-              </button>
-            )}
-            {hasClausoleCritiche && (
-              <button
-                type="button"
-                onClick={() =>
-                  document
-                    .getElementById("clausole-problematiche")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }
-                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
-              >
-                Clausole problematiche
-              </button>
-            )}
-            {hasClausoleVessatorie && (
-              <button
-                type="button"
-                onClick={() =>
-                  document
-                    .getElementById("clausole-vessatorie")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }
-                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
-              >
-                Clausole potenzialmente vessatorie
-              </button>
-            )}
-            {hasVersioneRiequilibrata && (
-              <button
-                type="button"
-                onClick={() =>
-                  document
-                    .getElementById("versione-riequilibrata")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }
-                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
-              >
-                Versione riequilibrata
-              </button>
-            )}
-            {hasGlossario && (
-              <button
-                type="button"
-                onClick={() =>
-                  document
-                    .getElementById("glossario")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }
-                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
-              >
-                Glossario
-              </button>
-            )}
-            {hasAlertFinali && (
-              <button
-                type="button"
-                onClick={() =>
-                  document
-                    .getElementById("alert-finali")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }
-                className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
-              >
-                Alert finali
-              </button>
-            )}
-          </div>
-        </nav>
+      {/* Navigazione ad ancore (sticky) */}
+      <nav
+        data-anchor-nav="true"
+        className="sticky top-0 z-10 -mx-4 sm:-mx-6 bg-slate-50/95 backdrop-blur border-b border-slate-200"
+      >
+        <div className="mx-auto flex w-full max-w-5xl gap-2 overflow-x-auto px-4 py-3 text-xs sm:text-sm">
+          {summary && (
+            <button
+              type="button"
+              onClick={() => scrollToAnchor("riassunto-semplice")}
+              className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+            >
+              Riassunto semplice
+            </button>
+          )}
+          {hasClausoleCritiche && (
+            <button
+              type="button"
+              onClick={() => scrollToAnchor("clausole-problematiche")}
+              className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+            >
+              Clausole problematiche
+            </button>
+          )}
+          {hasClausoleVessatorie && (
+            <button
+              type="button"
+              onClick={() => scrollToAnchor("clausole-vessatorie")}
+              className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+            >
+              Clausole potenzialmente vessatorie
+            </button>
+          )}
+          {hasVersioneRiequilibrata && (
+            <button
+              type="button"
+              onClick={() => scrollToAnchor("versione-riequilibrata")}
+              className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+            >
+              Versione riequilibrata
+            </button>
+          )}
+          {hasGlossario && (
+            <button
+              type="button"
+              onClick={() => scrollToAnchor("glossario")}
+              className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+            >
+              Glossario
+            </button>
+          )}
+          {hasAlertFinali && (
+            <button
+              type="button"
+              onClick={() => scrollToAnchor("alert-finali")}
+              className="inline-flex h-8 items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-slate-700 hover:border-slate-400 whitespace-nowrap"
+            >
+              Alert finali
+            </button>
+          )}
+        </div>
+      </nav>
 
         {/* Riassunto semplice / preview */}
         {summary && (
           <section
             id="riassunto-semplice"
-            className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8"
+            className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
           >
-            <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-1 flex items-center gap-2">
-              <span>Riassunto semplice</span>
-            </h2>
+            <SectionHeader
+              title="Riassunto semplice"
+              subtitle="Il contratto spiegato in poche frasi, senza linguaggio legale"
+              icon="uploadok.svg"
+            />
             
             <p className="text-[15px] text-slate-800 leading-relaxed">
               {summary}
@@ -549,11 +551,13 @@ export default function AnalysisDetailPage() {
         {showFull && a.clausole_critiche && a.clausole_critiche.length > 0 && (
           <section
             id="clausole-problematiche"
-            className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-5"
+            className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
           >
-            <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-5">
-              Clausole problematiche
-            </h2>
+            <SectionHeader
+              title="Clausole problematiche"
+              subtitle="Punti del contratto che possono creare rischi o ambiguità"
+              icon="uploadok.svg"
+            />
             
             <div className="space-y-10">
               {a.clausole_critiche.map((c, idx) => (
@@ -580,7 +584,7 @@ export default function AnalysisDetailPage() {
                   )}
 
                   {c.perche_critica && (
-                    <p className="text-sm text-slate-700">
+                    <p className="text-sm text-slate-700 mt-4 mb-5">
                       <span className="font-semibold">Perché è critica: </span>
                       {c.perche_critica}
                     </p>
@@ -607,11 +611,13 @@ export default function AnalysisDetailPage() {
           a.clausole_vessatorie_potenziali.length > 0 && (
             <section
               id="clausole-vessatorie"
-              className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-5"
+              className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
             >
-              <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-5">
-                Clausole potenzialmente vessatorie
-              </h2>
+              <SectionHeader
+              title="Clausole potenzialmente vessatorie"
+              subtitle="Clausole che potrebbero essere sfavorevoli o contestabili"
+              icon="uploadok.svg"
+            />
               
               <div className="space-y-10">
                 {a.clausole_vessatorie_potenziali.map((c, idx) => (
@@ -636,8 +642,16 @@ export default function AnalysisDetailPage() {
                       </p>
                     )}
                     {c.riferimento_normativo && (
-                      <p className="text-xs text-slate-600 italic">
-                        Riferimento: {c.riferimento_normativo}
+                      <p className="text-xs text-slate-600 italic inline-flex items-center gap-1.5">
+                        <span
+                          aria-hidden="true"
+                          className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-300 bg-white text-[10px] font-semibold leading-none text-slate-600"
+                        >
+                          i
+                        </span>
+                        <span>
+                          Riferimento: {c.riferimento_normativo}
+                        </span>
                       </p>
                     )}
                   </div>
@@ -651,11 +665,13 @@ export default function AnalysisDetailPage() {
           a.versione_riequilibrata.trim().length > 0 && (
             <section
               id="versione-riequilibrata"
-              className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-4"
+              className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
             >
-              <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-5">
-                Versione riequilibrata
-              </h2>
+               <SectionHeader
+              title="Versione riequilibrata"
+              subtitle="Proposta di riscrittura più equa e bilanciata"
+              icon="uploadok.svg"
+            />
               
               <p className="text-base text-slate-700 whitespace-pre-line leading-relaxed">
                 {a.versione_riequilibrata}
@@ -666,19 +682,57 @@ export default function AnalysisDetailPage() {
         {showFull && a.glossario && a.glossario.length > 0 && (
           <section
             id="glossario"
-            className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-4"
+            className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
           >
-            <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-5">
-              Glossario
-            </h2>
+            <SectionHeader
+              title="Glossario"
+              subtitle="Significato semplice dei termini legali usati nel contratto"
+              icon="uploadok.svg"
+            />
             
-            <ul className="space-y-2">
+            <ul className="space-y-4">
               {a.glossario.map((g, idx) => (
-                <li key={idx} className="text-base">
-                  <span className="font-semibold text-slate-900">
-                    {g.termine}:
-                  </span>{" "}
-                  <span className="text-slate-700">{g.spiegazione}</span>
+                <li
+                  key={idx}
+                  className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-xs"
+                >
+                  {/* Icona tonda 30x30 con SVG (placeholder) */}
+                  <div className="h-[30px] w-[30px] shrink-0 rounded-full border border-slate-300 bg-white flex items-center justify-center">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                      className="opacity-80"
+                    >
+                      <path
+                        d="M12 17h.01M11 10a2 2 0 1 1 3 1.732c-.9.52-1.5 1.08-1.5 2.268v.5"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+
+                  {/* Testi */}
+                  <div className="min-w-0">
+                    <div className="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                      {g.termine}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-700 leading-relaxed">
+                      {g.spiegazione}
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -688,16 +742,61 @@ export default function AnalysisDetailPage() {
         {showFull && a.alert_finali && a.alert_finali.length > 0 && (
           <section
             id="alert-finali"
-            className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-4"
+            className="scroll-mt-28 sm:scroll-mt-32 md:bg-white md:rounded-3xl md:border md:border-slate-200 md:shadow-sm p-0 md:p-5 space-y-5"
           >
-            <h2 className="text-2xl md:text-3xl font-normal text-slate-900 mb-5">
-              Alert finali
-            </h2>
+            <SectionHeader
+              title="Alert finali"
+              subtitle="Cose importanti da sapere prima di firmare"
+              icon="uploadok.svg"
+            />
             
-            <ul className="list-disc pl-5 space-y-1">
+            <ul className="space-y-4">
               {a.alert_finali.map((al, idx) => (
-                <li key={idx} className="text-base text-slate-700">
-                  {al}
+                <li
+                  key={idx}
+                  className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-xs"
+                >
+                  {/* Icona tonda 30x30 con SVG (placeholder) */}
+                  <div className="h-[30px] w-[30px] shrink-0 rounded-full border border-slate-300 bg-white flex items-center justify-center">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                      className="opacity-80"
+                    >
+                      <path
+                        d="M12 9v4"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 17h.01"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+
+                  {/* Testo */}
+                  <div className="min-w-0">
+                    <div className="text-sm sm:text-base text-slate-800 leading-relaxed">
+                      {al}
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
