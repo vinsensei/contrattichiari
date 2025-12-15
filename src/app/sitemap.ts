@@ -1,6 +1,7 @@
 // src/app/sitemap.ts
 import type { MetadataRoute } from "next";
 import { landingSlugs, getLandingBySlug } from "@/lib/landingConfig";
+import { EDITORIAL_PAGES } from "@/lib/editorialConfig";
 
 // Dominio principale (già corretto)
 const BASE_URL =
@@ -15,6 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   //
   const staticPages = [
     { path: "/", priority: 1.0, freq: "daily" },
+    { path: "/argomenti", priority: 0.8, freq: "weekly" },
     { path: "/pricing", priority: 0.7, freq: "weekly" },
     { path: "/login", priority: 0.5, freq: "monthly" },
     { path: "/register", priority: 0.5, freq: "monthly" },
@@ -50,7 +52,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .filter((x): x is NonNullable<typeof x> => Boolean(x));
 
   //
-  // --- RETURN COMPLETO ---
+  // --- 3. EDITORIALI (argomenti / clausole / guide / rischi / ecc.) ---
   //
-  return [...staticRoutes, ...landingRoutes];
+  // Nota: `EDITORIAL_PAGES` contiene slug già normalizzati (es. "affitto/guida-rapida").
+  // Qui li inseriamo nel sitemap come `/${slug}`.
+  const editorialRoutes: MetadataRoute.Sitemap = EDITORIAL_PAGES.map((p) => {
+    const slug = String(p.slug || "").replace(/^\/+|\/+$/g, "");
+
+    return {
+      url: `${BASE_URL}/${slug}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    };
+  }).filter((r) => r.url !== `${BASE_URL}/`);
+
+  //
+  // --- RETURN COMPLETO DEDUPLICATO ---
+  //
+  const all = [...staticRoutes, ...landingRoutes, ...editorialRoutes];
+
+  // Dedup per sicurezza (evita collisioni tra landing/editoriali/statiche)
+  const seen = new Set<string>();
+  const unique = all.filter((r) => {
+    if (seen.has(r.url)) return false;
+    seen.add(r.url);
+    return true;
+  });
+
+  return unique;
 }

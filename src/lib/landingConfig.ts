@@ -17,12 +17,13 @@ export type LandingConfig = {
   examples: string[];
   faq: { question: string; answer: string }[];
 
-  related?: string[];
+  related?: string[]; // slugs landing (tool)
+  relatedEditorial?: string[]; // slugs editorial, es: "clausole/recesso"
 };
 
 export const LANDINGS: Record<string, LandingConfig> = {
   // Contratti di affitto
-    "contratto-affitto": {
+  "contratto-affitto": {
     slug: "contratto-affitto",
 
     seoTitle: "Analisi contratto di affitto – Verifica rischi e clausole",
@@ -82,9 +83,16 @@ export const LANDINGS: Record<string, LandingConfig> = {
     ],
 
     related: ["contratto-affitto-studenti", "contratto-stanza"],
+
+    relatedEditorial: [
+      "contratti/affitto",
+      "clausole/recesso",
+      "rischi/penali-sproporzionate",
+    ],
   },
+
   //Contratto affitto studenti
-    "contratto-affitto-studenti": {
+  "contratto-affitto-studenti": {
     slug: "contratto-affitto-studenti",
 
     seoTitle: "Analisi contratto affitto studenti – Verifica clausole e spese",
@@ -140,7 +148,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-affitto", "contratto-stanza"],
   },
   //contratto transitorio
-    "contratto-transitorio": {
+  "contratto-transitorio": {
     slug: "contratto-transitorio",
 
     seoTitle: "Analisi contratto transitorio – Verifica durata e clausole",
@@ -190,7 +198,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-affitto"],
   },
   //Contratto stanza / co-living
-    "contratto-stanza": {
+  "contratto-stanza": {
     slug: "contratto-stanza",
 
     seoTitle: "Analisi contratto stanza – Verifica costi e clausole",
@@ -237,7 +245,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-affitto", "contratto-affitto-studenti"],
   },
   //Contratto affitto commerciale
-    "contratto-affitto-commerciale": {
+  "contratto-affitto-commerciale": {
     slug: "contratto-affitto-commerciale",
 
     seoTitle:
@@ -286,7 +294,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-affitto"],
   },
   //Contratto a tempo determinato
-    "contratto-tempo-determinato": {
+  "contratto-tempo-determinato": {
     slug: "contratto-tempo-determinato",
 
     seoTitle: "Analisi contratto a tempo determinato – Clausole e tutele",
@@ -341,7 +349,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-tempo-indeterminato", "co-co-co"],
   },
   //Contratto a tempo indeterminato
-    "contratto-tempo-indeterminato": {
+  "contratto-tempo-indeterminato": {
     slug: "contratto-tempo-indeterminato",
 
     seoTitle: "Analisi contratto a tempo indeterminato – Tutele e clausole",
@@ -391,7 +399,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-tempo-determinato"],
   },
   //Contratto di collaborazione (co.co.co.)
-    "co-co-co": {
+  "co-co-co": {
     slug: "co-co-co",
 
     seoTitle: "Analisi contratto di collaborazione – Clausole e rischi",
@@ -432,14 +440,15 @@ export const LANDINGS: Record<string, LandingConfig> = {
     faq: [
       {
         question: "Vale anche per partite IVA?",
-        answer: "Sì, puoi analizzare contratti di collaborazione anche con P.IVA.",
+        answer:
+          "Sì, puoi analizzare contratti di collaborazione anche con P.IVA.",
       },
     ],
 
     related: ["contratto-consulenza", "contratto-tempo-determinato"],
   },
   //Contratto di consulenza / progetto
-    "contratto-consulenza": {
+  "contratto-consulenza": {
     slug: "contratto-consulenza",
 
     seoTitle: "Analisi contratto di consulenza – Clausole e rischi",
@@ -487,7 +496,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["co-co-co"],
   },
   //Contratto di stage / tirocinio
-    "contratto-stage": {
+  "contratto-stage": {
     slug: "contratto-stage",
 
     seoTitle: "Analisi contratto di stage – Rischi e tutele",
@@ -534,7 +543,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-tempo-determinato"],
   },
   //Clausola di non concorrenza
-    "clausola-non-concorrenza": {
+  "clausola-non-concorrenza": {
     slug: "clausola-non-concorrenza",
 
     seoTitle: "Analisi clausola di non concorrenza – Validità e rischi",
@@ -580,7 +589,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-tempo-indeterminato"],
   },
   //Contratto di lavoro intermittente
-    "contratto-intermittente": {
+  "contratto-intermittente": {
     slug: "contratto-intermittente",
 
     seoTitle: "Analisi contratto intermittente – Verifica clausole e rischi",
@@ -626,7 +635,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-tempo-determinato"],
   },
   //Assicurazione auto (RC + accessorie)
-    "assicurazione-auto": {
+  "assicurazione-auto": {
     slug: "assicurazione-auto",
 
     seoTitle: "Analisi contratto assicurazione auto – Clausole e franchigie",
@@ -671,15 +680,14 @@ export const LANDINGS: Record<string, LandingConfig> = {
       },
       {
         question: "Valido anche per moto e furgoni?",
-        answer:
-          "Sì, qualsiasi contratto RC auto/moto/veicoli è analizzabile.",
+        answer: "Sì, qualsiasi contratto RC auto/moto/veicoli è analizzabile.",
       },
     ],
 
     related: ["assicurazione-casa", "assicurazione-vita"],
   },
   //Assicurazione casa
-   "assicurazione-casa": {
+  "assicurazione-casa": {
     slug: "assicurazione-casa",
 
     seoTitle: "Analisi assicurazione casa – Verifica clausole e coperture",
@@ -726,7 +734,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["assicurazione-auto", "assicurazione-sanitaria"],
   },
   //Assicurazione sanitaria
-   "assicurazione-sanitaria": {
+  "assicurazione-sanitaria": {
     slug: "assicurazione-sanitaria",
 
     seoTitle:
@@ -775,7 +783,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["assicurazione-vita", "assicurazione-casa"],
   },
   //Polizza vita / infortuni
-   "assicurazione-vita": {
+  "assicurazione-vita": {
     slug: "assicurazione-vita",
 
     seoTitle: "Analisi polizza vita – Clausole, beneficiari e esclusioni",
@@ -823,11 +831,10 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["assicurazione-auto", "assicurazione-sanitaria"],
   },
   //Contratto telefonia mobile
-    "contratto-telefonia-mobile": {
+  "contratto-telefonia-mobile": {
     slug: "contratto-telefonia-mobile",
 
-    seoTitle:
-      "Analisi contratto telefonia mobile – Costi nascosti e vincoli",
+    seoTitle: "Analisi contratto telefonia mobile – Costi nascosti e vincoli",
     seoDescription:
       "Carica il contratto telefonia mobile e verifica costi nascosti, vincoli, rateizzazione e penali.",
     ogTitle: "Controllo contratto telefonia mobile",
@@ -872,7 +879,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-fibra", "contratto-pay-tv"],
   },
   //Contratto fibra / internet
-    "contratto-fibra": {
+  "contratto-fibra": {
     slug: "contratto-fibra",
 
     seoTitle: "Analisi contratto fibra e internet – Verifica costi e vincoli",
@@ -920,11 +927,10 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-telefonia-mobile", "contratto-pay-tv"],
   },
   //Contratto pay TV / streaming
-    "contratto-pay-tv": {
+  "contratto-pay-tv": {
     slug: "contratto-pay-tv",
 
-    seoTitle:
-      "Analisi contratto pay TV e streaming – Verifica costi e vincoli",
+    seoTitle: "Analisi contratto pay TV e streaming – Verifica costi e vincoli",
     seoDescription:
       "Carica il contratto pay TV/streaming e controlla costi, rinnovi automatici e penali di recesso.",
     ogTitle: "Controllo contratto pay TV e streaming",
@@ -968,7 +974,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["contratto-fibra", "contratto-saas"],
   },
   //Contratto SaaS / abbonamenti digitali
-    "contratto-saas": {
+  "contratto-saas": {
     slug: "contratto-saas",
 
     seoTitle:
@@ -1151,8 +1157,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     faq: [
       {
         question: "Vale per regolamenti condominiali?",
-        answer:
-          "Sì, puoi caricare anche regolamenti o delibere condominiali.",
+        answer: "Sì, puoi caricare anche regolamenti o delibere condominiali.",
       },
     ],
 
@@ -1249,19 +1254,17 @@ export const LANDINGS: Record<string, LandingConfig> = {
     faq: [
       {
         question: "Accettate prestiti con cessione del quinto?",
-        answer:
-          "Sì, analizziamo anche contratti di cessione del quinto.",
+        answer: "Sì, analizziamo anche contratti di cessione del quinto.",
       },
     ],
 
     related: ["contratto-mutuo"],
   },
   //Carta di credito
-   "carta-di-credito": {
+  "carta-di-credito": {
     slug: "carta-di-credito",
 
-    seoTitle:
-      "Analisi contratto carta di credito – Costi, limiti e condizioni",
+    seoTitle: "Analisi contratto carta di credito – Costi, limiti e condizioni",
     seoDescription:
       "Carica il contratto della tua carta di credito e verifica costi, commissioni, limiti e condizioni nascoste.",
     ogTitle: "Controllo contratto carta di credito",
@@ -1298,15 +1301,14 @@ export const LANDINGS: Record<string, LandingConfig> = {
     faq: [
       {
         question: "Accettate carte aziendali?",
-        answer:
-          "Sì, puoi caricare contratti di carte personali e aziendali.",
+        answer: "Sì, puoi caricare contratti di carte personali e aziendali.",
       },
     ],
 
     related: ["carta-revolving", "conto-corrente"],
   },
   //Conto corrente
-   "conto-corrente": {
+  "conto-corrente": {
     slug: "conto-corrente",
 
     seoTitle:
@@ -1378,13 +1380,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
       "Clausole pericolose",
     ],
 
-    checks: [
-      "TAEG",
-      "Costi gestione",
-      "Penali",
-      "Limiti",
-      "Clausole critiche",
-    ],
+    checks: ["TAEG", "Costi gestione", "Penali", "Limiti", "Clausole critiche"],
 
     examples: [
       "“TAEG superiore alla media di mercato.”",
@@ -1450,7 +1446,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
     related: ["abbonamento-trasporti"],
   },
   //Noleggio auto lungo termine
-   "contratto-noleggio-auto-lungo-termine": {
+  "contratto-noleggio-auto-lungo-termine": {
     slug: "contratto-noleggio-auto-lungo-termine",
 
     seoTitle:
@@ -1502,8 +1498,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
   "contratto-coworking": {
     slug: "contratto-coworking",
 
-    seoTitle:
-      "Analisi contratto coworking – Costi, servizi inclusi e clausole",
+    seoTitle: "Analisi contratto coworking – Costi, servizi inclusi e clausole",
     seoDescription:
       "Carica il contratto di coworking e verifica costi, servizi inclusi, durata, recesso e clausole particolari.",
     ogTitle: "Controllo contratto coworking",
@@ -1551,8 +1546,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
   "abbonamento-trasporti": {
     slug: "abbonamento-trasporti",
 
-    seoTitle:
-      "Analisi abbonamento trasporti – Condizioni, rimborsi e clausole",
+    seoTitle: "Analisi abbonamento trasporti – Condizioni, rimborsi e clausole",
     seoDescription:
       "Carica condizioni e regolamento del tuo abbonamento trasporti e verifica rimborsi, sospensioni, vincoli e clausole.",
     ogTitle: "Controllo abbonamento trasporti",
@@ -1644,7 +1638,7 @@ export const LANDINGS: Record<string, LandingConfig> = {
 
     related: ["contratto-saas", "carta-di-credito"],
   },
-   // fine ultima landing (contratto-ecommerce)
+  // fine ultima landing (contratto-ecommerce)
 };
 
 export const landingSlugs = Object.keys(LANDINGS);

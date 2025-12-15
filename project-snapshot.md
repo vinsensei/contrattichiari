@@ -23,6 +23,7 @@ src/app
 - src/app/api/stripe/webhook/route.ts
 - src/app/api/user/activity/route.ts
 - src/app/apple-icon.png
+- src/app/cookie/page.tsx
 - src/app/dashboard/account/page.tsx
 - src/app/dashboard/analyses/page.tsx
 - src/app/dashboard/page.tsx
@@ -50,10 +51,13 @@ src/app
 
 ```
 src/components
+- src/components/AnalysisListItem.tsx
 - src/components/AnalyticsProvider.tsx
 - src/components/ContractUploadForm.tsx
+- src/components/CookieBanner.tsx
 - src/components/HeaderPrivate.tsx
 - src/components/HeaderPublic.tsx
+- src/components/SectionHeader.tsx
 ```
 
 ## Tree: src/lib
@@ -91,7 +95,7 @@ src/lib
     "@supabase/supabase-js": "^2.86.0",
     "@types/pdfkit": "^0.17.4",
     "mammoth": "^1.11.0",
-    "next": "16.0.5",
+    "next": "^16.0.7",
     "openai": "^6.9.1",
     "pdfkit": "^0.17.2",
     "react": "19.2.0",
