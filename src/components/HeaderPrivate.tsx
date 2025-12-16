@@ -41,13 +41,6 @@ export default function HeaderPrivate({
 
          <nav className="flex items-center gap-3 text-sm">
 
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800 transition"
-        >
-          Avvia analisi
-        </Link>
-
         {/* Pulsante menu utente */}
         <div className="relative">
           <button

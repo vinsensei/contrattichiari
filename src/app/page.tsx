@@ -33,7 +33,6 @@ export default function Home() {
               modificare.
             </p>
 
-
             <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/upload"
@@ -43,10 +42,10 @@ export default function Home() {
               </Link>
             </div>
             <br />
-              <p className="text-xs text-zinc-500">
-                Prima analisi rapida, linguaggio umano, nessun gergo da codice
-                civile.
-              </p>             
+            <p className="text-xs text-zinc-500">
+              Prima analisi rapida, linguaggio umano, nessun gergo da codice
+              civile.
+            </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-2 text-[11px] text-zinc-500">
               <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-1">
@@ -74,8 +73,8 @@ export default function Home() {
                   </span>
                 </p>
                 <p className="text-[11px] leading-relaxed text-zinc-600">
-                  Il contratto è generalmente corretto, ma contiene alcuni
-                  punti sbilanciati a favore del locatore (recesso, penali,
+                  Il contratto è generalmente corretto, ma contiene alcuni punti
+                  sbilanciati a favore del locatore (recesso, penali,
                   aggiornamento canone).
                 </p>
               </div>
@@ -94,8 +93,9 @@ export default function Home() {
                     Aggiornamento ISTAT
                   </p>
                   <p className="mt-1 text-[11px] text-zinc-600 line-clamp-3">
-                    Il canone viene aggiornato automaticamente al 100% dell&apos;indice
-                    ISTAT: puoi negoziare una soglia più bassa o un tetto massimo.
+                    Il canone viene aggiornato automaticamente al 100%
+                    dell&apos;indice ISTAT: puoi negoziare una soglia più bassa
+                    o un tetto massimo.
                   </p>
                 </div>
               </div>
@@ -104,40 +104,86 @@ export default function Home() {
         </section>
 
         {/* COME FUNZIONA */}
-        <section className="mt-16 grid gap-6 rounded-3xl bg-white p-6 text-sm shadow-sm sm:grid-cols-[1.2fr,1.1fr]">
-          <div className="space-y-3">
-            <h2 className="text-base font-semibold text-zinc-900">
-              Come funziona ContrattiChiari
+
+        <section
+          className="mt-16  grid gap-6 rounded-2xl border border-zinc-200 p-6 text-sm sm:grid-cols-[1.3fr,1.1fr]"
+          style={{ backgroundColor: "#fff" }}
+        >
+          {/* COLONNA SINISTRA */}
+          <div className="space-y-4">
+            <p
+              className="text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: "#2ABEFF" }}
+            >
+              Come funziona
+            </p>
+
+            <h2 className="text-lg font-semibold text-zinc-900">
+              Come funziona Contratti Chiari
             </h2>
-            <ol className="space-y-2 text-zinc-700">
-              <li>
-                <strong>1. Carichi il PDF o una scansione</strong> – affitti,
-                lavoro, servizi: basta che il testo sia leggibile.
+
+            <ol className="space-y-3 text-zinc-800">
+              <li className="flex gap-3">
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                  style={{ backgroundColor: "#2ABEFF" }}
+                >
+                  1
+                </span>
+                <span>
+                  <strong>Carica il contratto</strong> – PDF, foto o scansione
+                  del documento.
+                </span>
               </li>
-              <li>
-                <strong>2. Analisi automatica</strong> – il motore individua
-                clausole critiche, possibili squilibri e punti a tuo favore.
+
+              <li className="flex gap-3">
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                  style={{ backgroundColor: "#2ABEFF" }}
+                >
+                  2
+                </span>
+                <span>
+                  <strong>Analisi gratuita</strong> – ti mostriamo subito i
+                  punti critici principali.
+                </span>
               </li>
-              <li>
-                <strong>3. Spiegazione in italiano semplice</strong> – ricevi
-                riassunto, alert e un glossario dei termini più tecnici.
-              </li>
-              <li>
-                <strong>4. Storico e PDF scaricabile</strong> – con
-                l&apos;abbonamento salvi le analisi e scarichi i report.
+
+              <li className="flex gap-3">
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+                  style={{ backgroundColor: "#2ABEFF" }}
+                >
+                  3
+                </span>
+                <span>
+                  <strong>Analisi completa</strong> – PDF, storico e dettaglio
+                  se vuoi approfondire.
+                </span>
               </li>
             </ol>
-          </div>
-          <div className="space-y-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-              Perché esiste ContrattiChiari
+
+            <p className="text-xs italic text-zinc-600">
+              Linguaggio semplice, senza tecnicismi inutili.
             </p>
-            <p className="text-sm leading-relaxed text-zinc-700">
-              La maggior parte delle persone firma contratti senza avere il
-              tempo, le competenze o la pazienza per leggerli davvero.
-              ContrattiChiari non sostituisce un avvocato, ma ti aiuta a capire
-              subito se ci sono punti da far vedere a un professionista o da
-              rinegoziare.
+          </div>
+
+          {/* COLONNA DESTRA */}
+          <div
+            className="space-y-3 rounded-xl p-4"
+            style={{ backgroundColor: "rgba(42, 190, 255, 0.08)" }}
+          >
+            <p
+              className="text-[11px] font-semibold uppercase tracking-wide"
+              style={{ color: "#0B2A3A" }}
+            >
+              Cosa ottieni
+            </p>
+
+            <p className="text-sm leading-relaxed" style={{ color: "#0B2A3A" }}>
+              Una lettura chiara del contratto: clausole sbilanciate, rischi
+              concreti per te e punti che puoi provare a rinegoziare prima di
+              firmare.
             </p>
           </div>
         </section>
@@ -162,8 +208,8 @@ export default function Home() {
                 Linguaggio umano, non da codice civile
               </p>
               <p className="mt-1 leading-relaxed">
-                Sintesi, esempi e glossario in linguaggio quotidiano, per
-                capire al volo cosa stai accettando.
+                Sintesi, esempi e glossario in linguaggio quotidiano, per capire
+                al volo cosa stai accettando.
               </p>
             </div>
             <div className="rounded-2xl border border-zinc-200 bg-white p-4">
@@ -195,10 +241,7 @@ export default function Home() {
             <Link href="/termini" className="hover:text-zinc-800">
               Termini e condizioni
             </Link>
-            <Link
-              href="/contratto-affitto"
-              className="hover:text-zinc-800"
-            >
+            <Link href="/contratto-affitto" className="hover:text-zinc-800">
               Contratto di affitto
             </Link>
             <Link

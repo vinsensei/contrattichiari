@@ -22,7 +22,7 @@ export default function HeaderPublic() {
             <img
               src="/logo_mobile.png"
               alt="Contratti Chiari"
-              className="h-8 w-auto shrink-0 block md:hidden"
+              className="h-9 w-auto shrink-0 block md:hidden"
             />
 
             {/* Logo Desktop */}

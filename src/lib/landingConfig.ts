@@ -22,6 +22,80 @@ export type LandingConfig = {
 };
 
 export const LANDINGS: Record<string, LandingConfig> = {
+  /*
+  "debug-contratto-affitto": {
+  slug: "debug-contratto-affitto",
+
+  seoTitle: "DEBUG – Landing completa | ContrattiChiari",
+  seoDescription:
+    "Pagina di debug per visualizzare tutti i moduli disponibili nella landing di ContrattiChiari.",
+
+  ogTitle: "DEBUG Landing ContrattiChiari",
+  ogDescription:
+    "Anteprima completa di hero, problemi, checklist, esempi, CTA e FAQ.",
+  ogImage: "/og/contratto-affitto.png",
+
+
+  h1: "Debug landing – Tutti i moduli",
+  subtitle:
+    "Questa pagina serve solo a visualizzare e rifinire tutti i componenti della landing.",
+
+  ctaLabel: "Carica un contratto (debug)",
+
+  problemBlocks: [
+    "Clausole scritte in modo ambiguo o sbilanciato",
+    "Obblighi economici non evidenti alla prima lettura",
+    "Rinnovi automatici poco chiari",
+    "Penali sproporzionate o non spiegate",
+    "Rischi che emergono solo dopo la firma",
+  ],
+
+  checks: [
+    "Durata del contratto e rinnovi",
+    "Clausole di recesso e disdetta",
+    "Penali e interessi di mora",
+    "Ripartizione di spese e costi",
+    "Deposito cauzionale",
+    "Obblighi delle parti",
+    "Riferimenti mancanti o incompleti",
+    "Clausole potenzialmente vessatorie",
+  ],
+
+  examples: [
+    "«Il contratto prevede un rinnovo automatico senza indicare chiaramente i termini di disdetta.»",
+    "«Sono presenti penali fisse anche per ritardi minimi nei pagamenti.»",
+    "«Alcune spese vengono trasferite all’utente senza essere dettagliate.»",
+  ],
+  faq: [
+    {
+      question: "Questa pagina è visibile agli utenti?",
+      answer:
+        "No. È una pagina di debug usata solo per test grafici e di layout.",
+    },
+    {
+      question: "Serve anche per mobile?",
+      answer:
+        "Sì. Serve proprio per verificare il comportamento di tutti i moduli su mobile e desktop.",
+    },
+    {
+      question: "Quando va rimossa?",
+      answer:
+        "Quando il design della landing è validato e stabile.",
+    },
+  ],
+  related: [
+    "contratto-affitto",
+    "contratto-affitto-studenti",
+    "contratto-stanza",
+  ],
+
+  relatedEditorial: [
+    "contratti/affitto",
+    "clausole/recesso",
+    "rischi/penali-sproporzionate",
+  ],
+},
+*/
   // Contratti di affitto
   "contratto-affitto": {
     slug: "contratto-affitto",

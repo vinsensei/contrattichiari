@@ -250,7 +250,9 @@ export default function AnalysisDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-sm text-slate-500">Caricamento…</p>
+        <p className="text-sm text-slate-500">
+          <img src="/loader.svg" alt="Caricamento in corso..." className="h-12 w-12 animate-bounce mx-auto mb-2" />
+        </p>
       </div>
     );
   }

@@ -1,12 +1,12 @@
 // src/lib/editorialConfig.ts
 // EditorialKind: "index" is used for editorial listing/index pages (e.g., Argomenti/Clausole/Rischi) that are not a single clause/risk/hub.
 export type EditorialKind =
-  | "index"     // pagine indice/listing (es: Argomenti/Clausole/Rischi)
-  | "hub"       // pagina indice / cluster
-  | "guida"     // guida pratica / overview
-  | "clausola"  // singola clausola
-  | "rischio";  // rischio concreto
-  
+  | "index" // pagine indice/listing (es: Argomenti/Clausole/Rischi)
+  | "hub" // pagina indice / cluster
+  | "guida" // guida pratica / overview
+  | "clausola" // singola clausola
+  | "rischio"; // rischio concreto
+
 export type EditorialPage = {
   slug: string; // es: "clausole/recesso"
   kind: EditorialKind;
@@ -55,6 +55,126 @@ export type EditorialPage = {
 };
 
 export const EDITORIAL_PAGES: EditorialPage[] = [
+
+  /*
+  {
+    slug: "debug/all-blocks",
+    kind: "clausola",
+    seo: {
+      title: "Debug UI – Tutti i blocchi editoriali | ContrattiChiari",
+      description:
+        "Pagina tecnica di anteprima per visualizzare tutti i blocchi editoriali disponibili nel template.",
+    },
+    hero: {
+      h1: "Tutti i blocchi editoriali",
+      subtitle:
+        "Questa pagina serve solo a visualizzare e rifinire tutti i componenti disponibili.",
+    },
+
+    related: {
+      editorial: [
+        "contratti/affitto",
+        "clausole/recesso",
+        "rischi/penali-sproporzionate",
+      ],
+      landings: ["contratto-affitto"],
+    },
+
+    blocks: [
+      {
+        type: "intro",
+        text: "Questo è il blocco introduttivo. Serve per dare contesto immediato, senza box, con testo continuo. È pensato per spiegazioni iniziali, definizioni o inquadramento del problema.",
+      },
+
+      {
+        type: "bullets",
+        title: "Elenco puntato (bullets)",
+        items: [
+          "Primo punto importante da evidenziare",
+          "Secondo punto critico o informativo",
+          "Terzo punto con dettaglio rilevante",
+          "Quarto punto che l’utente deve ricordare",
+        ],
+      },
+
+      {
+        type: "examples",
+        title: "Esempi concreti",
+        items: [
+          {
+            title: "Esempio 1",
+            text: "Un esempio pratico che mostra come una clausola può essere scritta in modo ambiguo.",
+          },
+          {
+            title: "Esempio 2",
+            text: "Un secondo esempio che evidenzia un rischio reale per chi firma senza controllare.",
+          },
+          {
+            title: "Esempio 3",
+            text: "Un caso tipico che porta a contenziosi o problemi successivi.",
+          },
+        ],
+      },
+      {
+        type: "checklist",
+        title: "Checklist di verifica",
+        items: [
+          "Il testo è chiaro e comprensibile?",
+          "Sono indicati tempi e modalità precise?",
+          "Ci sono penali o costi nascosti?",
+          "È specificato cosa succede in caso di problemi?",
+          "Sono citati allegati o documenti esterni?",
+        ],
+      },
+
+      {
+        type: "cta",
+        variant: "soft",
+        title: "CTA soft (non invasiva)",
+        text: "Usata quando vuoi suggerire l’azione senza forzare troppo la conversione.",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+
+      {
+        type: "cta",
+        variant: "mid",
+        title: "CTA intermedia",
+        text: "Questa CTA ha più peso visivo ed è utile a metà pagina.",
+        buttonLabel: "Carica il contratto",
+        buttonHref: "/upload",
+      },
+
+      {
+        type: "cta",
+        variant: "strong",
+        title: "CTA forte (conversione)",
+        text: "Questa è la CTA principale: va usata nei punti decisivi della pagina.",
+        buttonLabel: "Analizza ora il contratto",
+        buttonHref: "/upload",
+      },
+
+      {
+        type: "faq",
+        items: [
+          {
+            q: "Questa pagina verrà indicizzata?",
+            a: "No. È una pagina tecnica di debug. Può essere rimossa o esclusa dalla sitemap.",
+          },
+          {
+            q: "Serve anche per mobile?",
+            a: "Sì. È pensata proprio per verificare il comportamento dei blocchi su mobile e desktop.",
+          },
+          {
+            q: "Quando va eliminata?",
+            a: "Quando tutti i componenti sono validati visivamente e funzionalmente.",
+          },
+        ],
+      },
+    ],
+  },
+  */
+
   // CLUSTER AFFITTI
   {
     slug: "clausole/recesso",
@@ -2843,7 +2963,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "lavoro/guida-rapida",
     kind: "guida",
     seo: {
-      title: "Contratto di lavoro o collaborazione: guida rapida (cosa controllare)",
+      title:
+        "Contratto di lavoro o collaborazione: guida rapida (cosa controllare)",
       description:
         "Guida rapida: le 7 cose da controllare in un contratto di lavoro o collaborazione (durata, recesso, compenso, esclusiva, non concorrenza, IP, vincoli).",
     },
@@ -2862,7 +2983,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "clausole/non-concorrenza",
         "clausole/proprieta-intellettuale",
       ],
-      landings: ["contratto-lavoro", "contratto-collaborazione", "contratto-partita-iva"],
+      landings: [
+        "contratto-lavoro",
+        "contratto-collaborazione",
+        "contratto-partita-iva",
+      ],
     },
     blocks: [
       {
@@ -2897,7 +3022,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "lavoro/clausole",
     kind: "index",
     seo: {
-      title: "Clausole nei contratti di lavoro e collaborazione: elenco e spiegazioni",
+      title:
+        "Clausole nei contratti di lavoro e collaborazione: elenco e spiegazioni",
       description:
         "Indice delle clausole più importanti nei contratti di lavoro e collaborazione: durata, recesso, compenso, non concorrenza, proprietà intellettuale.",
     },
@@ -2916,7 +3042,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "clausole/non-concorrenza",
         "clausole/proprieta-intellettuale",
       ],
-      landings: ["contratto-lavoro", "contratto-collaborazione", "contratto-partita-iva"],
+      landings: [
+        "contratto-lavoro",
+        "contratto-collaborazione",
+        "contratto-partita-iva",
+      ],
     },
     blocks: [
       {
@@ -2968,7 +3098,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "lavoro/rischi",
     kind: "index",
     seo: {
-      title: "Rischi nei contratti di lavoro e collaborazione: i problemi più comuni",
+      title:
+        "Rischi nei contratti di lavoro e collaborazione: i problemi più comuni",
       description:
         "Indice dei rischi tipici nei contratti di lavoro e collaborazione: compenso non pagato, recesso unilaterale, non concorrenza eccessiva, falsa partita IVA.",
     },
@@ -2986,7 +3117,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "rischi/non-concorrenza-eccessiva",
         "rischi/falsa-partita-iva",
       ],
-      landings: ["contratto-lavoro", "contratto-collaborazione", "contratto-partita-iva"],
+      landings: [
+        "contratto-lavoro",
+        "contratto-collaborazione",
+        "contratto-partita-iva",
+      ],
     },
     blocks: [
       {
@@ -5575,14 +5710,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     ],
   },
 
-    // =========================================================
+  // =========================================================
   // CLUSTER: UTENZE / SERVIZI (energia, gas, internet, telco)
   // =========================================================
   {
     slug: "contratti/utenze-servizi",
     kind: "hub",
     seo: {
-      title: "Contratti di utenze e servizi: cosa controllare prima di attivare",
+      title:
+        "Contratti di utenze e servizi: cosa controllare prima di attivare",
       description:
         "Guida pratica a luce, gas, internet e telefonia: rinnovi, rimodulazioni, penali, addebiti extra e cosa verificare nel contratto.",
     },
@@ -5667,7 +5803,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "rischi/addebiti-extra-non-previsti",
         "rischi/rimodulazione-imprevista",
       ],
-      landings: ["contratto-luce-gas", "contratto-internet", "contratto-telefonia"],
+      landings: [
+        "contratto-luce-gas",
+        "contratto-internet",
+        "contratto-telefonia",
+      ],
     },
     blocks: [
       {
@@ -5705,13 +5845,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "utenze/clausole",
     kind: "hub",
     seo: {
-      title: "Clausole dei contratti di utenze: le più importanti da controllare",
+      title:
+        "Clausole dei contratti di utenze: le più importanti da controllare",
       description:
         "Le clausole chiave di luce, gas, internet e telefonia: rinnovo tacito, rimodulazioni, recesso, penali, addebiti SDD e conguagli.",
     },
     hero: {
       h1: "Clausole nei contratti di utenze",
-      subtitle: "Le clausole che decidono costi, uscita e sorprese in bolletta.",
+      subtitle:
+        "Le clausole che decidono costi, uscita e sorprese in bolletta.",
     },
     related: {
       editorial: [
@@ -5723,7 +5865,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "clausole/addebito-sdd-metodi-pagamento",
         "clausole/conguagli-letture-stime",
       ],
-      landings: ["contratto-luce-gas", "contratto-internet", "contratto-telefonia"],
+      landings: [
+        "contratto-luce-gas",
+        "contratto-internet",
+        "contratto-telefonia",
+      ],
     },
     blocks: [
       {
@@ -5745,7 +5891,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
       {
         type: "cta",
         variant: "mid",
-        title: "Vuoi sapere quali clausole sono davvero critiche nel tuo contratto?",
+        title:
+          "Vuoi sapere quali clausole sono davvero critiche nel tuo contratto?",
         text: "Caricalo: individuiamo subito le frasi vaghe e i punti sbilanciati.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
@@ -5757,7 +5904,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "utenze/rischi",
     kind: "hub",
     seo: {
-      title: "Rischi nei contratti di utenze: i problemi più comuni e come riconoscerli",
+      title:
+        "Rischi nei contratti di utenze: i problemi più comuni e come riconoscerli",
       description:
         "Rischi tipici in luce, gas, internet e telefonia: rinnovo tacito, rimodulazioni, penali, addebiti extra e conguagli opachi.",
     },
@@ -5774,7 +5922,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "rischi/penali-recesso-anticipato-utenze",
         "rischi/conguagli-bolletta-opachi",
       ],
-      landings: ["contratto-luce-gas", "contratto-internet", "contratto-telefonia"],
+      landings: [
+        "contratto-luce-gas",
+        "contratto-internet",
+        "contratto-telefonia",
+      ],
     },
     blocks: [
       {
@@ -5820,7 +5972,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     },
     hero: {
       h1: "Rinnovo tacito (utenze)",
-      subtitle: "Scadenze e disdetta: quando il contratto “si rinnova da solo”.",
+      subtitle:
+        "Scadenze e disdetta: quando il contratto “si rinnova da solo”.",
     },
     related: {
       editorial: [
@@ -5828,7 +5981,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "clausole/recesso-disdetta-utenze",
         "rischi/rinnovo-tacito-nascosto-utenze",
       ],
-      landings: ["contratto-luce-gas", "contratto-internet", "contratto-telefonia"],
+      landings: [
+        "contratto-luce-gas",
+        "contratto-internet",
+        "contratto-telefonia",
+      ],
     },
     blocks: [
       {
@@ -5859,7 +6016,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/recesso-disdetta-utenze",
     kind: "clausola",
     seo: {
-      title: "Recesso e disdetta nelle utenze: tempi, modalità e punti a rischio",
+      title:
+        "Recesso e disdetta nelle utenze: tempi, modalità e punti a rischio",
       description:
         "Come disdire luce, gas, internet e telefonia: tempi, canali, moduli e clausole che possono invalidare la disdetta.",
     },
@@ -5875,7 +6033,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "rischi/rinnovo-tacito-nascosto-utenze",
         "rischi/penali-recesso-anticipato-utenze",
       ],
-      landings: ["contratto-luce-gas", "contratto-internet", "contratto-telefonia"],
+      landings: [
+        "contratto-luce-gas",
+        "contratto-internet",
+        "contratto-telefonia",
+      ],
     },
     blocks: [
       {
@@ -5907,7 +6069,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/rimodulazioni-variazioni-prezzo",
     kind: "clausola",
     seo: {
-      title: "Rimodulazioni e variazioni di prezzo: cosa controllare nel contratto",
+      title:
+        "Rimodulazioni e variazioni di prezzo: cosa controllare nel contratto",
       description:
         "Come sono scritte le variazioni di prezzo (rimodulazioni) in utenze e servizi: quando possono cambiare, come avvisano e cosa vale.",
     },
@@ -5921,7 +6084,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "rischi/rimodulazione-imprevista",
         "clausole/rinnovo-tacito-utenze",
       ],
-      landings: ["contratto-luce-gas", "contratto-internet", "contratto-telefonia"],
+      landings: [
+        "contratto-luce-gas",
+        "contratto-internet",
+        "contratto-telefonia",
+      ],
     },
     blocks: [
       {
@@ -5941,7 +6108,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
       {
         type: "cta",
         variant: "soft",
-        title: "Vuoi capire se la rimodulazione è scritta in modo troppo largo?",
+        title:
+          "Vuoi capire se la rimodulazione è scritta in modo troppo largo?",
         buttonLabel: "Carica il contratto",
         buttonHref: "/upload",
       },
@@ -5952,7 +6120,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/penali-chiusura-anticipata-utenze",
     kind: "clausola",
     seo: {
-      title: "Penali e costi di chiusura anticipata: cosa controllare nelle utenze",
+      title:
+        "Penali e costi di chiusura anticipata: cosa controllare nelle utenze",
       description:
         "Guida a penali e costi di uscita anticipata in luce, gas, internet e telefonia: importi, condizioni, apparati e restituzioni.",
     },
@@ -5966,7 +6135,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "clausole/recesso-disdetta-utenze",
         "rischi/penali-recesso-anticipato-utenze",
       ],
-      landings: ["contratto-internet", "contratto-telefonia", "contratto-luce-gas"],
+      landings: [
+        "contratto-internet",
+        "contratto-telefonia",
+        "contratto-luce-gas",
+      ],
     },
     blocks: [
       {
@@ -5997,7 +6170,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/addebito-sdd-metodi-pagamento",
     kind: "clausola",
     seo: {
-      title: "Addebito SDD e metodi di pagamento: cosa controllare nel contratto",
+      title:
+        "Addebito SDD e metodi di pagamento: cosa controllare nel contratto",
       description:
         "SDD/addebito diretto, fatturazione e contestazioni: cosa dice il contratto e dove possono nascere addebiti indesiderati.",
     },
@@ -6011,7 +6185,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "rischi/addebiti-extra-non-previsti",
         "rischi/conguagli-bolletta-opachi",
       ],
-      landings: ["contratto-luce-gas", "contratto-internet", "contratto-telefonia"],
+      landings: [
+        "contratto-luce-gas",
+        "contratto-internet",
+        "contratto-telefonia",
+      ],
     },
     blocks: [
       {
@@ -6042,7 +6220,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/conguagli-letture-stime",
     kind: "clausola",
     seo: {
-      title: "Conguagli, letture e stime: cosa controllare in bolletta e contratto",
+      title:
+        "Conguagli, letture e stime: cosa controllare in bolletta e contratto",
       description:
         "Come sono gestiti conguagli, letture contatori e stime: criteri, prove e clausole che rendono i costi imprevedibili.",
     },
@@ -6087,13 +6266,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "rischi/rinnovo-tacito-nascosto-utenze",
     kind: "rischio",
     seo: {
-      title: "Rinnovo tacito nascosto: come riconoscerlo nei contratti di utenze",
+      title:
+        "Rinnovo tacito nascosto: come riconoscerlo nei contratti di utenze",
       description:
         "Scadenze poco visibili e disdetta complicata: quando il rinnovo tacito ti lega al contratto senza accorgertene.",
     },
     hero: {
       h1: "Rinnovo tacito nascosto",
-      subtitle: "Il rischio: restare dentro perché disdetta e scadenze non sono chiare.",
+      subtitle:
+        "Il rischio: restare dentro perché disdetta e scadenze non sono chiare.",
     },
     related: {
       editorial: [
@@ -6101,7 +6282,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "clausole/rinnovo-tacito-utenze",
         "clausole/recesso-disdetta-utenze",
       ],
-      landings: ["contratto-internet", "contratto-telefonia", "contratto-luce-gas"],
+      landings: [
+        "contratto-internet",
+        "contratto-telefonia",
+        "contratto-luce-gas",
+      ],
     },
     blocks: [
       {
@@ -6122,7 +6307,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "rischi/rimodulazione-imprevista",
     kind: "rischio",
     seo: {
-      title: "Rimodulazione imprevista: quando il prezzo cambia e non te ne accorgi",
+      title:
+        "Rimodulazione imprevista: quando il prezzo cambia e non te ne accorgi",
       description:
         "Rimodulazioni in internet/telefonia/energia: comunicazioni poco chiare, preavvisi vaghi e costi che aumentano nel tempo.",
     },
@@ -6136,7 +6322,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "clausole/rimodulazioni-variazioni-prezzo",
         "clausole/recesso-disdetta-utenze",
       ],
-      landings: ["contratto-internet", "contratto-telefonia", "contratto-luce-gas"],
+      landings: [
+        "contratto-internet",
+        "contratto-telefonia",
+        "contratto-luce-gas",
+      ],
     },
     blocks: [
       {
@@ -6147,14 +6337,21 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         type: "examples",
         title: "Esempi tipici",
         items: [
-          { title: "Notifica “debole”", text: "Comunicazioni in bolletta o area clienti che passano inosservate." },
-          { title: "Preavviso vago", text: "Termini non chiari su quando scatta la variazione e da quando vale." },
+          {
+            title: "Notifica “debole”",
+            text: "Comunicazioni in bolletta o area clienti che passano inosservate.",
+          },
+          {
+            title: "Preavviso vago",
+            text: "Termini non chiari su quando scatta la variazione e da quando vale.",
+          },
         ],
       },
       {
         type: "cta",
         variant: "mid",
-        title: "Vuoi capire se la rimodulazione è scritta in modo troppo ampio?",
+        title:
+          "Vuoi capire se la rimodulazione è scritta in modo troppo ampio?",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -6165,13 +6362,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "rischi/addebiti-extra-non-previsti",
     kind: "rischio",
     seo: {
-      title: "Addebiti extra non previsti: quando paghi più del prezzo pubblicizzato",
+      title:
+        "Addebiti extra non previsti: quando paghi più del prezzo pubblicizzato",
       description:
         "Costi extra in utenze e servizi: attivazioni, gestione, apparati, servizi opzionali e addebiti automatici poco trasparenti.",
     },
     hero: {
       h1: "Addebiti extra non previsti",
-      subtitle: "Quando il costo reale è “prezzo + extra” (e non te lo dicono bene).",
+      subtitle:
+        "Quando il costo reale è “prezzo + extra” (e non te lo dicono bene).",
     },
     related: {
       editorial: [
@@ -6179,7 +6378,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "clausole/addebito-sdd-metodi-pagamento",
         "clausole/penali-chiusura-anticipata-utenze",
       ],
-      landings: ["contratto-internet", "contratto-telefonia", "contratto-luce-gas"],
+      landings: [
+        "contratto-internet",
+        "contratto-telefonia",
+        "contratto-luce-gas",
+      ],
     },
     blocks: [
       {
@@ -6246,7 +6449,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "rischi/conguagli-bolletta-opachi",
     kind: "rischio",
     seo: {
-      title: "Conguagli opachi in bolletta: quando non riesci a verificare i consumi",
+      title:
+        "Conguagli opachi in bolletta: quando non riesci a verificare i consumi",
       description:
         "Conguagli difficili da capire: letture stimate, rettifiche tardive e documenti mancanti. Cosa controllare nel contratto e nelle condizioni.",
     },
@@ -6276,12 +6480,9 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     ],
   },
 
-  
-
   // =========================================================
   // EXTRA LAVORO (mancanti tipiche): riservatezza + esclusiva
   // =========================================================
-
 
   {
     slug: "clausole/esclusiva-rapporto-lavoro",
@@ -6301,7 +6502,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         "clausole/non-concorrenza",
         "rischi/non-concorrenza-eccessiva",
       ],
-      landings: ["contratto-lavoro", "contratto-collaborazione", "contratto-partita-iva"],
+      landings: [
+        "contratto-lavoro",
+        "contratto-collaborazione",
+        "contratto-partita-iva",
+      ],
     },
     blocks: [
       {

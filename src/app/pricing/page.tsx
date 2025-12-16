@@ -99,7 +99,9 @@ export default function PricingPage() {
   if (checkingUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-sm text-slate-500">Caricamento…</p>
+        <p className="text-sm text-slate-500">
+          <img src="/loader.svg" alt="Caricamento in corso..." className="h-12 w-12 animate-bounce mx-auto mb-2" />
+        </p>
       </div>
     );
   }
@@ -135,15 +137,17 @@ export default function PricingPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-8">
-        <div className="text-center max-w-xl mx-auto space-y-2 animate-fade-in-up delay-1 mt-xs-0 mt-20">
-          <h1 className="text-3xl md:text-4xl tracking-tight text-slate-900">
-            La certezza che ti serve, subito. 
+        <div className="text-center max-w-xl mx-auto space-y-1.5 sm:space-y-2 animate-fade-in-up delay-1 mt-0 md:mt-20">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl tracking-tight text-slate-900">
+           La certezza che ti serve, subito. 
           </h1>
-          <p className="text-sm text-slate-500 mb-10">
+
+          <p className="text-xs sm:text-sm text-slate-500 mb-6 sm:mb-10">
             Parti gratis, passa allo Standard
             quando ti serve analizzare più contratti.
           </p>
-        </div>
+       </div>
+        
 
         <section className="grid gap-6 md:grid-cols-3">
           {/* Piano Free */}

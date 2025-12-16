@@ -106,7 +106,9 @@ export default function AnalysesListPage() {
   if (loadingUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-sm text-slate-500">Caricamento…</p>
+        <p className="text-sm text-slate-500">
+          <img src="/loader.svg" alt="Caricamento in corso..." className="h-12 w-12 animate-bounce mx-auto mb-2" />
+        </p>
       </div>
     );
   }
@@ -183,14 +185,17 @@ export default function AnalysesListPage() {
       />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
-        <div className="text-center max-w-xl mx-auto space-y-2 animate-fade-in-up delay-1 mt-xs-0 mt-20">
-          <h1 className="text-3xl md:text-4xl tracking-tight text-slate-900">
+        <div className="text-center max-w-xl mx-auto space-y-1.5 sm:space-y-2 animate-fade-in-up delay-1 mt-0 md:mt-20">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl tracking-tight text-slate-900">
             Le mie analisi
           </h1>
-          <p className="text-sm text-slate-500 mb-10">
+
+          <p className="text-xs sm:text-sm text-slate-500 mb-6 sm:mb-10">
             Consulta lo storico dei controlli effettuati
           </p>
-        </div>
+      </div>
+        
+        
         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between  animate-fade-in-up delay-2">
           {/* search input styled */}
           <div className="relative w-full sm:max-w-xs">

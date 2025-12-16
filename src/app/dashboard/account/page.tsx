@@ -161,7 +161,9 @@ export default function AccountPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-sm text-slate-500">Caricamento…</p>
+        <p className="text-sm text-slate-500">
+          <img src="/loader.svg" alt="Caricamento in corso..." className="h-12 w-12 animate-bounce mx-auto mb-2" />
+        </p>
       </div>
     );
   }
@@ -177,13 +179,15 @@ export default function AccountPage() {
       />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
-        <div className="text-center max-w-xl mx-auto space-y-2 animate-fade-in-up delay-1 mt-xs-0 mt-20">
-        <h1 className="text-3xl md:text-4xl tracking-tight text-slate-900">
-          Il mio profilo
-        </h1>
-        <p className="text-sm text-slate-500 mb-10">
-          Gestisci l'abbonamento, modifica il profilo o cambia piano.
-        </p>
+
+        <div className="text-center max-w-xl mx-auto space-y-1.5 sm:space-y-2 animate-fade-in-up delay-1 mt-0 md:mt-20">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl tracking-tight text-slate-900">
+            Il mio profilo
+          </h1>
+
+          <p className="text-xs sm:text-sm text-slate-500 mb-6 sm:mb-10">
+            Gestisci l'abbonamento, modifica il profilo o cambia piano.
+          </p>
       </div>
 
         <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-2">
