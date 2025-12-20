@@ -37,7 +37,13 @@ export default function HeaderPublic() {
           // stato iniziale: non sappiamo ancora se è loggato, mostriamo solo uno scheletro
           <div className="h-8 w-28 rounded-full bg-zinc-200 animate-pulse" />
         ) : loggedIn ? (
-          <nav className="flex items-center gap-3 text-sm">
+          <nav className="flex items-center gap-4 text-sm">
+            <Link
+              href="/pricing"
+              className="text-xs font-medium text-zinc-700 transition hover:text-zinc-900"
+            >
+              Prezzi
+            </Link>
             <Link
               href="/dashboard"
               className="rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-medium text-zinc-50 shadow-sm transition hover:bg-zinc-800"
@@ -46,7 +52,13 @@ export default function HeaderPublic() {
             </Link>
           </nav>
         ) : (
-          <nav className="flex items-center gap-3 text-sm">
+          <nav className="flex items-center gap-4 text-sm">
+            <Link
+              href="/pricing"
+              className="text-xs font-medium text-zinc-700 transition hover:text-zinc-900"
+            >
+              Prezzi
+            </Link>
             <Link
               href="/login"
               className="rounded-full border border-zinc-300 px-4 py-1.5 text-xs font-medium text-zinc-900 transition hover:border-zinc-900 hover:bg-zinc-900 hover:text-white"

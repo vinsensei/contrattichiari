@@ -18,9 +18,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/", priority: 1.0, freq: "daily" },
     { path: "/argomenti", priority: 0.8, freq: "weekly" },
     { path: "/pricing", priority: 0.7, freq: "weekly" },
-    { path: "/login", priority: 0.5, freq: "monthly" },
-    { path: "/register", priority: 0.5, freq: "monthly" },
-    { path: "/upload", priority: 0.8, freq: "weekly" },
     { path: "/privacy", priority: 0.3, freq: "yearly" },
     { path: "/termini", priority: 0.3, freq: "yearly" },
   ];
@@ -67,6 +64,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     };
   }).filter((r) => r.url !== `${BASE_URL}/`);
 
+  
   //
   // --- RETURN COMPLETO DEDUPLICATO ---
   //

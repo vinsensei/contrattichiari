@@ -139,8 +139,10 @@ export async function generateMetadata({
     };
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://contrattichiari.it";
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://contrattichiari.it").replace(
+    /\/+$/,
+    ""
+  );
   const url = `${baseUrl}/${slugStr}`;
 
   const toAbsolute = (p?: string) => {

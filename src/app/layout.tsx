@@ -5,6 +5,7 @@ import Script from "next/script";
 import { GA4_ID } from "@/lib/gtag";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
 import CookieBanner from "@/components/CookieBanner";
+import MobilePricingCTA from "@/components/MobilePricingCTA";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,10 +17,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-
 export const metadata: Metadata = {
   title: "Contratti Chiari – Analizza i tuoi contratti in 30 secondi",
-  description: "Carica il PDF del tuo contratto e ottieni un’analisi chiara, in italiano semplice.",
+  description:
+    "Carica il PDF del tuo contratto e ottieni un’analisi chiara, in italiano semplice.",
   metadataBase: new URL("https://contrattichiari.it"),
   alternates: {
     canonical: "https://contrattichiari.it",
@@ -36,8 +37,8 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: "Contratti Chiari",
-      }
-    ]
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -54,7 +55,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it">
-       <head>
+      <head>
         {GA4_ID && (
           <>
             <Script
@@ -64,7 +65,7 @@ export default function RootLayout({
             <Script id="ga4-init" strategy="afterInteractive">
               {`
                 window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
+                function gtag(){dataLayer.push(arguments);} 
                 window.gtag = window.gtag || gtag;
                 gtag('js', new Date());
                 gtag('config', '${GA4_ID}', { send_page_view: false });
@@ -73,8 +74,9 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased pb-20 md:pb-0`}>
         {children}
+        <MobilePricingCTA />
         <CookieBanner />
         <AnalyticsProvider />
       </body>

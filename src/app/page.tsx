@@ -3,6 +3,9 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Contratti Chiari – Analisi contratti con AI",
+  alternates: {
+    canonical: "https://contrattichiari.it/",
+  },
 };
 
 export default function Home() {
@@ -221,6 +224,71 @@ export default function Home() {
                 reale: locazioni, incarichi, consulenze, servizi digitali.
               </p>
             </div>
+          </div>
+        </section>
+
+        {/* GUIDE RAPIDE */}
+        <section className="mt-12">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                Guide rapide
+              </p>
+              <h2 className="text-base font-semibold text-zinc-900">
+                Rischi e clausole più comuni (in 2 minuti)
+              </h2>
+              <p className="mt-1 max-w-2xl text-xs leading-relaxed text-zinc-600">
+                Se vuoi orientarti prima di caricare un PDF, parti da qui: esempi concreti e
+                spiegazioni in linguaggio semplice.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 text-xs sm:grid-cols-3">
+            <Link
+              href="/rischi/addebiti-extra-non-previsti"
+              className="group rounded-2xl border border-zinc-200 bg-white p-4 transition hover:border-zinc-300"
+            >
+              <p className="font-semibold text-zinc-900 group-hover:text-zinc-950">
+                Addebiti extra non previsti
+              </p>
+              <p className="mt-1 leading-relaxed text-zinc-600">
+                Costi aggiuntivi, conguagli e voci ambigue: cosa controllare e cosa chiedere di chiarire.
+              </p>
+              <p className="mt-3 text-[11px] font-medium text-zinc-500 group-hover:text-zinc-700">
+                Leggi la guida →
+              </p>
+            </Link>
+
+            <Link
+              href="/contratto-affitto"
+              className="group rounded-2xl border border-zinc-200 bg-white p-4 transition hover:border-zinc-300"
+            >
+              <p className="font-semibold text-zinc-900 group-hover:text-zinc-950">
+                Contratto di affitto
+              </p>
+              <p className="mt-1 leading-relaxed text-zinc-600">
+                Le clausole che contano davvero: recesso, deposito, penali, rinnovo e aggiornamento ISTAT.
+              </p>
+              <p className="mt-3 text-[11px] font-medium text-zinc-500 group-hover:text-zinc-700">
+                Vai alla pagina →
+              </p>
+            </Link>
+
+            <Link
+              href="/contratto-noleggio-auto-lungo-termine"
+              className="group rounded-2xl border border-zinc-200 bg-white p-4 transition hover:border-zinc-300"
+            >
+              <p className="font-semibold text-zinc-900 group-hover:text-zinc-950">
+                Noleggio auto lungo termine
+              </p>
+              <p className="mt-1 leading-relaxed text-zinc-600">
+                Attenzione a franchigie, manutenzione, penali e condizioni di restituzione del veicolo.
+              </p>
+              <p className="mt-3 text-[11px] font-medium text-zinc-500 group-hover:text-zinc-700">
+                Vai alla pagina →
+              </p>
+            </Link>
           </div>
         </section>
       </main>

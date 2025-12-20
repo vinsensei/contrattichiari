@@ -1,5 +1,6 @@
 "use client";
 
+import Head from "next/head";
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ContractUploadForm from "@/components/ContractUploadForm";
@@ -12,61 +13,67 @@ function UploadPageInner() {
   const fromSlug = searchParams.get("from");
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* HEADER comune */}
-      <HeaderPublic />
+    <>
+      <Head>
+        <meta name="robots" content="noindex,nofollow" />
+        <link rel="canonical" href="https://contrattichiari.it/" />
+      </Head>
+      <div className="min-h-screen bg-slate-50">
+        {/* HEADER comune */}
+        <HeaderPublic />
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
+        <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
         
-          {/* titolo + testo... */}
+            {/* titolo + testo... */}
 
-          <ContractUploadForm
-            bottomLeftText="Passaggio 1 di 3 · Caricamento contratto"
-            bottomRightText="Passaggio successivo: registrazione e salvataggio analisi"
-            onAnalyze={async (file) => {
-              const fd = new FormData();
-              fd.set("file", file);
-              if (fromSlug) fd.set("from", fromSlug);
+            <ContractUploadForm
+              bottomLeftText=""
+              bottomRightText=""
+              onAnalyze={async (file) => {
+                const fd = new FormData();
+                fd.set("file", file);
+                if (fromSlug) fd.set("from", fromSlug);
 
-              // GA4: evento di inizio analisi anonima
-              gaEvent("anonymous_analysis_started", {
-                from_slug: fromSlug || "(none)",
-                file_size: file.size,
-                file_type: file.type || "(unknown)",
-              });
-
-              const res = await fetch("/api/analysis/anonymous", {
-                method: "POST",
-                body: fd,
-              });
-
-              if (!res.ok) {
-                // GA4: analisi fallita
-                gaEvent("anonymous_analysis_failed", {
+                // GA4: evento di inizio analisi anonima
+                gaEvent("anonymous_analysis_started", {
                   from_slug: fromSlug || "(none)",
-                  http_status: res.status,
+                  file_size: file.size,
+                  file_type: file.type || "(unknown)",
                 });
 
-                throw new Error("Errore durante l'analisi del contratto.");
-              }
+                const res = await fetch("/api/analysis/anonymous", {
+                  method: "POST",
+                  body: fd,
+                });
 
-              const data = (await res.json()) as { analysisId: string };
+                if (!res.ok) {
+                  // GA4: analisi fallita
+                  gaEvent("anonymous_analysis_failed", {
+                    from_slug: fromSlug || "(none)",
+                    http_status: res.status,
+                  });
 
-              // GA4: analisi creata
-              gaEvent("anonymous_analysis_created", {
-                analysis_id: data.analysisId,
-                from_slug: fromSlug || "(none)",
-              });
+                  throw new Error("Errore durante l'analisi del contratto.");
+                }
 
-              const search = new URLSearchParams();
-              search.set("analysisId", data.analysisId);
-              if (fromSlug) search.set("from", fromSlug);
+                const data = (await res.json()) as { analysisId: string };
 
-              router.push(`/register?${search.toString()}`);
-            }}
-          />
-      </main>
-    </div>
+                // GA4: analisi creata
+                gaEvent("anonymous_analysis_created", {
+                  analysis_id: data.analysisId,
+                  from_slug: fromSlug || "(none)",
+                });
+
+                const search = new URLSearchParams();
+                search.set("analysisId", data.analysisId);
+                if (fromSlug) search.set("from", fromSlug);
+
+                router.push(`/register?${search.toString()}`);
+              }}
+            />
+        </main>
+      </div>
+    </>
   );
 }
 
