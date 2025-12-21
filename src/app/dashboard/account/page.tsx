@@ -6,19 +6,20 @@ import { supabaseBrowser } from "@/lib/supabaseClient";
 import HeaderPrivate from "@/components/HeaderPrivate";
 import Link from "next/link";
 
+type Plan = "free" | "standard" | "pro";
+
 export default function AccountPage() {
   const supabase = supabaseBrowser();
   const router = useRouter();
 
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [plan, setPlan] = useState<"free" | "standard" | "pro">("free");
+  const [plan, setPlan] = useState<Plan>("free");
   const [isActive, setIsActive] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [billingLoading, setBillingLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -28,37 +29,45 @@ export default function AccountPage() {
           error: userError,
         } = await supabase.auth.getUser();
 
-        if (userError) {
-          console.error("Errore nel recupero utente:", userError);
-          router.replace("/login");
-          return;
-        }
-
-        if (!user) {
+        if (userError || !user) {
           router.replace("/login");
           return;
         }
 
         setUserEmail(user.email ?? null);
-        setUserId(user.id);
 
+        // NB: prendiamo anche current_period_end per decidere "attivo" in modo robusto
         const { data: sub, error: subError } = await supabase
           .from("user_subscriptions")
-          .select("plan, is_active")
+          .select("plan, is_active, current_period_end")
           .eq("user_id", user.id)
           .maybeSingle();
 
         if (subError) {
           console.error("Errore nel recupero abbonamento:", subError);
-        }
-
-        if (sub) {
-          setPlan((sub.plan as any) ?? "free");
-          setIsActive(sub.is_active ?? false);
-        } else {
           setPlan("free");
           setIsActive(false);
+          return;
         }
+
+        if (!sub) {
+          setPlan("free");
+          setIsActive(false);
+          return;
+        }
+
+        const planVal: Plan = (sub.plan as Plan) ?? "free";
+
+        const cpeMs = sub.current_period_end
+          ? new Date(sub.current_period_end).getTime()
+          : null;
+
+        const now = Date.now();
+        const activeByDate = cpeMs ? cpeMs > now : false;
+        const active = Boolean(sub.is_active) && activeByDate;
+
+        setPlan(planVal);
+        setIsActive(active);
       } catch (e) {
         console.error("Errore imprevisto nel caricamento account:", e);
       } finally {
@@ -83,36 +92,52 @@ export default function AccountPage() {
 
   const handleOpenBillingPortal = async () => {
     setErrorMsg(null);
-
-    if (!userId) {
-      setErrorMsg("Impossibile determinare l'utente. Riprova più tardi.");
-      return;
-    }
-
     setBillingLoading(true);
 
     try {
-      console.log("[PORTAL] chiamo API con userId:", userId);
+      // ✅ passiamo il token, NON userId
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      if (!token) {
+        throw new Error("Devi essere autenticato.");
+      }
 
       const res = await fetch("/api/stripe/portal", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId }),
       });
 
       if (!res.ok) {
-        const text = await res.text();
+        let text = "";
+        try {
+          text = await res.text();
+        } catch {}
         console.error("Errore apertura portale:", text);
-        throw new Error("Impossibile aprire l’area fatturazione.");
+
+        // Se l'API restituisce JSON {error:"..."} proviamo a mostrarlo
+        try {
+          const j = JSON.parse(text);
+          throw new Error(j?.error || "Impossibile aprire l’area fatturazione.");
+        } catch {
+          throw new Error("Impossibile aprire l’area fatturazione.");
+        }
       }
 
-      const data = (await res.json()) as { url: string };
+      const data = (await res.json()) as { url?: string };
+
+      if (!data?.url) {
+        throw new Error("URL portale non valido.");
+      }
+
       window.location.href = data.url;
     } catch (err: any) {
       console.error("[PORTAL] errore lato client:", err);
-      setErrorMsg(err.message ?? "Errore apertura area fatturazione");
+      setErrorMsg(err?.message ?? "Errore apertura area fatturazione");
+    } finally {
       setBillingLoading(false);
     }
   };
@@ -120,8 +145,11 @@ export default function AccountPage() {
   const handleDeleteAccount = async () => {
     setErrorMsg(null);
 
-    if (!userId) {
-      setErrorMsg("Impossibile determinare l'utente. Riprova più tardi.");
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+
+    if (!token) {
+      setErrorMsg("Devi essere autenticato.");
       return;
     }
 
@@ -137,8 +165,8 @@ export default function AccountPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId }),
       });
 
       if (!res.ok) {
@@ -147,13 +175,11 @@ export default function AccountPage() {
         throw new Error("Errore durante l’eliminazione dell’account.");
       }
 
-      // utente eliminato lato Supabase → porta alla home
       window.location.href = "/";
     } catch (err: any) {
       console.error("[ACCOUNT DELETE] errore lato client:", err);
-      setErrorMsg(
-        err.message ?? "Errore durante l’eliminazione dell’account."
-      );
+      setErrorMsg(err?.message ?? "Errore durante l’eliminazione dell’account.");
+    } finally {
       setDeleting(false);
     }
   };
@@ -162,7 +188,11 @@ export default function AccountPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <p className="text-sm text-slate-500">
-          <img src="/loader.svg" alt="Caricamento in corso..." className="h-12 w-12 animate-bounce mx-auto mb-2" />
+          <img
+            src="/loader.svg"
+            alt="Caricamento in corso..."
+            className="h-12 w-12 animate-bounce mx-auto mb-2"
+          />
         </p>
       </div>
     );
@@ -179,16 +209,15 @@ export default function AccountPage() {
       />
 
       <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
-
         <div className="text-center max-w-xl mx-auto space-y-1.5 sm:space-y-2 animate-fade-in-up delay-1 mt-0 md:mt-20">
           <h1 className="text-2xl sm:text-3xl md:text-4xl tracking-tight text-slate-900">
             Il mio profilo
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-500 mb-6 sm:mb-10">
-            Gestisci l'abbonamento, modifica il profilo o cambia piano.
+            Gestisci l&apos;abbonamento, modifica il profilo o cambia piano.
           </p>
-      </div>
+        </div>
 
         <section className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 space-y-2">
           <h2 className="text-sm font-semibold text-slate-900">Dati account</h2>
@@ -211,6 +240,7 @@ export default function AccountPage() {
             Gestisci il tuo abbonamento, aggiorna il metodo di pagamento e
             scarica le fatture dal portale Stripe.
           </p>
+
           <div className="flex flex-wrap gap-3 pt-1">
             <button
               type="button"
@@ -222,6 +252,7 @@ export default function AccountPage() {
                 ? "Apertura area fatturazione…"
                 : "Apri area fatturazione"}
             </button>
+
             <Link
               href="/pricing"
               className="rounded-full border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"

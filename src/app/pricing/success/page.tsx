@@ -1,164 +1,139 @@
-import Stripe from "stripe";
-import { supabaseAdmin } from "@/lib/supabaseClient";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabaseBrowser } from "@/lib/supabaseClient";
 
-type SuccessPageProps = {
-  searchParams: Promise<{
-    session_id?: string;
-  }>;
-};
+export default function PricingPage() {
+  const supabase = supabaseBrowser();
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: "2024-06-20",
-} as any);
+  // 1) loadingCheckout as plan-specific string or null
+  const [loadingCheckout, setLoadingCheckout] = useState<
+    "standard" | "pro" | null
+  >(null);
 
-export default async function PricingSuccessPage({
-  searchParams,
-}: SuccessPageProps) {
-  // 👇 NUOVO: unwrap della Promise
-  const params = await searchParams;
-  const sessionId = params.session_id;
+  const [plan, setPlan] = useState<"free" | "standard" | "pro">("free");
+  const [isActive, setIsActive] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  if (!sessionId) {
-    return (
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4 text-center">
-          <h1 className="text-lg font-semibold text-slate-900">
-            Nessuna sessione di pagamento trovata
-          </h1>
-          <p className="text-sm text-slate-600">
-            Non abbiamo trovato i dettagli del pagamento. Se hai completato il
-            checkout, prova ad accedere alla dashboard per verificare il tuo
-            piano.
-          </p>
-          <div className="flex justify-center gap-3 pt-2">
-            <Link
-              href="/dashboard"
-              className="rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800"
-            >
-              Vai alla dashboard
-            </Link>
-            <Link
-              href="/pricing"
-              className="rounded-full border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
-            >
-              Torna ai piani
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  let plan: "standard" | "pro" | "free" = "free";
-  let updateOk = false;
-
-  try {
-    // 1) Recupera la sessione Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-    const metadata = session.metadata || {};
-    const userId = metadata.userId;
-    const planMeta = (metadata.plan as "standard" | "pro") || "standard";
-
-    plan = planMeta;
-
-    if (!userId) {
-      console.error("[SUCCESS] Nessun userId in session.metadata", {
-        sessionId,
-        metadata,
-      });
-    } else {
-      // 2) customerId da session.customer
-      const customerId =
-        typeof session.customer === "string"
-          ? session.customer
-          : session.customer?.id;
-
-      // 3) current_period_end dalla subscription, se c'è
-      let currentPeriodEnd: string | null = null;
-      const subscriptionId = session.subscription;
-
-      if (typeof subscriptionId === "string") {
-        try {
-          const subscription = await stripe.subscriptions.retrieve(
-            subscriptionId
-          );
-
-          // TS non vede current_period_end sul tipo, lo leggiamo via any
-          const cpe = (subscription as any)
-            .current_period_end as number | undefined;
-
-          if (cpe) {
-            currentPeriodEnd = new Date(cpe * 1000).toISOString();
-          }
-        } catch (err) {
-          console.error("[SUCCESS] Errore nel recupero subscription:", err);
-        }
-      }
-
-      // 4) Upsert su user_subscriptions, includendo stripe_customer_id
-      const supabase = supabaseAdmin();
-      const { error } = await supabase.from("user_subscriptions").upsert(
-        {
-          user_id: userId,
-          plan: planMeta,
-          is_active: true,
-          current_period_end: currentPeriodEnd,
-          stripe_customer_id: customerId ?? null,
-        },
-        { onConflict: "user_id" }
-      );
+  useEffect(() => {
+    async function loadSubscription() {
+      const { data, error } = await supabase
+        .from("user_subscriptions")
+        .select("plan, is_active, current_period_end")
+        .single();
 
       if (error) {
-        console.error("[SUCCESS] Errore upsert user_subscriptions:", error);
+        setPlan("free");
+        setIsActive(false);
+        return;
+      }
+
+      const sub = data;
+
+      if (sub) {
+        const planVal = (sub.plan as any) ?? "free";
+
+        // is_active può essere stale (es. dopo cancellazione o scadenza).
+        // Usiamo anche current_period_end per decidere se è davvero attivo.
+        const cpe = sub.current_period_end
+          ? new Date(sub.current_period_end).getTime()
+          : null;
+        const now = Date.now();
+        const activeByDate = cpe ? cpe > now : false;
+        const active = Boolean(sub.is_active) && activeByDate;
+
+        setPlan(planVal);
+        setIsActive(active);
       } else {
-        updateOk = true;
+        setPlan("free");
+        setIsActive(false);
       }
     }
-  } catch (err) {
-    console.error("[SUCCESS] Errore nel recupero sessione Stripe:", err);
+
+    loadSubscription();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function startCheckout(selectedPlan: "standard" | "pro") {
+    setErrorMsg(null);
+    setLoadingCheckout(selectedPlan);
+
+    try {
+      const res = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: selectedPlan }),
+      });
+
+      if (!res.ok) {
+        setErrorMsg("Errore nella richiesta di checkout.");
+        setLoadingCheckout(null);
+        return;
+      }
+
+      const data = await res.json();
+
+      // Se l'API decide che hai già un abbonamento attivo, può rispondere con un URL di gestione (Customer Portal)
+      // invece che con una Checkout Session.
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        setErrorMsg("Risposta di Stripe non valida.");
+        setLoadingCheckout(null);
+      }
+    } catch (err) {
+      setErrorMsg("Errore durante il checkout.");
+      setLoadingCheckout(null);
+    }
   }
 
-  return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4 text-center">
-        <h1 className="text-lg font-semibold text-slate-900">
-          {updateOk
-            ? "Abbonamento attivato con successo"
-            : "Pagamento completato"}
-        </h1>
-        <p className="text-sm text-slate-600">
-          {updateOk
-            ? "Il tuo piano è stato aggiornato. Puoi ora usare Contratti Chiari senza limiti, secondo il piano scelto."
-            : "Abbiamo ricevuto il pagamento. Se il tuo piano non risulta ancora aggiornato, potrebbe volerci qualche istante."}
-        </p>
-        <p className="text-xs text-slate-500">
-          Piano:{" "}
-          <span className="font-medium">
-            {plan === "standard"
-              ? "Standard"
-              : plan === "pro"
-              ? "Pro"
-              : "Free"}
-          </span>
-        </p>
+  const standardIsActive = isActive && plan === "standard";
+  const proIsActive = isActive && plan === "pro";
 
-        <div className="flex justify-center gap-3 pt-2">
-          <Link
-            href="/dashboard"
-            className="rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800"
+  const hasAnyActive = isActive && (plan === "standard" || plan === "pro");
+  const isOnOtherPlan = (p: "standard" | "pro") => hasAnyActive && plan !== p;
+
+  return (
+    <main className="min-h-screen bg-white flex flex-col items-center justify-center p-8 space-y-6">
+      <h1 className="text-3xl font-bold">Scegli il tuo piano</h1>
+
+      <div className="flex gap-6">
+        <div className="border p-6 rounded-lg shadow-sm w-64">
+          <h2 className="text-xl font-semibold mb-2">Standard</h2>
+          <p className="mb-4">Ideale per uso personale.</p>
+          <button
+            disabled={loadingCheckout !== null}
+            className="w-full rounded bg-blue-600 text-white py-2 disabled:opacity-50"
+            onClick={() => startCheckout("standard")}
           >
-            Vai alla dashboard
-          </Link>
-          <Link
-            href="/dashboard/account"
-            className="rounded-full border border-slate-300 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
+            {loadingCheckout === "standard"
+              ? "Reindirizzamento…"
+              : isOnOtherPlan("standard")
+              ? "Gestisci / cambia piano"
+              : "Attiva Standard"}
+          </button>
+          {standardIsActive && (
+            <p className="mt-2 text-green-600">Piano attivo</p>
+          )}
+        </div>
+
+        <div className="border p-6 rounded-lg shadow-sm w-64">
+          <h2 className="text-xl font-semibold mb-2">Pro</h2>
+          <p className="mb-4">Per professionisti e aziende.</p>
+          <button
+            disabled={loadingCheckout !== null}
+            className="w-full rounded bg-green-600 text-white py-2 disabled:opacity-50"
+            onClick={() => startCheckout("pro")}
           >
-            Gestisci account
-          </Link>
+            {loadingCheckout === "pro"
+              ? "Reindirizzamento…"
+              : isOnOtherPlan("pro")
+              ? "Gestisci / cambia piano"
+              : "Attiva Pro"}
+          </button>
+          {proIsActive && <p className="mt-2 text-green-600">Piano attivo</p>}
         </div>
       </div>
+
+      {errorMsg && <p className="text-red-600 mt-4">{errorMsg}</p>}
     </main>
   );
 }

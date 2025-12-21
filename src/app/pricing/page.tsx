@@ -13,7 +13,7 @@ export default function PricingPage() {
 
   const [checkingUser, setCheckingUser] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [loadingCheckout, setLoadingCheckout] = useState(false);
+  const [loadingCheckout, setLoadingCheckout] = useState<"standard" | "pro" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [plan, setPlan] = useState<"free" | "standard" | "pro">("free");
@@ -33,7 +33,7 @@ export default function PricingPage() {
         if (data.user) {
           const { data: sub, error: subError } = await supabase
             .from("user_subscriptions")
-            .select("plan, is_active")
+            .select("plan, is_active, current_period_end")
             .eq("user_id", data.user.id)
             .maybeSingle();
 
@@ -42,8 +42,19 @@ export default function PricingPage() {
           }
 
           if (sub) {
-            setPlan((sub.plan as any) ?? "free");
-            setIsActive(sub.is_active ?? false);
+            const planVal = (sub.plan as any) ?? "free";
+
+            // is_active può essere stale (es. dopo cancellazione o scadenza).
+            // Usiamo anche current_period_end per decidere se è davvero attivo.
+            const cpe = sub.current_period_end
+              ? new Date(sub.current_period_end).getTime()
+              : null;
+            const now = Date.now();
+            const activeByDate = cpe ? cpe > now : false;
+            const active = Boolean(sub.is_active) && activeByDate;
+
+            setPlan(planVal);
+            setIsActive(active);
           } else {
             setPlan("free");
             setIsActive(false);
@@ -64,7 +75,7 @@ export default function PricingPage() {
   const startCheckout = async (selectedPlan: "standard" | "pro") => {
     if (!userId) return;
     setErrorMsg(null);
-    setLoadingCheckout(true);
+    setLoadingCheckout(selectedPlan);
 
     // GA4: evento di inizio checkout
     gaEvent("subscription_started", {
@@ -79,22 +90,18 @@ export default function PricingPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        setErrorMsg(data.error || "Impossibile avviare il checkout.");
-        setLoadingCheckout(false);
-        return;
-      }
-
-      if (data.url) {
-        window.location.href = data.url; // redirect a Stripe
+      // Se l'API decide che hai già un abbonamento attivo, può rispondere con un URL di gestione (Customer Portal)
+      // invece che con una Checkout Session.
+      if (data?.url) {
+        window.location.href = data.url;
       } else {
         setErrorMsg("Risposta di Stripe non valida.");
-        setLoadingCheckout(false);
+        setLoadingCheckout(null);
       }
     } catch (err) {
       console.error(err);
       setErrorMsg("Errore imprevisto durante il checkout.");
-      setLoadingCheckout(false);
+      setLoadingCheckout(null);
     }
   };
 
@@ -110,6 +117,9 @@ export default function PricingPage() {
 
   const standardIsActive = isActive && plan === "standard";
   const proIsActive = isActive && plan === "pro";
+
+  const hasAnyActive = isActive && (plan === "standard" || plan === "pro");
+  const isOnOtherPlan = (p: "standard" | "pro") => hasAnyActive && plan !== p;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -192,10 +202,10 @@ export default function PricingPage() {
                   }
                   startCheckout("standard");
                 }}
-                disabled={loadingCheckout}
+                disabled={loadingCheckout !== null}
                 className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 disabled:opacity-60"
               >
-                {loadingCheckout ? "Reindirizzamento…" : "Attiva Standard"}
+                {loadingCheckout === "standard" ? "Reindirizzamento…" : isOnOtherPlan("standard") ? "Gestisci / cambia piano" : "Attiva Standard"}
               </button>
             )}
           </div>
@@ -240,10 +250,10 @@ export default function PricingPage() {
                   }
                   startCheckout("pro");
                 }}
-                disabled={loadingCheckout}
+                disabled={loadingCheckout !== null}
                 className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-60"
               >
-                {loadingCheckout ? "Reindirizzamento…" : "Attiva Pro"}
+                {loadingCheckout === "pro" ? "Reindirizzamento…" : isOnOtherPlan("pro") ? "Gestisci / cambia piano" : "Attiva Pro"}
               </button>
             )}
           </div>

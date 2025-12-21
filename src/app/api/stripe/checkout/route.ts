@@ -59,61 +59,106 @@ export async function POST(req: Request) {
     const appUrl = getAppUrl(req);
     const successUrl = `${appUrl}/pricing/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${appUrl}/pricing`;
+    const portalReturnUrl = `${appUrl}/pricing`;
 
-    // 1) Proviamo a recuperare uno stripe_customer_id già noto (così evitiamo clienti duplicati)
+    // 1) Lookup subscription state (per evitare checkout se già attivo)
     let stripeCustomerId: string | null = null;
+    let stripeSubscriptionId: string | null = null;
+    let isActive = false;
+
     try {
       const { data, error } = await supabaseAdmin
         .from("user_subscriptions")
-        .select("stripe_customer_id")
+        .select(
+          "plan,stripe_customer_id,stripe_subscription_id,is_active,current_period_end"
+        )
         .eq("user_id", userId)
         .maybeSingle();
 
       if (error) {
-        console.warn("Stripe checkout: cannot lookup stripe_customer_id", error);
+        console.warn("Stripe checkout: cannot lookup user_subscriptions", error);
       } else {
         stripeCustomerId = (data?.stripe_customer_id as string | null) ?? null;
+        stripeSubscriptionId =
+          (data?.stripe_subscription_id as string | null) ?? null;
+        const now = new Date();
+        const periodEnd = (data as any)?.current_period_end
+          ? new Date((data as any).current_period_end)
+          : null;
+
+        // ✅ consideriamo attiva anche se i webhook arrivano in ritardo,
+        // usando current_period_end come fallback.
+        isActive =
+          Boolean((data as any)?.is_active) || (periodEnd ? periodEnd > now : false);
       }
     } catch (e) {
-      console.warn("Stripe checkout: lookup stripe_customer_id unexpected error", e);
+      console.warn(
+        "Stripe checkout: lookup user_subscriptions unexpected error",
+        e
+      );
     }
 
-    // 2) Creiamo la Checkout Session.
-    // IMPORTANTISSIMO: mettiamo metadata anche su subscription_data.metadata,
-    // così i webhook customer.subscription.* possono leggerla sempre.
+    // 2) Se l'utente ha già una subscription attiva → Billing Portal (gestione upgrade/downgrade/cancel)
+    if (isActive) {
+      // Se non ho il customerId, provo a ricavarlo dalla subscription
+      if (!stripeCustomerId && stripeSubscriptionId) {
+        try {
+          const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+          const cust =
+            typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+
+          if (cust) {
+            stripeCustomerId = cust;
+
+            // best-effort: salviamo il customerId per i prossimi giri
+            await supabaseAdmin
+              .from("user_subscriptions")
+              .update({ stripe_customer_id: cust })
+              .eq("user_id", userId);
+          }
+        } catch (e) {
+          console.warn("Stripe portal: cannot retrieve subscription/customer", e);
+        }
+      }
+
+      if (!stripeCustomerId) {
+        return NextResponse.json(
+          {
+            error:
+              "Active subscription found but missing stripe_customer_id. Cannot open billing portal.",
+          },
+          { status: 500 }
+        );
+      }
+
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: stripeCustomerId,
+        return_url: portalReturnUrl,
+      });
+
+      return NextResponse.json({ url: portalSession.url, mode: "portal" });
+    }
+
+    // 3) Nessuna subscription attiva → Checkout Session (create subscription)
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       client_reference_id: userId,
 
-      // Optional: se abbiamo già un customer, lo riutilizziamo
       ...(stripeCustomerId ? { customer: stripeCustomerId } : {}),
 
-      // Fallback metadata sul checkout session
-      metadata: {
-        userId,
-        plan,
-      },
+      metadata: { userId, plan },
 
-      // Metadata sulla subscription (più affidabile per i webhook)
       subscription_data: {
-        metadata: {
-          userId,
-          plan,
-        },
+        metadata: { userId, plan },
       },
 
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: priceId, quantity: 1 }],
 
       success_url: successUrl,
       cancel_url: cancelUrl,
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url, mode: "checkout" });
   } catch (err) {
     console.error("Stripe checkout error:", err);
     return NextResponse.json(
