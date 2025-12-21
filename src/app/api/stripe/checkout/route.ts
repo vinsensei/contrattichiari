@@ -1,11 +1,11 @@
+// src/app/api/stripe/checkout/route.ts
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
-// Stripe uses the API version configured in your Stripe dashboard / key.
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-// Service-role Supabase client (server-only). Used only to lookup/store stripe_customer_id.
+// Service-role Supabase client (server-only)
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -27,29 +27,37 @@ function priceIdForPlan(plan: Plan) {
 
 export async function POST(req: Request) {
   try {
-    const { plan, userId } = (await req.json()) as {
-      plan?: string;
-      userId?: string;
-    };
-
-    if (!plan || !userId) {
-      return NextResponse.json(
-        { error: "Missing plan or userId" },
-        { status: 400 }
-      );
+    // ✅ AUTH: token -> userId (mai dal client)
+    const authHeader = req.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    if (!token) {
+      return NextResponse.json({ error: "Missing auth token" }, { status: 401 });
     }
 
-    // Supportiamo standard + pro (free non passa da checkout)
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("[CHECKOUT] auth error:", authError);
+      return NextResponse.json({ error: "Utente non autenticato" }, { status: 401 });
+    }
+
+    const userId = user.id;
+
+    const { plan } = (await req.json()) as { plan?: string };
+    if (!plan) {
+      return NextResponse.json({ error: "Missing plan" }, { status: 400 });
+    }
+
     if (plan !== "standard" && plan !== "pro") {
-      return NextResponse.json(
-        { error: "Unsupported plan" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Unsupported plan" }, { status: 400 });
     }
 
     const priceId = priceIdForPlan(plan);
     if (!priceId) {
-      console.error("Stripe checkout error: missing price ID for plan", plan);
+      console.error("[CHECKOUT] missing price ID for plan", plan);
       return NextResponse.json(
         { error: "Server misconfigured: missing Stripe price ID" },
         { status: 500 }
@@ -61,72 +69,54 @@ export async function POST(req: Request) {
     const cancelUrl = `${appUrl}/pricing`;
     const portalReturnUrl = `${appUrl}/pricing`;
 
-    // 1) Lookup subscription state (per evitare checkout se già attivo)
+    // 1) Lookup subscription state
     let stripeCustomerId: string | null = null;
     let stripeSubscriptionId: string | null = null;
     let isActive = false;
 
-    try {
-      const { data, error } = await supabaseAdmin
-        .from("user_subscriptions")
-        .select(
-          "plan,stripe_customer_id,stripe_subscription_id,is_active,current_period_end"
-        )
-        .eq("user_id", userId)
-        .maybeSingle();
+    const { data } = await supabaseAdmin
+      .from("user_subscriptions")
+      .select("stripe_customer_id,stripe_subscription_id,is_active,current_period_end,plan")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-      if (error) {
-        console.warn("Stripe checkout: cannot lookup user_subscriptions", error);
-      } else {
-        stripeCustomerId = (data?.stripe_customer_id as string | null) ?? null;
-        stripeSubscriptionId =
-          (data?.stripe_subscription_id as string | null) ?? null;
-        const now = new Date();
-        const periodEnd = (data as any)?.current_period_end
-          ? new Date((data as any).current_period_end)
-          : null;
+    if (data) {
+      stripeCustomerId = (data.stripe_customer_id as string | null) ?? null;
+      stripeSubscriptionId = (data.stripe_subscription_id as string | null) ?? null;
 
-        // ✅ consideriamo attiva anche se i webhook arrivano in ritardo,
-        // usando current_period_end come fallback.
-        isActive =
-          Boolean((data as any)?.is_active) || (periodEnd ? periodEnd > now : false);
-      }
-    } catch (e) {
-      console.warn(
-        "Stripe checkout: lookup user_subscriptions unexpected error",
-        e
-      );
+      const now = Date.now();
+      const cpeMs = data.current_period_end
+        ? new Date(data.current_period_end as any).getTime()
+        : null;
+
+      // ✅ robusto: consideriamo attiva anche se `is_active` è stale,
+      // usando `current_period_end` come fallback (webhook può arrivare in ritardo)
+      const activeByDate = Boolean(cpeMs && cpeMs > now);
+      isActive = Boolean(data.is_active) || activeByDate;
     }
 
-    // 2) Se l'utente ha già una subscription attiva → Billing Portal (gestione upgrade/downgrade/cancel)
+    // 2) Se attivo -> portal
     if (isActive) {
-      // Se non ho il customerId, provo a ricavarlo dalla subscription
       if (!stripeCustomerId && stripeSubscriptionId) {
         try {
           const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
-          const cust =
-            typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+          const cust = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
 
           if (cust) {
             stripeCustomerId = cust;
-
-            // best-effort: salviamo il customerId per i prossimi giri
             await supabaseAdmin
               .from("user_subscriptions")
               .update({ stripe_customer_id: cust })
               .eq("user_id", userId);
           }
         } catch (e) {
-          console.warn("Stripe portal: cannot retrieve subscription/customer", e);
+          console.warn("[CHECKOUT] cannot retrieve subscription/customer", e);
         }
       }
 
       if (!stripeCustomerId) {
         return NextResponse.json(
-          {
-            error:
-              "Active subscription found but missing stripe_customer_id. Cannot open billing portal.",
-          },
+          { error: "Active subscription but missing stripe_customer_id" },
           { status: 500 }
         );
       }
@@ -139,31 +129,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ url: portalSession.url, mode: "portal" });
     }
 
-    // 3) Nessuna subscription attiva → Checkout Session (create subscription)
+    // 3) Nessuna subscription attiva -> checkout
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       client_reference_id: userId,
-
       ...(stripeCustomerId ? { customer: stripeCustomerId } : {}),
-
       metadata: { userId, plan },
-
-      subscription_data: {
-        metadata: { userId, plan },
-      },
-
+      subscription_data: { metadata: { userId, plan } },
       line_items: [{ price: priceId, quantity: 1 }],
-
       success_url: successUrl,
       cancel_url: cancelUrl,
     });
 
     return NextResponse.json({ url: session.url, mode: "checkout" });
   } catch (err) {
-    console.error("Stripe checkout error:", err);
-    return NextResponse.json(
-      { error: "Stripe checkout failure" },
-      { status: 500 }
-    );
+    console.error("[CHECKOUT] Stripe checkout error:", err);
+    return NextResponse.json({ error: "Stripe checkout failure" }, { status: 500 });
   }
 }

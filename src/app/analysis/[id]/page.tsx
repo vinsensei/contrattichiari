@@ -183,23 +183,31 @@ export default function AnalysisDetailPage() {
           return;
         }
 
-        // 2) recupero abbonamento utente
         // 2) recupero abbonamento utente (tier: free | standard | pro)
         let tier: PlanTier = "free";
+
         try {
-          const { data: subscription, error: subError } = await supabase
+          const { data: sub, error: subError } = await supabase
             .from("user_subscriptions")
-            .select("plan, is_active")
+            .select("plan, is_active, current_period_end")
             .eq("user_id", user.id)
             .maybeSingle();
 
           if (subError) {
             console.error("Errore nel recupero abbonamento:", subError);
-          } else if (subscription?.is_active && subscription.plan) {
-            // normalizziamo il valore letto da DB
-            if (subscription.plan === "pro") tier = "pro";
-            else if (subscription.plan === "standard") tier = "standard";
-            else tier = "free";
+          } else if (sub) {
+            const cpeMs = sub.current_period_end
+              ? new Date(sub.current_period_end).getTime()
+              : null;
+
+            const isActive =
+              Boolean(sub.is_active) || Boolean(cpeMs && cpeMs > Date.now());
+
+            if (isActive && sub.plan) {
+              if (sub.plan === "pro") tier = "pro";
+              else if (sub.plan === "standard") tier = "standard";
+              else tier = "free";
+            }
           }
         } catch (subErr) {
           console.error("Errore imprevisto nel recupero abbonamento:", subErr);
@@ -425,7 +433,8 @@ export default function AnalysisDetailPage() {
           isPro
             ? async () => {
                 try {
-                  const { data: sessionData } = await supabase.auth.getSession();
+                  const { data: sessionData } =
+                    await supabase.auth.getSession();
                   const token = sessionData.session?.access_token;
                   if (!token) return alert("Devi essere autenticato.");
 
@@ -603,7 +612,7 @@ export default function AnalysisDetailPage() {
           Avvisi importanti da considerare prima della firma.
         */}
         <SectionFinalAlerts show={showFull} items={a.alert_finali} />
-        
+
         {/* 
           CALL TO ACTION DI UPGRADE
           Invito all’abbonamento quando l’utente

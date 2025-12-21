@@ -18,6 +18,38 @@ function getAppUrl(req: Request) {
   return envAppUrl && envAppUrl.startsWith("http") ? envAppUrl : requestOrigin;
 }
 
+function isStripeModeMismatchError(err: any): boolean {
+  const msg = String(err?.message ?? "");
+  return (
+    msg.includes("a similar object exists in live mode") ||
+    msg.includes("a similar object exists in test mode")
+  );
+}
+
+async function safeRetrieveCustomerIdFromSubscription(subscriptionId: string) {
+  try {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const c = subscription.customer;
+    return typeof c === "string" ? c : c?.id ?? null;
+  } catch (e: any) {
+    if (isStripeModeMismatchError(e)) return null;
+    throw e;
+  }
+}
+
+async function safeValidateCustomerId(customerId: string) {
+  try {
+    const c = await stripe.customers.retrieve(customerId);
+    // If Stripe returns a deleted customer object, treat it as invalid.
+    // Stripe types: Customer | DeletedCustomer
+    if ((c as any)?.deleted) return null;
+    return (c as any)?.id ?? null;
+  } catch (e: any) {
+    if (isStripeModeMismatchError(e)) return null;
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     /* ------------------------------------------------------------------
@@ -59,14 +91,19 @@ export async function POST(req: Request) {
     const subscriptionId: string | null =
       (sub?.stripe_subscription_id as string | null) ?? null;
 
+    // Se in DB abbiamo un customerId ma non esiste (o è in modalità diversa), lo invalidiamo
+    if (customerId) {
+      const ok = await safeValidateCustomerId(customerId);
+      if (!ok) customerId = null;
+    }
+
     /* ------------------------------------------------------------------
        3) Metodo più affidabile: se ho subscriptionId → ricavo customer da Stripe
+          (con fallback sicuro se c'è mismatch test/live)
     ------------------------------------------------------------------ */
     if (!customerId && subscriptionId) {
       try {
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const c = subscription.customer;
-        customerId = typeof c === "string" ? c : c?.id ?? null;
+        customerId = await safeRetrieveCustomerIdFromSubscription(subscriptionId);
       } catch (e) {
         console.warn("[PORTAL] cannot retrieve subscription:", subscriptionId, e);
       }
@@ -94,6 +131,8 @@ export async function POST(req: Request) {
       }
 
       customerId = customer.id;
+      // Nota: se arriviamo qui è molto probabile che i dati in DB siano stale (es. test/live mismatch).
+      // Aggiorniamo in modo best-effort nel passo successivo con upsert.
     }
 
     /* ------------------------------------------------------------------
@@ -106,6 +145,9 @@ export async function POST(req: Request) {
           {
             user_id: userId,
             stripe_customer_id: customerId,
+            // Se abbiamo dovuto ricostruire il customerId senza poter validare la subscription,
+            // meglio azzerare la subscription_id per evitare future retrieve su id non valido.
+            stripe_subscription_id: subscriptionId ?? null,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id" }
@@ -121,8 +163,15 @@ export async function POST(req: Request) {
     ------------------------------------------------------------------ */
     const appUrl = getAppUrl(req);
 
+    if (!customerId) {
+      return NextResponse.json(
+        { error: "Nessun cliente Stripe disponibile per aprire il portale" },
+        { status: 400 }
+      );
+    }
+
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customerId!,
+      customer: customerId,
       return_url: `${appUrl}/dashboard/account`,
     });
 

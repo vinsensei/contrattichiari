@@ -2566,14 +2566,14 @@ export async function POST(req: Request) {
 ### src/app/api/stripe/checkout/route.ts
 
 ```
+// src/app/api/stripe/checkout/route.ts
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
-// Stripe uses the API version configured in your Stripe dashboard / key.
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-// Service-role Supabase client (server-only). Used only to lookup/store stripe_customer_id.
+// Service-role Supabase client (server-only)
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -2595,29 +2595,37 @@ function priceIdForPlan(plan: Plan) {
 
 export async function POST(req: Request) {
   try {
-    const { plan, userId } = (await req.json()) as {
-      plan?: string;
-      userId?: string;
-    };
-
-    if (!plan || !userId) {
-      return NextResponse.json(
-        { error: "Missing plan or userId" },
-        { status: 400 }
-      );
+    // ✅ AUTH: token -> userId (mai dal client)
+    const authHeader = req.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
+    if (!token) {
+      return NextResponse.json({ error: "Missing auth token" }, { status: 401 });
     }
 
-    // Supportiamo standard + pro (free non passa da checkout)
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("[CHECKOUT] auth error:", authError);
+      return NextResponse.json({ error: "Utente non autenticato" }, { status: 401 });
+    }
+
+    const userId = user.id;
+
+    const { plan } = (await req.json()) as { plan?: string };
+    if (!plan) {
+      return NextResponse.json({ error: "Missing plan" }, { status: 400 });
+    }
+
     if (plan !== "standard" && plan !== "pro") {
-      return NextResponse.json(
-        { error: "Unsupported plan" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Unsupported plan" }, { status: 400 });
     }
 
     const priceId = priceIdForPlan(plan);
     if (!priceId) {
-      console.error("Stripe checkout error: missing price ID for plan", plan);
+      console.error("[CHECKOUT] missing price ID for plan", plan);
       return NextResponse.json(
         { error: "Server misconfigured: missing Stripe price ID" },
         { status: 500 }
@@ -2629,72 +2637,53 @@ export async function POST(req: Request) {
     const cancelUrl = `${appUrl}/pricing`;
     const portalReturnUrl = `${appUrl}/pricing`;
 
-    // 1) Lookup subscription state (per evitare checkout se già attivo)
+    // 1) Lookup subscription state
     let stripeCustomerId: string | null = null;
     let stripeSubscriptionId: string | null = null;
     let isActive = false;
 
-    try {
-      const { data, error } = await supabaseAdmin
-        .from("user_subscriptions")
-        .select(
-          "plan,stripe_customer_id,stripe_subscription_id,is_active,current_period_end"
-        )
-        .eq("user_id", userId)
-        .maybeSingle();
+    const { data } = await supabaseAdmin
+      .from("user_subscriptions")
+      .select("stripe_customer_id,stripe_subscription_id,is_active,current_period_end,plan")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-      if (error) {
-        console.warn("Stripe checkout: cannot lookup user_subscriptions", error);
-      } else {
-        stripeCustomerId = (data?.stripe_customer_id as string | null) ?? null;
-        stripeSubscriptionId =
-          (data?.stripe_subscription_id as string | null) ?? null;
-        const now = new Date();
-        const periodEnd = (data as any)?.current_period_end
-          ? new Date((data as any).current_period_end)
-          : null;
+    if (data) {
+      stripeCustomerId = (data.stripe_customer_id as string | null) ?? null;
+      stripeSubscriptionId = (data.stripe_subscription_id as string | null) ?? null;
 
-        // ✅ consideriamo attiva anche se i webhook arrivano in ritardo,
-        // usando current_period_end come fallback.
-        isActive =
-          Boolean((data as any)?.is_active) || (periodEnd ? periodEnd > now : false);
-      }
-    } catch (e) {
-      console.warn(
-        "Stripe checkout: lookup user_subscriptions unexpected error",
-        e
-      );
+      const now = Date.now();
+      const cpeMs = data.current_period_end
+        ? new Date(data.current_period_end as any).getTime()
+        : null;
+
+      // ✅ robusto: attivo solo se is_active TRUE e periodo non scaduto
+      const activeByDate = cpeMs ? cpeMs > now : false;
+      isActive = Boolean(data.is_active) && activeByDate;
     }
 
-    // 2) Se l'utente ha già una subscription attiva → Billing Portal (gestione upgrade/downgrade/cancel)
+    // 2) Se attivo -> portal
     if (isActive) {
-      // Se non ho il customerId, provo a ricavarlo dalla subscription
       if (!stripeCustomerId && stripeSubscriptionId) {
         try {
           const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
-          const cust =
-            typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+          const cust = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
 
           if (cust) {
             stripeCustomerId = cust;
-
-            // best-effort: salviamo il customerId per i prossimi giri
             await supabaseAdmin
               .from("user_subscriptions")
               .update({ stripe_customer_id: cust })
               .eq("user_id", userId);
           }
         } catch (e) {
-          console.warn("Stripe portal: cannot retrieve subscription/customer", e);
+          console.warn("[CHECKOUT] cannot retrieve subscription/customer", e);
         }
       }
 
       if (!stripeCustomerId) {
         return NextResponse.json(
-          {
-            error:
-              "Active subscription found but missing stripe_customer_id. Cannot open billing portal.",
-          },
+          { error: "Active subscription but missing stripe_customer_id" },
           { status: 500 }
         );
       }
@@ -2707,32 +2696,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ url: portalSession.url, mode: "portal" });
     }
 
-    // 3) Nessuna subscription attiva → Checkout Session (create subscription)
+    // 3) Nessuna subscription attiva -> checkout
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       client_reference_id: userId,
-
       ...(stripeCustomerId ? { customer: stripeCustomerId } : {}),
-
       metadata: { userId, plan },
-
-      subscription_data: {
-        metadata: { userId, plan },
-      },
-
+      subscription_data: { metadata: { userId, plan } },
       line_items: [{ price: priceId, quantity: 1 }],
-
       success_url: successUrl,
       cancel_url: cancelUrl,
     });
 
     return NextResponse.json({ url: session.url, mode: "checkout" });
   } catch (err) {
-    console.error("Stripe checkout error:", err);
-    return NextResponse.json(
-      { error: "Stripe checkout failure" },
-      { status: 500 }
-    );
+    console.error("[CHECKOUT] Stripe checkout error:", err);
+    return NextResponse.json({ error: "Stripe checkout failure" }, { status: 500 });
   }
 }
 ```
@@ -2852,128 +2831,137 @@ export async function POST(req: NextRequest) {
 ```
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { supabaseAdmin } from "@/lib/supabaseClient";
+import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2024-06-20",
 } as any);
 
+// Supabase admin (service role)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+function getAppUrl(req: Request) {
+  const envAppUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const requestOrigin = new URL(req.url).origin;
+  return envAppUrl && envAppUrl.startsWith("http") ? envAppUrl : requestOrigin;
+}
+
 export async function POST(req: Request) {
   try {
-    // --- 1) Leggi il body in modo safe (come abbiamo fatto per /portal) ---
-    let userId: string | undefined;
+    /* ------------------------------------------------------------------
+       1) AUTH: leggiamo il token dall’header Authorization
+    ------------------------------------------------------------------ */
+    const authHeader = req.headers.get("authorization");
+    const token = authHeader?.replace("Bearer ", "");
 
-    try {
-      const rawBody = await req.text();
-      if (rawBody) {
-        const parsed = JSON.parse(rawBody);
-        userId = parsed.userId;
-      }
-    } catch (parseErr) {
-      console.error("[PORTAL] JSON parse error:", parseErr);
+    if (!token) {
+      return NextResponse.json({ error: "Missing auth token" }, { status: 401 });
     }
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Missing userId" },
-        { status: 400 }
-      );
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error("[PORTAL] auth error:", authError);
+      return NextResponse.json({ error: "Utente non autenticato" }, { status: 401 });
     }
 
-    const supabase = supabaseAdmin();
+    const userId = user.id;
 
-    // --- 2) Prova a leggere stripe_customer_id da user_subscriptions ---
-    const { data: sub, error: subError } = await supabase
+    /* ------------------------------------------------------------------
+       2) Recuperiamo stripe ids da user_subscriptions
+    ------------------------------------------------------------------ */
+    const { data: sub, error: subError } = await supabaseAdmin
       .from("user_subscriptions")
-      .select("stripe_customer_id")
+      .select("stripe_customer_id, stripe_subscription_id")
       .eq("user_id", userId)
       .maybeSingle();
 
     if (subError) {
-      console.error("[PORTAL] errore user_subscriptions:", subError);
+      console.error("[PORTAL] errore lookup user_subscriptions:", subError);
     }
 
-    let customerId: string | null =
-      (sub?.stripe_customer_id as string | null) ?? null;
+    let customerId: string | null = (sub?.stripe_customer_id as string | null) ?? null;
+    const subscriptionId: string | null =
+      (sub?.stripe_subscription_id as string | null) ?? null;
 
-    // --- 3) Se stripe_customer_id non c'è, cerchiamo il cliente Stripe via email ---
+    /* ------------------------------------------------------------------
+       3) Metodo più affidabile: se ho subscriptionId → ricavo customer da Stripe
+    ------------------------------------------------------------------ */
+    if (!customerId && subscriptionId) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const c = subscription.customer;
+        customerId = typeof c === "string" ? c : c?.id ?? null;
+      } catch (e) {
+        console.warn("[PORTAL] cannot retrieve subscription:", subscriptionId, e);
+      }
+    }
+
+    /* ------------------------------------------------------------------
+       4) Fallback: se manca customerId, cerchiamo su Stripe via email
+    ------------------------------------------------------------------ */
     if (!customerId) {
-      // Prendi la mail dall'utente in auth.users
-      const {
-        data: userData,
-        error: userError,
-      } = await supabase.auth.admin.getUserById(userId);
-
-      if (userError || !userData?.user?.email) {
-        console.error("[PORTAL] impossibile recuperare email utente:", userError);
-        return NextResponse.json(
-          { error: "Impossibile trovare l'utente o la sua email." },
-          { status: 400 }
-        );
+      if (!user.email) {
+        return NextResponse.json({ error: "Email utente non disponibile" }, { status: 400 });
       }
 
-      const email = userData.user.email;
-
-      console.log("[PORTAL] Nessun stripe_customer_id in DB, cerco per email:", email);
-
       const customers = await stripe.customers.list({
-        email,
+        email: user.email,
         limit: 1,
       });
 
       const customer = customers.data[0];
-
       if (!customer) {
-        console.error("[PORTAL] Nessun customer Stripe trovato per email:", email);
         return NextResponse.json(
-          { error: "Nessun cliente Stripe associato all’account." },
+          { error: "Nessun cliente Stripe associato all’account" },
           { status: 400 }
         );
       }
 
       customerId = customer.id;
+    }
 
-      // Prova a salvare il customerId in user_subscriptions per il futuro
-      const { error: updateError } = await supabase
+    /* ------------------------------------------------------------------
+       5) Persistiamo customerId (upsert: crea riga se manca)
+    ------------------------------------------------------------------ */
+    if (customerId) {
+      const { error: upsertError } = await supabaseAdmin
         .from("user_subscriptions")
-        .update({ stripe_customer_id: customerId })
-        .eq("user_id", userId);
+        .upsert(
+          {
+            user_id: userId,
+            stripe_customer_id: customerId,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
 
-      if (updateError) {
-        console.error("[PORTAL] errore nel salvataggio stripe_customer_id:", updateError);
-      } else {
-        console.log("[PORTAL] stripe_customer_id aggiornato per user:", userId);
+      if (upsertError) {
+        console.warn("[PORTAL] upsert stripe_customer_id failed:", upsertError);
       }
     }
 
-    if (!customerId) {
-      // ultra fallback, non dovrebbe mai arrivare qui
-      return NextResponse.json(
-        { error: "Nessun cliente Stripe associato all’account." },
-        { status: 400 }
-      );
-    }
+    /* ------------------------------------------------------------------
+       6) Costruiamo la return_url corretta + Billing Portal session
+    ------------------------------------------------------------------ */
+    const appUrl = getAppUrl(req);
 
-    // --- 4) Costruisci la base URL dell’app ---
-    const envAppUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    const requestOrigin = new URL(req.url).origin;
-
-    const appUrl =
-      envAppUrl && envAppUrl.startsWith("http") ? envAppUrl : requestOrigin;
-
-    // --- 5) Crea la sessione del Billing Portal ---
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customerId,
+      customer: customerId!,
       return_url: `${appUrl}/dashboard/account`,
     });
 
     return NextResponse.json({ url: portalSession.url });
   } catch (err) {
+    // Qui vogliamo LOG utile, perché il tuo errore era troppo “generico”
     console.error("[PORTAL] errore inatteso:", err);
-    return NextResponse.json(
-      { error: "Errore interno apertura portale" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Errore interno apertura portale" }, { status: 500 });
   }
 }
 ```
@@ -2981,6 +2969,7 @@ export async function POST(req: Request) {
 ### src/app/api/stripe/webhook/route.ts
 
 ```
+// src/app/api/stripe/webhook/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabaseClient";
@@ -3005,23 +2994,13 @@ function planFromPriceId(priceId?: string | null): "free" | "standard" | "pro" {
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
-
-  if (!sig) {
-    console.error("[WEBHOOK] Missing signature header");
-    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
-  }
+  if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 });
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error("[WEBHOOK] Missing STRIPE_WEBHOOK_SECRET");
-    return NextResponse.json(
-      { error: "Webhook not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
   }
 
-  // Stripe signature verification requires the exact raw request body.
-  // Using arrayBuffer + Buffer is the safest option in Next.js.
   const rawBody = Buffer.from(await req.arrayBuffer());
 
   let event: Stripe.Event;
@@ -3033,7 +3012,6 @@ export async function POST(req: NextRequest) {
   }
 
   console.log("[WEBHOOK] Event received:", event.type);
-
   const supabase = supabaseAdmin();
 
   try {
@@ -3042,269 +3020,138 @@ export async function POST(req: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
 
         const customerId =
-          typeof session.customer === "string"
-            ? session.customer
-            : session.customer?.id;
+          typeof session.customer === "string" ? session.customer : session.customer?.id;
 
         const subscriptionId =
           typeof session.subscription === "string" ? session.subscription : null;
 
-        // 1) Proviamo a leggere userId/plan dai metadata della sessione (set lato checkout)
         let userId = session.metadata?.userId ?? null;
-        let plan: "standard" | "pro" | null =
-          (session.metadata?.plan as any) ?? null;
+        let plan = (session.metadata?.plan as "standard" | "pro" | undefined) ?? undefined;
 
-        // 2) Fallback: se abbiamo subscriptionId, proviamo a leggere i metadata dalla subscription
-        //    (più robusto nel tempo, perché i metadata sulla subscription restano come fonte di verità)
         let currentPeriodEnd: string | null = null;
+
         if (subscriptionId) {
           try {
-            const subscription = await stripe.subscriptions.retrieve(
-              subscriptionId
-            );
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            currentPeriodEnd = unixToIso((subscription as any).current_period_end as number | undefined);
 
-            currentPeriodEnd = unixToIso(
-              (subscription as any).current_period_end as number | undefined
-            );
+            userId = userId ?? (subscription.metadata?.userId as string | null);
+            plan = plan ?? (subscription.metadata?.plan as any);
 
-            if (!userId) {
-              userId = (subscription.metadata?.userId as string) ?? null;
-            }
-            if (!plan) {
-              plan = (subscription.metadata?.plan as any) ?? null;
-            }
-
-            // Ultimo fallback: deduciamo il plan dal priceId
             if (!plan) {
               const priceId = subscription.items.data[0]?.price?.id ?? null;
               const p = planFromPriceId(priceId);
               plan = p === "pro" ? "pro" : "standard";
             }
-          } catch (err) {
-            console.error(
-              "[WEBHOOK] Error retrieving subscription for checkout.session.completed:",
-              err
-            );
+          } catch (e) {
+            console.error("[WEBHOOK] retrieve subscription error:", e);
           }
         }
 
-        // Default plan se non lo troviamo
-        const effectivePlan: "standard" | "pro" = plan === "pro" ? "pro" : "standard";
-
-        console.log("[WEBHOOK] checkout.session.completed:", {
-          userId,
-          plan: effectivePlan,
-          customerId,
-          subscriptionId,
-          currentPeriodEnd,
-        });
-
         if (!userId) {
-          console.error("[WEBHOOK] Missing userId in metadata (session/subscription)");
+          console.error("[WEBHOOK] Missing userId in session/subscription metadata");
           break;
         }
 
-        const { error } = await supabase
-          .from("user_subscriptions")
-          .upsert(
-            {
-              user_id: userId,
-              plan: effectivePlan,
-              is_active: true,
-              stripe_customer_id: customerId ?? null,
-              stripe_subscription_id: subscriptionId,
-              current_period_end: currentPeriodEnd,
-            },
-            { onConflict: "user_id" }
-          );
+        const effectivePlan: "standard" | "pro" = plan === "pro" ? "pro" : "standard";
 
-        if (error) {
-          console.error("[WEBHOOK] Supabase upsert error:", error);
-        } else {
-          console.log("[WEBHOOK] Subscription upserted for user:", userId);
-        }
+        const { error } = await supabase.from("user_subscriptions").upsert(
+          {
+            user_id: userId,
+            plan: effectivePlan,
+            is_active: true,
+            current_period_end: currentPeriodEnd,
+            stripe_customer_id: customerId ?? null,
+            stripe_subscription_id: subscriptionId,
+          },
+          { onConflict: "user_id" }
+        );
 
+        if (error) console.error("[WEBHOOK] upsert error:", error);
         break;
       }
 
-      case "customer.subscription.created": {
+      case "customer.subscription.created":
+      case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
 
+        const customerId = subscription.customer as string;
         const status = subscription.status;
         const isActive = status === "active" || status === "trialing";
-
-        const currentPeriodEnd = unixToIso(
-          (subscription as any).current_period_end as number | undefined
-        );
+        const currentPeriodEnd = unixToIso((subscription as any).current_period_end as number | undefined);
 
         const priceId = subscription.items.data[0]?.price?.id ?? null;
         const plan = isActive ? planFromPriceId(priceId) : "free";
 
         const userId = (subscription.metadata?.userId as string) ?? null;
 
-        console.log("[WEBHOOK] customer.subscription.created:", {
-          customerId,
-          status,
-          isActive,
-          currentPeriodEnd,
-          plan,
-          userId,
-        });
-
-        if (!userId) {
-          // Se non abbiamo userId nei metadata non possiamo collegare in modo sicuro.
-          // Manteniamo log e usciamo.
-          console.error(
-            "[WEBHOOK] Missing userId in subscription.metadata on subscription.created"
-          );
-          break;
-        }
-
-        const { error } = await supabase
-          .from("user_subscriptions")
-          .upsert(
+        // ✅ 1) se userId presente, aggiorna per user_id (fonte di verità)
+        if (userId) {
+          const { error } = await supabase.from("user_subscriptions").upsert(
             {
               user_id: userId,
               plan,
               is_active: isActive,
+              current_period_end: currentPeriodEnd,
               stripe_customer_id: customerId,
               stripe_subscription_id: subscription.id,
-              current_period_end: currentPeriodEnd,
             },
             { onConflict: "user_id" }
           );
-
-        if (error) {
-          console.error(
-            "[WEBHOOK] Supabase upsert error (subscription.created):",
-            error
-          );
+          if (error) console.error("[WEBHOOK] subscription upsert error:", error);
+          break;
         }
 
-        break;
-      }
-
-      case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
-
-        const status = subscription.status;
-        const isActive = status === "active" || status === "trialing";
-
-        const currentPeriodEnd = unixToIso(
-          (subscription as any).current_period_end as number | undefined
-        );
-
-        const priceId = subscription.items.data[0]?.price?.id ?? null;
-        const plan = isActive ? planFromPriceId(priceId) : "free";
-
-        const userId = (subscription.metadata?.userId as string) ?? null;
-
-        console.log("[WEBHOOK] customer.subscription.updated:", {
-          customerId,
-          status,
-          isActive,
-          currentPeriodEnd,
-          plan,
-          userId,
-        });
-
-        // 1) tentiamo update via stripe_customer_id
-        const upd = await supabase
+        // ✅ 2) fallback solo se manca userId (meno sicuro)
+        const { error } = await supabase
           .from("user_subscriptions")
           .update({
+            plan,
             is_active: isActive,
             current_period_end: currentPeriodEnd,
-            plan,
             stripe_subscription_id: subscription.id,
           })
           .eq("stripe_customer_id", customerId);
 
-        if (upd.error) {
-          console.error(
-            "[WEBHOOK] Supabase update error (subscription.updated):",
-            upd.error
-          );
-          break;
-        }
-
-        // 2) fallback su user_id dai metadata (se presente)
-        //    così “ripariamo” righe create senza stripe_customer_id.
-        //    Non usiamo `count` perché non è sempre disponibile sugli update di supabase-js.
-        if (userId) {
-          // Proviamo sempre a riallineare stripe_customer_id e subscription_id su user_id
-          const fix = await supabase
-            .from("user_subscriptions")
-            .update({
-              stripe_customer_id: customerId,
-              stripe_subscription_id: subscription.id,
-            })
-            .eq("user_id", userId);
-
-          if (fix.error) {
-            console.error(
-              "[WEBHOOK] Supabase fallback update error (subscription.updated -> user_id):",
-              fix.error
-            );
-          }
-        } else {
-          console.warn(
-            "[WEBHOOK] subscription.updated: no userId metadata available for fallback"
-          );
-        }
-
+        if (error) console.error("[WEBHOOK] subscription update fallback error:", error);
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
+
         const customerId = subscription.customer as string;
         const userId = (subscription.metadata?.userId as string) ?? null;
 
-        console.log("[WEBHOOK] customer.subscription.deleted:", {
-          customerId,
-          userId,
-        });
-
-        const del = await supabase
-          .from("user_subscriptions")
-          .update({
-            is_active: false,
-            current_period_end: null,
-            plan: "free",
-            stripe_subscription_id: subscription.id,
-          })
-          .eq("stripe_customer_id", customerId);
-
-        if (del.error) {
-          console.error(
-            "[WEBHOOK] Supabase update error (subscription.deleted):",
-            del.error
-          );
-        }
-
-        // Fallback su user_id se il customer_id non matcha nessuna riga
+        // ✅ preferisci userId se c’è
         if (userId) {
-          const fix = await supabase
+          const { error } = await supabase
             .from("user_subscriptions")
             .update({
+              plan: "free",
               is_active: false,
               current_period_end: null,
-              plan: "free",
               stripe_customer_id: customerId,
               stripe_subscription_id: subscription.id,
             })
             .eq("user_id", userId);
 
-          if (fix.error) {
-            console.error(
-              "[WEBHOOK] Supabase fallback update error (subscription.deleted -> user_id):",
-              fix.error
-            );
-          }
+          if (error) console.error("[WEBHOOK] deleted update error:", error);
+          break;
         }
 
+        // fallback per customerId
+        const { error } = await supabase
+          .from("user_subscriptions")
+          .update({
+            plan: "free",
+            is_active: false,
+            current_period_end: null,
+            stripe_subscription_id: subscription.id,
+          })
+          .eq("stripe_customer_id", customerId);
+
+        if (error) console.error("[WEBHOOK] deleted fallback error:", error);
         break;
       }
 
@@ -3315,10 +3162,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (err) {
     console.error("[WEBHOOK] Handler error:", err);
-    return NextResponse.json(
-      { error: "Webhook handler failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 }
 ```

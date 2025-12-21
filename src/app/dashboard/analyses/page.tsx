@@ -58,20 +58,30 @@ export default function AnalysesListPage() {
 
         setUserEmail(user.email ?? null);
 
-        // piano
-        const { data: sub, error: subError } = await supabase
+        // piano (evita 406: niente maybeSingle)
+        const { data: subs, error: subError } = await supabase
           .from("user_subscriptions")
-          .select("plan, is_active")
+          .select("plan, is_active, current_period_end")
           .eq("user_id", user.id)
-          .maybeSingle();
+          .limit(1);
 
         if (subError) {
           console.error("Errore nel recupero abbonamento:", subError);
         }
 
+        const sub = Array.isArray(subs) && subs.length > 0 ? (subs[0] as any) : null;
         if (sub) {
-          setPlan((sub.plan as any) ?? "free");
-          setIsActive(sub.is_active ?? false);
+          const planVal = (sub.plan as any) ?? "free";
+
+          const cpeMs = sub.current_period_end
+            ? new Date(sub.current_period_end).getTime()
+            : null;
+
+          const activeByDate = cpeMs ? cpeMs > Date.now() : false;
+          const active = Boolean(sub.is_active) && activeByDate;
+
+          setPlan(planVal);
+          setIsActive(active);
         } else {
           setPlan("free");
           setIsActive(false);
@@ -233,13 +243,29 @@ export default function AnalysesListPage() {
           {loadingAnalyses ? (
             <p className="text-sm text-slate-500">Caricamento analisi…</p>
           ) : analyses.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              Non hai ancora analizzato nessun contratto.
-            </p>
+            <div className="py-16 text-center flex flex-col items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 text-lg">
+                📄
+              </div>
+              <p className="text-sm text-slate-600 font-medium">
+                Nessuna analisi ancora
+              </p>
+              <p className="text-xs text-slate-500 max-w-xs">
+                Quando analizzerai un contratto, lo troverai qui nello storico.
+              </p>
+            </div>
           ) : filteredAnalyses.length === 0 && searchQuery.trim() ? (
-            <p className="text-sm text-slate-500">
-              Nessun risultato per &quot;{searchQuery.trim()}&quot;.
-            </p>
+            <div className="py-16 text-center flex flex-col items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 text-lg">
+                🔍
+              </div>
+              <p className="text-sm text-slate-600 font-medium">
+                Nessun risultato trovato
+              </p>
+              <p className="text-xs text-slate-500 max-w-xs">
+                Non ci sono analisi che corrispondono a <span className="font-medium">&quot;{searchQuery.trim()}&quot;</span>.
+              </p>
+            </div>
           ) : (
             <ul className="space-y-3">
               {filteredAnalyses.map((a) => {

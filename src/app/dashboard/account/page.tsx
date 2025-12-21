@@ -37,11 +37,12 @@ export default function AccountPage() {
         setUserEmail(user.email ?? null);
 
         // NB: prendiamo anche current_period_end per decidere "attivo" in modo robusto
-        const { data: sub, error: subError } = await supabase
+        const { data: subs, error: subError } = await supabase
           .from("user_subscriptions")
           .select("plan, is_active, current_period_end")
           .eq("user_id", user.id)
-          .maybeSingle();
+          .limit(1);
+        const sub = subs?.[0] ?? null;
 
         if (subError) {
           console.error("Errore nel recupero abbonamento:", subError);

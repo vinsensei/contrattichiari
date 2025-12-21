@@ -1,141 +1,164 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
-export default function PricingPage() {
+type Plan = "free" | "standard" | "pro";
+
+export default function PricingSuccessPage() {
   const supabase = supabaseBrowser();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // 1) loadingCheckout as plan-specific string or null
-  const [loadingCheckout, setLoadingCheckout] = useState<
-    "standard" | "pro" | null
-  >(null);
+  const sessionId = useMemo(
+    () => searchParams.get("session_id") ?? "",
+    [searchParams]
+  );
 
-  const [plan, setPlan] = useState<"free" | "standard" | "pro">("free");
+  const [loading, setLoading] = useState(true);
+  const [plan, setPlan] = useState<Plan>("free");
   const [isActive, setIsActive] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadSubscription() {
-      const { data, error } = await supabase
-        .from("user_subscriptions")
-        .select("plan, is_active, current_period_end")
-        .single();
+    let cancelled = false;
 
-      if (error) {
-        setPlan("free");
-        setIsActive(false);
-        return;
-      }
+    async function loadAndWaitForSubscription() {
+      setLoading(true);
+      setErrorMsg(null);
 
-      const sub = data;
+      try {
+        // 1) Serve essere loggati (il successo può essere aperto anche in una tab anon/incognito)
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-      if (sub) {
-        const planVal = (sub.plan as any) ?? "free";
+        if (userError || !user) {
+          // Se non siamo autenticati, rimandiamo al login e poi in /pricing
+          router.replace("/login");
+          return;
+        }
 
-        // is_active può essere stale (es. dopo cancellazione o scadenza).
-        // Usiamo anche current_period_end per decidere se è davvero attivo.
-        const cpe = sub.current_period_end
-          ? new Date(sub.current_period_end).getTime()
-          : null;
-        const now = Date.now();
-        const activeByDate = cpe ? cpe > now : false;
-        const active = Boolean(sub.is_active) && activeByDate;
+        // 2) Aspettiamo che webhook/DB aggiornino la subscription.
+        // In prod può richiedere qualche secondo.
+        const MAX_TRIES = 12; // ~18s
+        const SLEEP_MS = 1500;
 
-        setPlan(planVal);
-        setIsActive(active);
-      } else {
-        setPlan("free");
-        setIsActive(false);
+        for (let i = 0; i < MAX_TRIES; i++) {
+          if (cancelled) return;
+
+          const { data: rows, error: subError } = await supabase
+            .from("user_subscriptions")
+            .select("plan, is_active, current_period_end, updated_at")
+            .eq("user_id", user.id)
+            .order("updated_at", { ascending: false })
+            .limit(1);
+
+          const sub = rows?.[0] ?? null;
+
+          if (!subError && sub) {
+            const planVal: Plan = (sub.plan as Plan) ?? "free";
+
+            // is_active può essere stale: usiamo anche current_period_end.
+            const cpeMs = sub.current_period_end
+              ? new Date(sub.current_period_end).getTime()
+              : null;
+            const now = Date.now();
+            const activeByDate = cpeMs ? cpeMs > now : false;
+            const active = Boolean(sub.is_active) && activeByDate;
+
+            setPlan(planVal);
+            setIsActive(active);
+
+            // Se vediamo un piano pagante attivo, possiamo proseguire.
+            if (active && (planVal === "standard" || planVal === "pro")) {
+              // Redirect morbido: vai al dashboard/account dove puoi gestire fatture/piano.
+              router.replace("/dashboard/account");
+              return;
+            }
+          }
+
+          // sleep
+          await new Promise((r) => setTimeout(r, SLEEP_MS));
+        }
+
+        // Se dopo i tentativi non risulta ancora attivo, non blocchiamo l'utente:
+        // lo mandiamo comunque in account, dove potrà riprovare / vedere lo stato.
+        if (!cancelled) {
+          router.replace("/dashboard/account");
+        }
+      } catch (e) {
+        console.error("[PRICING SUCCESS] unexpected error:", e);
+        if (!cancelled) {
+          setErrorMsg(
+            "Pagamento completato, ma non siamo riusciti a confermare l’attivazione. Vai al profilo per verificare lo stato."
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
 
-    loadSubscription();
+    loadAndWaitForSubscription();
+
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router, supabase, sessionId]);
 
-  async function startCheckout(selectedPlan: "standard" | "pro") {
-    setErrorMsg(null);
-    setLoadingCheckout(selectedPlan);
-
-    try {
-      const res = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: selectedPlan }),
-      });
-
-      if (!res.ok) {
-        setErrorMsg("Errore nella richiesta di checkout.");
-        setLoadingCheckout(null);
-        return;
-      }
-
-      const data = await res.json();
-
-      // Se l'API decide che hai già un abbonamento attivo, può rispondere con un URL di gestione (Customer Portal)
-      // invece che con una Checkout Session.
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        setErrorMsg("Risposta di Stripe non valida.");
-        setLoadingCheckout(null);
-      }
-    } catch (err) {
-      setErrorMsg("Errore durante il checkout.");
-      setLoadingCheckout(null);
-    }
-  }
-
-  const standardIsActive = isActive && plan === "standard";
-  const proIsActive = isActive && plan === "pro";
-
-  const hasAnyActive = isActive && (plan === "standard" || plan === "pro");
-  const isOnOtherPlan = (p: "standard" | "pro") => hasAnyActive && plan !== p;
+  const planLabel =
+    plan === "free" ? "Free" : plan === "standard" ? "Standard" : "Pro";
 
   return (
-    <main className="min-h-screen bg-white flex flex-col items-center justify-center p-8 space-y-6">
-      <h1 className="text-3xl font-bold">Scegli il tuo piano</h1>
+    <main className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-12 text-center">
+      <div className="w-full max-w-xl space-y-4">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900">
+          Pagamento completato
+        </h1>
 
-      <div className="flex gap-6">
-        <div className="border p-6 rounded-lg shadow-sm w-64">
-          <h2 className="text-xl font-semibold mb-2">Standard</h2>
-          <p className="mb-4">Ideale per uso personale.</p>
-          <button
-            disabled={loadingCheckout !== null}
-            className="w-full rounded bg-blue-600 text-white py-2 disabled:opacity-50"
-            onClick={() => startCheckout("standard")}
-          >
-            {loadingCheckout === "standard"
-              ? "Reindirizzamento…"
-              : isOnOtherPlan("standard")
-              ? "Gestisci / cambia piano"
-              : "Attiva Standard"}
-          </button>
-          {standardIsActive && (
-            <p className="mt-2 text-green-600">Piano attivo</p>
-          )}
+        <p className="text-sm sm:text-base text-slate-600">
+          Stiamo attivando il tuo piano. Potrebbe richiedere qualche secondo.
+        </p>
+
+        {sessionId ? (
+          <p className="text-xs text-slate-400">
+            Riferimento: <span className="font-mono">{sessionId}</span>
+          </p>
+        ) : null}
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="text-xs text-slate-500">Stato</div>
+          <div className="mt-1 text-sm text-slate-800">
+            Piano: <span className="font-semibold">{planLabel}</span>
+            {isActive ? (
+              <span className="ml-2 text-emerald-700">(attivo)</span>
+            ) : (
+              <span className="ml-2 text-amber-700">(in aggiornamento)</span>
+            )}
+          </div>
         </div>
 
-        <div className="border p-6 rounded-lg shadow-sm w-64">
-          <h2 className="text-xl font-semibold mb-2">Pro</h2>
-          <p className="mb-4">Per professionisti e aziende.</p>
+        {loading ? (
+          <div className="text-sm text-slate-500">Reindirizzamento…</div>
+        ) : null}
+
+        {errorMsg ? (
+          <p className="text-sm text-rose-600">{errorMsg}</p>
+        ) : null}
+
+        <div className="pt-2">
           <button
-            disabled={loadingCheckout !== null}
-            className="w-full rounded bg-green-600 text-white py-2 disabled:opacity-50"
-            onClick={() => startCheckout("pro")}
+            type="button"
+            onClick={() => router.replace("/dashboard/account")}
+            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-800"
           >
-            {loadingCheckout === "pro"
-              ? "Reindirizzamento…"
-              : isOnOtherPlan("pro")
-              ? "Gestisci / cambia piano"
-              : "Attiva Pro"}
+            Vai al profilo
           </button>
-          {proIsActive && <p className="mt-2 text-green-600">Piano attivo</p>}
         </div>
       </div>
-
-      {errorMsg && <p className="text-red-600 mt-4">{errorMsg}</p>}
     </main>
   );
 }

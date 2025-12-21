@@ -19,6 +19,7 @@ function RegisterPageInner() {
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (analysisId) {
@@ -139,13 +140,29 @@ function RegisterPageInner() {
                 <label className="block text-sm font-medium text-slate-700">
                   Password
                 </label>
-                <input
-                  type="password"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 pr-10 text-sm text-slate-900 placeholder-slate-400"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+                    aria-label={showPassword ? "Nascondi password" : "Mostra password"}
+                  >
+                    {showPassword ? (
+                      <img src="/eye-off.svg" alt="Nascondi password" className="h-5 w-5" />
+                    ) : (
+                      <img src="/eye.svg" alt="Mostra password" className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {errorMsg && (

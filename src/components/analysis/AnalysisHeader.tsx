@@ -32,19 +32,18 @@ export default function AnalysisHeader({
         </div>
 
         <div className="flex items-center gap-3">
-          {riskBadge}
           {isPro ? (
             <button
               type="button"
               onClick={() => onDownloadPdf?.()}
-              className="inline-flex items-center rounded-full bg-slate-900 px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-slate-800 transition"
+              className="inline-flex items-center rounded-full bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800 transition"
             >
               Scarica PDF
             </button>
           ) : (
             <button
               disabled
-              className="inline-flex items-center rounded-full bg-slate-200 px-4 py-2 text-xs sm:text-sm font-medium text-slate-500 cursor-not-allowed"
+              className="inline-flex items-center rounded-full bg-slate-200 px-3 py-1.5 text-xs font-medium text-slate-500 cursor-not-allowed"
             >
               Scarica PDF (Pro)
             </button>

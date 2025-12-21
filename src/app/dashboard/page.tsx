@@ -78,12 +78,23 @@ export default function DashboardPage() {
         }
 
         if (sub) {
-          setPlan((sub.plan as any) ?? "free");
-          setIsActive(sub.is_active ?? false);
+          const planVal = (sub.plan as any) ?? "free";
+
+          const cpeMs = sub.current_period_end
+            ? new Date(sub.current_period_end).getTime()
+            : null;
+
+          const active =
+            Boolean(sub.is_active) &&
+            Boolean(cpeMs && cpeMs > Date.now());
+
+          setPlan(planVal);
+          setIsActive(active);
           setCurrentPeriodEnd(sub.current_period_end ?? null);
         } else {
           setPlan("free");
           setIsActive(false);
+          setCurrentPeriodEnd(null);
         }
 
         // carica ultime analisi

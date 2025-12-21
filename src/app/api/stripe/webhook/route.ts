@@ -1,3 +1,4 @@
+// src/app/api/stripe/webhook/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabaseClient";
@@ -7,6 +8,15 @@ export const runtime = "nodejs";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2024-06-20",
 } as any);
+
+type StripeSubWithPeriodEnd = Stripe.Subscription & {
+  current_period_end?: number;
+};
+
+function getCurrentPeriodEndIso(subscription: Stripe.Subscription): string | null {
+  const sub = subscription as StripeSubWithPeriodEnd;
+  return unixToIso(typeof sub.current_period_end === "number" ? sub.current_period_end : null);
+}
 
 function unixToIso(ts?: number | null): string | null {
   if (!ts || !Number.isFinite(ts)) return null;
@@ -22,23 +32,13 @@ function planFromPriceId(priceId?: string | null): "free" | "standard" | "pro" {
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
-
-  if (!sig) {
-    console.error("[WEBHOOK] Missing signature header");
-    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
-  }
+  if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 });
 
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error("[WEBHOOK] Missing STRIPE_WEBHOOK_SECRET");
-    return NextResponse.json(
-      { error: "Webhook not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
   }
 
-  // Stripe signature verification requires the exact raw request body.
-  // Using arrayBuffer + Buffer is the safest option in Next.js.
   const rawBody = Buffer.from(await req.arrayBuffer());
 
   let event: Stripe.Event;
@@ -50,7 +50,6 @@ export async function POST(req: NextRequest) {
   }
 
   console.log("[WEBHOOK] Event received:", event.type);
-
   const supabase = supabaseAdmin();
 
   try {
@@ -59,269 +58,138 @@ export async function POST(req: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
 
         const customerId =
-          typeof session.customer === "string"
-            ? session.customer
-            : session.customer?.id;
+          typeof session.customer === "string" ? session.customer : session.customer?.id;
 
         const subscriptionId =
           typeof session.subscription === "string" ? session.subscription : null;
 
-        // 1) Proviamo a leggere userId/plan dai metadata della sessione (set lato checkout)
         let userId = session.metadata?.userId ?? null;
-        let plan: "standard" | "pro" | null =
-          (session.metadata?.plan as any) ?? null;
+        let plan = (session.metadata?.plan as "standard" | "pro" | undefined) ?? undefined;
 
-        // 2) Fallback: se abbiamo subscriptionId, proviamo a leggere i metadata dalla subscription
-        //    (più robusto nel tempo, perché i metadata sulla subscription restano come fonte di verità)
         let currentPeriodEnd: string | null = null;
+
         if (subscriptionId) {
           try {
-            const subscription = await stripe.subscriptions.retrieve(
-              subscriptionId
-            );
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            currentPeriodEnd = getCurrentPeriodEndIso(subscription);
 
-            currentPeriodEnd = unixToIso(
-              (subscription as any).current_period_end as number | undefined
-            );
+            userId = userId ?? (subscription.metadata?.userId as string | null);
+            plan = plan ?? (subscription.metadata?.plan as any);
 
-            if (!userId) {
-              userId = (subscription.metadata?.userId as string) ?? null;
-            }
-            if (!plan) {
-              plan = (subscription.metadata?.plan as any) ?? null;
-            }
-
-            // Ultimo fallback: deduciamo il plan dal priceId
             if (!plan) {
               const priceId = subscription.items.data[0]?.price?.id ?? null;
               const p = planFromPriceId(priceId);
               plan = p === "pro" ? "pro" : "standard";
             }
-          } catch (err) {
-            console.error(
-              "[WEBHOOK] Error retrieving subscription for checkout.session.completed:",
-              err
-            );
+          } catch (e) {
+            console.error("[WEBHOOK] retrieve subscription error:", e);
           }
         }
 
-        // Default plan se non lo troviamo
-        const effectivePlan: "standard" | "pro" = plan === "pro" ? "pro" : "standard";
-
-        console.log("[WEBHOOK] checkout.session.completed:", {
-          userId,
-          plan: effectivePlan,
-          customerId,
-          subscriptionId,
-          currentPeriodEnd,
-        });
-
         if (!userId) {
-          console.error("[WEBHOOK] Missing userId in metadata (session/subscription)");
+          console.error("[WEBHOOK] Missing userId in session/subscription metadata");
           break;
         }
 
-        const { error } = await supabase
-          .from("user_subscriptions")
-          .upsert(
-            {
-              user_id: userId,
-              plan: effectivePlan,
-              is_active: true,
-              stripe_customer_id: customerId ?? null,
-              stripe_subscription_id: subscriptionId,
-              current_period_end: currentPeriodEnd,
-            },
-            { onConflict: "user_id" }
-          );
+        const effectivePlan: "standard" | "pro" = plan === "pro" ? "pro" : "standard";
 
-        if (error) {
-          console.error("[WEBHOOK] Supabase upsert error:", error);
-        } else {
-          console.log("[WEBHOOK] Subscription upserted for user:", userId);
-        }
+        const { error } = await supabase.from("user_subscriptions").upsert(
+          {
+            user_id: userId,
+            plan: effectivePlan,
+            is_active: true,
+            current_period_end: currentPeriodEnd,
+            stripe_customer_id: customerId ?? null,
+            stripe_subscription_id: subscriptionId,
+          },
+          { onConflict: "user_id" }
+        );
 
+        if (error) console.error("[WEBHOOK] upsert error:", error);
         break;
       }
 
-      case "customer.subscription.created": {
+      case "customer.subscription.created":
+      case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
 
+        const customerId = subscription.customer as string;
         const status = subscription.status;
         const isActive = status === "active" || status === "trialing";
-
-        const currentPeriodEnd = unixToIso(
-          (subscription as any).current_period_end as number | undefined
-        );
+        const currentPeriodEnd = getCurrentPeriodEndIso(subscription);
 
         const priceId = subscription.items.data[0]?.price?.id ?? null;
         const plan = isActive ? planFromPriceId(priceId) : "free";
 
         const userId = (subscription.metadata?.userId as string) ?? null;
 
-        console.log("[WEBHOOK] customer.subscription.created:", {
-          customerId,
-          status,
-          isActive,
-          currentPeriodEnd,
-          plan,
-          userId,
-        });
-
-        if (!userId) {
-          // Se non abbiamo userId nei metadata non possiamo collegare in modo sicuro.
-          // Manteniamo log e usciamo.
-          console.error(
-            "[WEBHOOK] Missing userId in subscription.metadata on subscription.created"
-          );
-          break;
-        }
-
-        const { error } = await supabase
-          .from("user_subscriptions")
-          .upsert(
+        // ✅ 1) se userId presente, aggiorna per user_id (fonte di verità)
+        if (userId) {
+          const { error } = await supabase.from("user_subscriptions").upsert(
             {
               user_id: userId,
               plan,
               is_active: isActive,
+              current_period_end: currentPeriodEnd,
               stripe_customer_id: customerId,
               stripe_subscription_id: subscription.id,
-              current_period_end: currentPeriodEnd,
             },
             { onConflict: "user_id" }
           );
-
-        if (error) {
-          console.error(
-            "[WEBHOOK] Supabase upsert error (subscription.created):",
-            error
-          );
+          if (error) console.error("[WEBHOOK] subscription upsert error:", error);
+          break;
         }
 
-        break;
-      }
-
-      case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
-
-        const status = subscription.status;
-        const isActive = status === "active" || status === "trialing";
-
-        const currentPeriodEnd = unixToIso(
-          (subscription as any).current_period_end as number | undefined
-        );
-
-        const priceId = subscription.items.data[0]?.price?.id ?? null;
-        const plan = isActive ? planFromPriceId(priceId) : "free";
-
-        const userId = (subscription.metadata?.userId as string) ?? null;
-
-        console.log("[WEBHOOK] customer.subscription.updated:", {
-          customerId,
-          status,
-          isActive,
-          currentPeriodEnd,
-          plan,
-          userId,
-        });
-
-        // 1) tentiamo update via stripe_customer_id
-        const upd = await supabase
+        // ✅ 2) fallback solo se manca userId (meno sicuro)
+        const { error } = await supabase
           .from("user_subscriptions")
           .update({
+            plan,
             is_active: isActive,
             current_period_end: currentPeriodEnd,
-            plan,
             stripe_subscription_id: subscription.id,
           })
           .eq("stripe_customer_id", customerId);
 
-        if (upd.error) {
-          console.error(
-            "[WEBHOOK] Supabase update error (subscription.updated):",
-            upd.error
-          );
-          break;
-        }
-
-        // 2) fallback su user_id dai metadata (se presente)
-        //    così “ripariamo” righe create senza stripe_customer_id.
-        //    Non usiamo `count` perché non è sempre disponibile sugli update di supabase-js.
-        if (userId) {
-          // Proviamo sempre a riallineare stripe_customer_id e subscription_id su user_id
-          const fix = await supabase
-            .from("user_subscriptions")
-            .update({
-              stripe_customer_id: customerId,
-              stripe_subscription_id: subscription.id,
-            })
-            .eq("user_id", userId);
-
-          if (fix.error) {
-            console.error(
-              "[WEBHOOK] Supabase fallback update error (subscription.updated -> user_id):",
-              fix.error
-            );
-          }
-        } else {
-          console.warn(
-            "[WEBHOOK] subscription.updated: no userId metadata available for fallback"
-          );
-        }
-
+        if (error) console.error("[WEBHOOK] subscription update fallback error:", error);
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
+
         const customerId = subscription.customer as string;
         const userId = (subscription.metadata?.userId as string) ?? null;
 
-        console.log("[WEBHOOK] customer.subscription.deleted:", {
-          customerId,
-          userId,
-        });
-
-        const del = await supabase
-          .from("user_subscriptions")
-          .update({
-            is_active: false,
-            current_period_end: null,
-            plan: "free",
-            stripe_subscription_id: subscription.id,
-          })
-          .eq("stripe_customer_id", customerId);
-
-        if (del.error) {
-          console.error(
-            "[WEBHOOK] Supabase update error (subscription.deleted):",
-            del.error
-          );
-        }
-
-        // Fallback su user_id se il customer_id non matcha nessuna riga
+        // ✅ preferisci userId se c’è
         if (userId) {
-          const fix = await supabase
+          const { error } = await supabase
             .from("user_subscriptions")
             .update({
+              plan: "free",
               is_active: false,
               current_period_end: null,
-              plan: "free",
               stripe_customer_id: customerId,
               stripe_subscription_id: subscription.id,
             })
             .eq("user_id", userId);
 
-          if (fix.error) {
-            console.error(
-              "[WEBHOOK] Supabase fallback update error (subscription.deleted -> user_id):",
-              fix.error
-            );
-          }
+          if (error) console.error("[WEBHOOK] deleted update error:", error);
+          break;
         }
 
+        // fallback per customerId
+        const { error } = await supabase
+          .from("user_subscriptions")
+          .update({
+            plan: "free",
+            is_active: false,
+            current_period_end: null,
+            stripe_subscription_id: subscription.id,
+          })
+          .eq("stripe_customer_id", customerId);
+
+        if (error) console.error("[WEBHOOK] deleted fallback error:", error);
         break;
       }
 
@@ -332,9 +200,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (err) {
     console.error("[WEBHOOK] Handler error:", err);
-    return NextResponse.json(
-      { error: "Webhook handler failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 }

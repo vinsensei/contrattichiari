@@ -60,14 +60,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const plan: string = sub?.plan ?? "free";
-    const isActive: boolean = sub?.is_active ?? false;
-
-    const currentPeriodEnd = sub?.current_period_end
-      ? new Date(sub.current_period_end as string)
+    const cpeMs = sub?.current_period_end
+      ? new Date(sub.current_period_end).getTime()
       : null;
 
-    const now = new Date();
+    const isActive =
+      Boolean(sub?.is_active) && Boolean(cpeMs && cpeMs > Date.now());
+
+    const plan = (sub?.plan as "free" | "standard" | "pro") ?? "free";
 
     // 2) Regole piano: free vs a pagamento + scadenza periodo
     if (plan === "free") {
@@ -97,8 +97,7 @@ export async function POST(req: NextRequest) {
       }
     } else {
       // piano a pagamento → deve essere attivo e non scaduto
-      const isExpired =
-        currentPeriodEnd !== null && currentPeriodEnd.getTime() < now.getTime();
+      const isExpired = Boolean(cpeMs && cpeMs <= Date.now());
 
       if (!isActive || isExpired) {
         // opzionale: se scaduto, facciamo un downgrade veloce lato DB
@@ -108,6 +107,7 @@ export async function POST(req: NextRequest) {
             .update({
               is_active: false,
               plan: "free",
+              current_period_end: null,
             })
             .eq("user_id", userId);
 

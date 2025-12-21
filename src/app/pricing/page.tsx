@@ -13,7 +13,9 @@ export default function PricingPage() {
 
   const [checkingUser, setCheckingUser] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [loadingCheckout, setLoadingCheckout] = useState<"standard" | "pro" | null>(null);
+  const [loadingCheckout, setLoadingCheckout] = useState<
+    "standard" | "pro" | null
+  >(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [plan, setPlan] = useState<"free" | "standard" | "pro">("free");
@@ -31,15 +33,17 @@ export default function PricingPage() {
       // carica piano corrente
       try {
         if (data.user) {
-          const { data: sub, error: subError } = await supabase
+          const { data: rows, error: subError } = await supabase
             .from("user_subscriptions")
             .select("plan, is_active, current_period_end")
             .eq("user_id", data.user.id)
-            .maybeSingle();
+            .limit(1);
 
           if (subError) {
             console.error("Errore nel recupero abbonamento:", subError);
           }
+
+          const sub = rows?.[0] ?? null;
 
           if (sub) {
             const planVal = (sub.plan as any) ?? "free";
@@ -77,25 +81,33 @@ export default function PricingPage() {
     setErrorMsg(null);
     setLoadingCheckout(selectedPlan);
 
-    // GA4: evento di inizio checkout
-    gaEvent("subscription_started", {
-      plan: selectedPlan,
-    });
+    gaEvent("subscription_started", { plan: selectedPlan });
 
     try {
+      const { data: sessionData, error: sessionErr } =
+        await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      if (sessionErr || !token) {
+        setErrorMsg("Sessione non valida. Rifai login e riprova.");
+        setLoadingCheckout(null);
+        return;
+      }
+
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: selectedPlan, userId }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ plan: selectedPlan }), // ✅ niente userId dal client
       });
 
       const data = await res.json();
-      // Se l'API decide che hai già un abbonamento attivo, può rispondere con un URL di gestione (Customer Portal)
-      // invece che con una Checkout Session.
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        setErrorMsg("Risposta di Stripe non valida.");
+
+      if (data?.url) window.location.href = data.url;
+      else {
+        setErrorMsg(data?.error ?? "Risposta di Stripe non valida.");
         setLoadingCheckout(null);
       }
     } catch (err) {
@@ -109,7 +121,11 @@ export default function PricingPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <p className="text-sm text-slate-500">
-          <img src="/loader.svg" alt="Caricamento in corso..." className="h-12 w-12 animate-bounce mx-auto mb-2" />
+          <img
+            src="/loader.svg"
+            alt="Caricamento in corso..."
+            className="h-12 w-12 animate-bounce mx-auto mb-2"
+          />
         </p>
       </div>
     );
@@ -128,15 +144,14 @@ export default function PricingPage() {
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-8">
         <div className="text-center max-w-xl mx-auto space-y-1.5 sm:space-y-2 animate-fade-in-up delay-1 mt-0 md:mt-20">
           <h1 className="text-2xl sm:text-3xl md:text-4xl tracking-tight text-slate-900">
-           La certezza che ti serve, subito. 
+            La certezza che ti serve, subito.
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-500 mb-6 sm:mb-10">
-            Parti gratis, passa allo Standard
-            quando ti serve analizzare più contratti.
+            Parti gratis, passa allo Standard quando ti serve analizzare più
+            contratti.
           </p>
-       </div>
-        
+        </div>
 
         <section className="grid gap-6 md:grid-cols-3">
           {/* Piano Free */}
@@ -205,7 +220,11 @@ export default function PricingPage() {
                 disabled={loadingCheckout !== null}
                 className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 disabled:opacity-60"
               >
-                {loadingCheckout === "standard" ? "Reindirizzamento…" : isOnOtherPlan("standard") ? "Gestisci / cambia piano" : "Attiva Standard"}
+                {loadingCheckout === "standard"
+                  ? "Reindirizzamento…"
+                  : isOnOtherPlan("standard")
+                  ? "Gestisci / cambia piano"
+                  : "Attiva Standard"}
               </button>
             )}
           </div>
@@ -253,7 +272,11 @@ export default function PricingPage() {
                 disabled={loadingCheckout !== null}
                 className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-60"
               >
-                {loadingCheckout === "pro" ? "Reindirizzamento…" : isOnOtherPlan("pro") ? "Gestisci / cambia piano" : "Attiva Pro"}
+                {loadingCheckout === "pro"
+                  ? "Reindirizzamento…"
+                  : isOnOtherPlan("pro")
+                  ? "Gestisci / cambia piano"
+                  : "Attiva Pro"}
               </button>
             )}
           </div>
@@ -261,25 +284,52 @@ export default function PricingPage() {
 
         {/* TRUST / REASSURANCE */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="mb-6 flex items-center justify-center gap-3 rounded-xl bg-slate-50 px-4 py-3">
+            <div className="flex items-center gap-2 text-slate-700">
+              <img
+                src="/shield-secure.svg"
+                alt="Pagamenti sicuri"
+                className="h-5 w-5 text-emerald-600"
+              />
+
+              <span className="text-sm font-medium">
+                Pagamenti sicuri e certificati
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 opacity-80">
+              <img src="/stripe.png" alt="Stripe" className="h-5 w-auto" />
+              <span className="text-xs text-slate-500">Powered by Stripe</span>
+            </div>
+          </div>
           <div className="grid gap-6 md:grid-cols-3">
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-slate-900">Disdici quando vuoi</p>
+              <p className="text-sm font-semibold text-slate-900">
+                Disdici quando vuoi
+              </p>
               <p className="text-xs leading-relaxed text-slate-600">
-                Nessun vincolo: puoi annullare in qualsiasi momento dal tuo account.
+                Nessun vincolo: puoi annullare in qualsiasi momento dal tuo
+                account.
               </p>
             </div>
 
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-slate-900">Pagamento sicuro</p>
+              <p className="text-sm font-semibold text-slate-900">
+                Pagamento sicuro
+              </p>
               <p className="text-xs leading-relaxed text-slate-600">
-                Pagamenti gestiti da Stripe. Non salviamo i dati della tua carta sui nostri sistemi.
+                Pagamenti gestiti da Stripe. Non salviamo i dati della tua carta
+                sui nostri sistemi.
               </p>
             </div>
 
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-slate-900">Trasparenza totale</p>
+              <p className="text-sm font-semibold text-slate-900">
+                Trasparenza totale
+              </p>
               <p className="text-xs leading-relaxed text-slate-600">
-                Prezzo chiaro, niente costi nascosti. Se resti sul Free, non paghi nulla.
+                Prezzo chiaro, niente costi nascosti. Se resti sul Free, non
+                paghi nulla.
               </p>
             </div>
           </div>
@@ -287,12 +337,18 @@ export default function PricingPage() {
           <div className="mt-6 flex flex-col gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-slate-500">
               Hai dubbi? Leggi{" "}
-              <Link href="/termini" className="underline hover:text-slate-700">Termini</Link>
-              {" "}e{" "}
-              <Link href="/privacy" className="underline hover:text-slate-700">Privacy</Link>.
+              <Link href="/termini" className="underline hover:text-slate-700">
+                Termini
+              </Link>{" "}
+              e{" "}
+              <Link href="/privacy" className="underline hover:text-slate-700">
+                Privacy
+              </Link>
+              .
             </p>
             <p className="text-[11px] text-slate-400">
-              I risultati sono informativi e non sostituiscono un parere legale professionale.
+              I risultati sono informativi e non sostituiscono un parere legale
+              professionale.
             </p>
           </div>
         </section>
