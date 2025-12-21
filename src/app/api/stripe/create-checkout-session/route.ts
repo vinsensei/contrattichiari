@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing priceId or userId' }, { status: 400 });
     }
 
-    const appUrl = process.env.APP_URL || 'http://localhost:3000';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000";
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',

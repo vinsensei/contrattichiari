@@ -61,13 +61,10 @@ export default function PricingPage() {
     check();
   }, [supabase, router]);
 
-  const startCheckout = async () => {
+  const startCheckout = async (selectedPlan: "standard" | "pro") => {
     if (!userId) return;
     setErrorMsg(null);
     setLoadingCheckout(true);
-
-    // piano scelto (per ora fisso)
-    const selectedPlan = "standard";
 
     // GA4: evento di inizio checkout
     gaEvent("subscription_started", {
@@ -112,6 +109,7 @@ export default function PricingPage() {
   }
 
   const standardIsActive = isActive && plan === "standard";
+  const proIsActive = isActive && plan === "pro";
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -192,7 +190,7 @@ export default function PricingPage() {
                     router.push("/login?redirect=/pricing");
                     return;
                   }
-                  startCheckout();
+                  startCheckout("standard");
                 }}
                 disabled={loadingCheckout}
                 className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 disabled:opacity-60"
@@ -203,8 +201,15 @@ export default function PricingPage() {
           </div>
 
           {/* Piano Pro */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-3 opacity-70">
-            <h2 className="text-base font-semibold text-slate-900">Pro</h2>
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-base font-semibold text-slate-900">Pro</h2>
+              {proIsActive && (
+                <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 px-3 py-0.5 text-[11px] font-medium border border-emerald-200">
+                  Piano attivo
+                </span>
+              )}
+            </div>
             <p className="text-2xl font-semibold text-slate-900">9,99€/mese</p>
             <p className="text-sm text-slate-600">
               Per studi e team. Report esportabili e funzionalità avanzate.
@@ -212,13 +217,35 @@ export default function PricingPage() {
             <ul className="text-xs text-slate-600 space-y-1 mt-2">
               <li>• Tutto dello Standard</li>
               <li>• Report PDF esportabili</li>
-              <li>• Storico avanzato e ricerca</li>
-              <li>• Analisi pensate per studi e team</li>
-              <li>• Multi-utente (in roadmap)</li>
+              <li>• Esportazione PDF (report completo)</li>
+              <li>• Funzioni avanzate sull’analisi (blocchi Pro)</li>
+              <li>• Priorità supporto (in roadmap)</li>
             </ul>
-            <p className="mt-auto text-xs text-slate-400">
-              Il piano Pro sarà attivato in una fase successiva.
-            </p>
+            {errorMsg && (
+              <p className="text-xs text-red-600 mt-2">{errorMsg}</p>
+            )}
+            {proIsActive ? (
+              <button
+                onClick={() => router.push("/dashboard/account")}
+                className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800"
+              >
+                Gestisci il tuo abbonamento
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  if (!userId) {
+                    router.push("/login?redirect=/pricing");
+                    return;
+                  }
+                  startCheckout("pro");
+                }}
+                disabled={loadingCheckout}
+                className="mt-auto inline-flex items-center justify-center px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-60"
+              >
+                {loadingCheckout ? "Reindirizzamento…" : "Attiva Pro"}
+              </button>
+            )}
           </div>
         </section>
 

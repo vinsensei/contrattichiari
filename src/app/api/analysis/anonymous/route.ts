@@ -83,7 +83,10 @@ export async function POST(req: NextRequest) {
       lowerName.endsWith(".markdown");
 
     if (!isPdf && !isDocx && !isPlainText) {
-      console.warn("Unsupported file extension for anonymous analysis:", originalName);
+      console.warn(
+        "Unsupported file extension for anonymous analysis:",
+        originalName
+      );
 
       await supabase
         .from("contract_analyses")
@@ -108,7 +111,13 @@ export async function POST(req: NextRequest) {
 
     // 3) Prompt comune (stesso di /api/contracts/analyze)
     const userPrompt = `
-Analizza il seguente contratto (testo o file allegato) e restituisci SOLO un JSON con la seguente struttura:
+Analizza il seguente contratto (testo o file allegato) e restituisci SOLO un JSON valido.
+
+VINCOLO DI COMPATIBILITÀ (IMPORTANTISSIMO):
+- Devi mantenere ESATTAMENTE tutte le chiavi legacy già previste (stessi nomi e stessi tipi).
+- NON rimuovere, NON rinominare, NON cambiare tipo dei campi legacy.
+- Devi AGGIUNGERE un nuovo campo "v2" (append-only) con la struttura richiesta sotto.
+- Rispondi SOLO con JSON valido. Nessun testo fuori dal JSON.
 
 {
   "tipo_contratto": string,
@@ -140,15 +149,74 @@ Analizza il seguente contratto (testo o file allegato) e restituisci SOLO un JSO
   ],
   "alert_finali": [
     string
-  ]
+  ],
+  "v2": {
+    "schema_version": "2.0",
+    "contract_type_short": "web-agency" | "affitto" | "lavoro" | "consulenza" | "nda" | "fornitura" | "saas" | "altro",
+    "risk_index": {
+      "score": number,
+      "level": "basso" | "medio" | "alto",
+      "why_short": string
+    },
+    "top_risk_clauses": [
+      {
+        "clause_id": string,
+        "title": string,
+        "risk_score": number,
+        "risk_level": "basso" | "medio" | "alto",
+        "why_short": string,
+        "excerpt": string
+      }
+    ],
+    "plain_language": string,
+    "balance_score": {
+      "user": number,
+      "counterparty": number,
+      "note": string
+    },
+    "checklist": [
+      { "type": "action" | "caution" | "ok", "text": string }
+    ],
+    "clauses_enriched": [
+      {
+        "clause_id": string,
+        "title": string,
+        "excerpt": string,
+        "risk_level": "basso" | "medio" | "alto",
+        "risk_score": number,
+        "traffic_light": "green" | "yellow" | "red",
+        "diagnostic": string,
+        "highlights": [ string ]
+      }
+    ]
+  }
 }
 
-Regole IMPORTANTI:
+REGOLE IMPORTANTI:
 - Il contratto è in italiano.
 - Rispondi SOLO con JSON valido.
 - Nessun testo fuori dal JSON.
-- Se non hai abbastanza informazioni, metti stringhe brevi che lo indicano.
-`;
+- Score numerici:
+  - v2.risk_index.score: 0-100
+  - v2.*.risk_score: 0-100
+- v2.balance_score.user + v2.balance_score.counterparty devono sommare a 100.
+- clause_id deve essere stabile e semplice: "c1", "c2", "c3"... (uno per ogni elemento di v2.clauses_enriched).
+- v2.top_risk_clauses deve contenere ESATTAMENTE 3 elementi (se possibile). Se non possibile, metti meno elementi ma mai null.
+- v2.plain_language deve essere massimo 500 caratteri.
+- v2.diagnostic deve essere massimo 250 caratteri.
+- v2.highlights: massimo 3 frasi brevi.
+- Le parole string/number nello schema indicano il tipo, NON devono comparire come valori.
+- In "v2" non usare mai null per oggetti o array: se mancano dati usa stringhe brevi o array vuoti [].
+- Se non hai abbastanza informazioni, compila comunque i campi con stringhe brevi tipo "Informazioni insufficienti nel testo fornito".
+- In "v2" non usare mai null per oggetti o array: se mancano dati usa stringhe brevi o array vuoti [].
+- Le parole string/number nello schema indicano il tipo, NON devono comparire come valori.
+- v2.contract_type_short deve essere uno slug breve in minuscolo (es: "web-agency", "affitto", "lavoro", "nda", "consulenza", "fornitura", "altro").
+- v2.contract_type_short deve essere UNO tra: "web-agency" | "affitto" | "lavoro" | "consulenza" | "nda" | "fornitura" | "saas" | "altro".
+
+Ora analizza questo contratto:`;
+
+    const answerRule =
+      "RISPOSTA: restituisci SOLO il JSON, senza backtick, senza markdown, senza commenti.";
 
     let response: any;
 
@@ -168,7 +236,7 @@ Regole IMPORTANTI:
           {
             role: "user",
             content: [
-              { type: "input_text", text: userPrompt },
+              { type: "input_text", text: `${userPrompt}\n\n${answerRule}` },
               { type: "input_file", file_id: uploadedFile.id },
             ],
           },
@@ -209,7 +277,9 @@ Regole IMPORTANTI:
 
 Testo del contratto:
 
-${contractText}`;
+${contractText}
+
+${answerRule}`;
 
       response = await openai.responses.create({
         model: "gpt-4.1",
@@ -257,7 +327,8 @@ ${contractText}`;
         .update({
           status: "failed",
           analysis_json: {
-            error: "Il motore di analisi ha restituito un risultato non valido.",
+            error:
+              "Il motore di analisi ha restituito un risultato non valido.",
             raw: textResult,
           },
         })
