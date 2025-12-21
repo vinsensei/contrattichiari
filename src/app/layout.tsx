@@ -25,6 +25,15 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://contrattichiari.it",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: "Contratti Chiari – Analizza i tuoi contratti in 30 secondi",
     description: "Analisi contratti con AI: clausole rischiose spiegate in modo chiaro.",
