@@ -712,49 +712,46 @@ export const LANDINGS: Record<string, LandingConfig> = {
   "assicurazione-auto": {
     slug: "assicurazione-auto",
 
-    seoTitle: "Analisi contratto assicurazione auto – Clausole e franchigie",
+    seoTitle:
+      "Analisi assicurazione auto – Franchigie, esclusioni, rivalsa e massimali",
     seoDescription:
-      "Carica il contratto di assicurazione auto e verifica franchigie, esclusioni, massimali e clausole critiche.",
-    ogTitle: "Controllo contratto assicurazione auto",
+      "Carica la polizza auto e controlla franchigie, esclusioni, rivalsa, massimali e clausole che riducono (o negano) il risarcimento.",
+    ogTitle: "Controllo assicurazione auto",
     ogDescription:
-      "Analisi assicurazione auto: franchigie, esclusioni, massimali, clausole rischiose.",
+      "Analisi polizza auto: franchigie, esclusioni, rivalsa, massimali e clausole critiche.",
     ogImage: "/og/assicurazione-auto.png",
 
-    h1: "Analisi contratto assicurazione auto",
+    h1: "Analisi assicurazione auto",
     subtitle:
-      "Scopri subito franchigie, esclusioni e clausole che possono farti pagare di più in caso di sinistro.",
-    ctaLabel: "Carica contratto assicurazione auto",
+      "Scopri subito cosa pagheresti davvero in caso di sinistro: franchigie, esclusioni e regole di liquidazione.",
+    ctaLabel: "Carica assicurazione auto",
 
     problemBlocks: [
-      "Franchigie molto alte non evidenziate",
-      "Esclusioni poco chiare o generiche",
-      "Massimali insufficienti per i tuoi rischi",
-      "Clausole che limitano il risarcimento",
+      "Franchigie elevate non messe in evidenza",
+      "Esclusioni generiche che bloccano il risarcimento",
+      "Rivalsa/limitazioni che spostano il costo su di te",
+      "Massimali e garanzie accessorie poco chiari",
     ],
 
     checks: [
-      "Franchigie",
+      "Franchigie e scoperti",
+      "Esclusioni principali",
       "Massimali",
-      "Esclusioni",
-      "Garanzie accessorie",
-      "Rinuncia alla rivalsa",
-      "Condizioni di disdetta",
+      "Rivalsa / rinuncia alla rivalsa",
+      "Garanzie accessorie (kasko, eventi, furto)",
+      "Recesso e tempi di rimborso",
     ],
 
     examples: [
-      "“Franchigia elevata non messa adeguatamente in evidenza.”",
-      "“Esclusioni che rendono difficile ottenere il risarcimento.”",
+      "“Franchigia alta: il primo importo del danno lo paghi tu.”",
+      "“Esclusioni vaghe: risarcimento ridotto o negato.”",
     ],
 
     faq: [
       {
-        question: "Posso caricare condizioni generali e particolari?",
+        question: "Posso caricare condizioni generali + particolari?",
         answer:
-          "Sì, analizziamo sia condizioni generali che specifiche della tua polizza.",
-      },
-      {
-        question: "Valido anche per moto e furgoni?",
-        answer: "Sì, qualsiasi contratto RC auto/moto/veicoli è analizzabile.",
+          "Sì: spesso le clausole più importanti sono nelle condizioni generali o negli allegati/appendici.",
       },
     ],
 
@@ -764,48 +761,50 @@ export const LANDINGS: Record<string, LandingConfig> = {
   "assicurazione-casa": {
     slug: "assicurazione-casa",
 
-    seoTitle: "Analisi assicurazione casa – Verifica clausole e coperture",
+    seoTitle:
+      "Analisi assicurazione casa – Esclusioni, massimali, scoperti e rimborsi",
     seoDescription:
-      "Carica il contratto di assicurazione casa e controlla coperture, esclusioni, franchigie e limiti.",
-    ogTitle: "Controllo contratto assicurazione casa",
+      "Carica la polizza casa e verifica esclusioni, massimali, scoperti, tempi di rimborso e condizioni che possono limitare l’indennizzo.",
+    ogTitle: "Controllo assicurazione casa",
     ogDescription:
-      "Analisi polizza casa: coperture, franchigie, esclusioni, limiti di risarcimento.",
+      "Analisi polizza casa: esclusioni, massimali, scoperti, tempi di rimborso e clausole critiche.",
     ogImage: "/og/assicurazione-casa.png",
 
-    h1: "Analisi contratto assicurazione casa",
+    h1: "Analisi assicurazione casa",
     subtitle:
-      "Verifica in pochi secondi cosa copre davvero la tua assicurazione casa e cosa è escluso.",
-    ctaLabel: "Carica contratto assicurazione casa",
+      "Capisci subito cosa copre davvero la polizza e cosa rischi di pagare tu tra esclusioni, scoperti e limiti.",
+    ctaLabel: "Carica assicurazione casa",
 
     problemBlocks: [
-      "Coperture danni acqua poco chiare",
-      "Esclusioni per eventi atmosferici",
-      "Limiti bassi per responsabilità civile",
-      "Franchigie elevate su danni comuni",
+      "Esclusioni che emergono solo dopo il sinistro",
+      "Massimali insufficienti per danni importanti",
+      "Scoperti/franchigie che riducono molto il rimborso",
+      "Tempi e documenti richiesti poco chiari",
     ],
 
     checks: [
-      "Incendio e scoppio",
-      "Danni acqua",
-      "Eventi atmosferici",
-      "Furto",
-      "Responsabilità civile",
-      "Esclusioni e franchigie",
+      "Eventi coperti (incendio, acqua, eventi naturali)",
+      "Esclusioni e limitazioni",
+      "Massimali per sezione",
+      "Scoperti e franchigie",
+      "Documentazione richiesta",
+      "Recesso e rimborso premio",
     ],
 
     examples: [
-      "“Esclusi i danni da pioggia oltre certe soglie, non evidenziato chiaramente.”",
-      "“Massimale RC troppo basso rispetto ai rischi indicati.”",
+      "“Copertura presente, ma con massimale troppo basso per il danno reale.”",
+      "“Esclusioni negli allegati che limitano l’indennizzo.”",
     ],
 
     faq: [
       {
-        question: "Valido anche per seconde case?",
-        answer: "Sì, analizziamo polizze casa per qualsiasi immobile.",
+        question: "Vale anche per polizze abbinate a mutuo?",
+        answer:
+          "Sì: molte polizze casa sono collegate al mutuo e hanno vincoli specifici su recesso e beneficiario.",
       },
     ],
 
-    related: ["assicurazione-auto", "assicurazione-sanitaria"],
+    related: ["assicurazione-auto", "assicurazione-vita"],
   },
   //Assicurazione sanitaria
   "assicurazione-sanitaria": {
@@ -1338,44 +1337,46 @@ export const LANDINGS: Record<string, LandingConfig> = {
   "carta-di-credito": {
     slug: "carta-di-credito",
 
-    seoTitle: "Analisi contratto carta di credito – Costi, limiti e condizioni",
+    seoTitle:
+      "Analisi carta di credito – Canone, commissioni, blocchi e addebiti",
     seoDescription:
-      "Carica il contratto della tua carta di credito e verifica costi, commissioni, limiti e condizioni nascoste.",
-    ogTitle: "Controllo contratto carta di credito",
+      "Carica il contratto della carta di credito e controlla canone, commissioni, addebiti contestabili, blocchi e clausole che generano costi nascosti.",
+    ogTitle: "Controllo carta di credito",
     ogDescription:
-      "Analisi carta di credito: costi, limiti, commissioni e condizioni.",
+      "Analisi carta di credito: canone, commissioni, addebiti, blocchi e clausole critiche.",
     ogImage: "/og/carta-di-credito.png",
 
-    h1: "Analisi contratto carta di credito",
+    h1: "Analisi carta di credito",
     subtitle:
-      "Scopri subito costi nascosti, commissioni e condizioni della tua carta.",
+      "Scopri subito costi reali, regole di rimborso e clausole che possono bloccarti pagamenti o aumentare le spese.",
     ctaLabel: "Carica contratto carta di credito",
 
     problemBlocks: [
-      "Commissioni non evidenziate",
-      "Condizioni di rimborso poco chiare",
-      "Limiti non esplicitati",
-      "Penali elevate",
+      "Canone e commissioni non chiarissimi",
+      "Addebiti e servizi accessori attivati automaticamente",
+      "Limiti e blocchi operativi improvvisi",
+      "Contestazioni e rimborsi con tempi/opacità",
     ],
 
     checks: [
-      "Commissioni",
-      "Limiti",
-      "Modalità rimborso",
-      "Penali",
-      "Costi gestione",
-      "Clausole rischiose",
+      "Canone e commissioni",
+      "Interessi e mora",
+      "Spese prelievo/anticipo contanti",
+      "Servizi opzionali e assicurazioni",
+      "Blocchi/limitazioni d’uso",
+      "Contestazioni e chargeback",
     ],
 
     examples: [
-      "“Penali di ritardato pagamento molto alte.”",
-      "“Condizioni di rimborso non spiegate chiaramente.”",
+      "“Commissioni su prelievo e anticipo contanti poco evidenziate.”",
+      "“Servizi aggiuntivi attivi di default con costo mensile.”",
     ],
 
     faq: [
       {
-        question: "Accettate carte aziendali?",
-        answer: "Sì, puoi caricare contratti di carte personali e aziendali.",
+        question: "Posso caricare condizioni generali + foglio informativo?",
+        answer:
+          "Sì: più documenti hai, più è facile individuare costi e vincoli non visibili nel contratto principale.",
       },
     ],
 
@@ -1386,90 +1387,98 @@ export const LANDINGS: Record<string, LandingConfig> = {
     slug: "conto-corrente",
 
     seoTitle:
-      "Analisi contratto conto corrente – Costi, commissioni e condizioni",
+      "Analisi conto corrente – Canone, costi nascosti e servizi opzionali",
     seoDescription:
-      "Carica il contratto del conto corrente e verifica costi, commissioni, vincoli e clausole rischiose.",
-    ogTitle: "Controllo contratto conto corrente",
+      "Carica il contratto del conto corrente e controlla canone, commissioni, servizi opzionali attivati di default, scoperti, fidi e modifiche unilaterali.",
+    ogTitle: "Controllo conto corrente",
     ogDescription:
-      "Analisi conto corrente: costi, commissioni, condizioni, vincoli, rischi.",
+      "Analisi conto corrente: canone, commissioni, servizi opzionali, scoperto e clausole critiche.",
     ogImage: "/og/conto-corrente.png",
 
-    h1: "Analisi contratto conto corrente",
+    h1: "Analisi conto corrente",
     subtitle:
-      "Verifica in pochi secondi costi e condizioni del tuo conto corrente.",
+      "Verifica subito canone, commissioni e servizi extra: spesso i costi veri stanno nelle condizioni e nelle “note”.",
     ctaLabel: "Carica contratto conto corrente",
 
     problemBlocks: [
-      "Costi nascosti",
-      "Commissioni variabili",
-      "Vincoli e requisiti minimi di utilizzo",
-      "Clausole poco chiare",
+      "Commissioni e costi ricorrenti poco evidenti",
+      "Servizi opzionali attivati automaticamente",
+      "Spese su bonifici, carte, prelievi e alert",
+      "Modifiche unilaterali con comunicazioni “invisibili”",
     ],
 
     checks: [
-      "Costi gestione",
-      "Commissioni",
-      "Vincoli",
-      "Condizioni apertura",
-      "Modalità recesso",
+      "Canone e spese fisse",
+      "Commissioni operazioni (bonifici/prelievi)",
+      "Carte collegate e relativi costi",
+      "Servizi opzionali/assicurazioni",
+      "Scoperto/fido e interessi",
+      "Modifiche unilaterali e recesso",
     ],
 
     examples: [
-      "“Commissioni non elencate in modo chiaro.”",
-      "“Clausole vincolanti senza spiegazione.”",
+      "“Servizi premium attivi di default con addebito mensile.”",
+      "“Commissioni per operazioni comuni non evidenziate chiaramente.”",
     ],
 
     faq: [
       {
-        question: "Analizzate anche i fogli informativi bancari?",
+        question: "Vale anche per conti online e conti aziendali?",
         answer:
-          "Sì, puoi caricare condizioni generali, fogli informativi e contratti.",
+          "Sì: possiamo analizzare conti personali, online e business, perché le clausole critiche sono spesso simili.",
       },
     ],
 
-    related: ["carta-di-credito"],
+    related: ["carta-di-credito", "carta-revolving"],
   },
   //Carta revolving
   "carta-revolving": {
     slug: "carta-revolving",
 
     seoTitle:
-      "Analisi contratto carta revolving – Tassi, costi e rischi importanti",
+      "Analisi carta revolving – Interessi reali, TAEG e rischio debito",
     seoDescription:
-      "Carica il contratto della tua carta revolving e verifica tassi, costi e condizioni ad alto rischio.",
-    ogTitle: "Controllo contratto carta revolving",
+      "Carica il contratto della carta revolving e verifica TAEG, interessi reali, costi ricorrenti, rimborsi minimi e rischio sovraindebitamento.",
+    ogTitle: "Controllo carta revolving",
     ogDescription:
-      "Analisi carta revolving: tassi, costi nascosti, rischi, clausole critiche.",
+      "Analisi carta revolving: TAEG, interessi, rate minime, costi ricorrenti e clausole critiche.",
     ogImage: "/og/carta-revolving.png",
 
-    h1: "Analisi contratto carta revolving",
+    h1: "Analisi carta revolving",
     subtitle:
-      "Attenzione: scopri subito rischi, costi e condizioni della carta revolving.",
+      "Capisci subito quanto ti costa davvero: interessi, rate minime e regole che possono farti restare in debito a lungo.",
     ctaLabel: "Carica contratto carta revolving",
 
     problemBlocks: [
-      "TAEG altissimo",
-      "Costi nascosti",
-      "Rischio sovraindebitamento",
-      "Clausole pericolose",
+      "TAEG e interessi reali difficili da stimare",
+      "Rate minime che allungano il debito",
+      "Costi ricorrenti (commissioni, assicurazioni, servizi)",
+      "Penali, mora e ricalcoli poco trasparenti",
     ],
 
-    checks: ["TAEG", "Costi gestione", "Penali", "Limiti", "Clausole critiche"],
+    checks: [
+      "TAEG (costo totale)",
+      "Interessi e modalità di calcolo",
+      "Rata minima e piano di rimborso",
+      "Commissioni/quote/servizi",
+      "Penali e mora",
+      "Modifiche unilaterali",
+    ],
 
     examples: [
-      "“TAEG superiore alla media di mercato.”",
-      "“Costi aggiuntivi non chiaramente indicati.”",
+      "“Rata minima bassa: il debito si riduce lentissimo.”",
+      "“Spese ricorrenti che aumentano il costo totale oltre il previsto.”",
     ],
 
     faq: [
       {
-        question: "È valido per qualsiasi società finanziaria?",
+        question: "È diversa da una carta di credito normale?",
         answer:
-          "Sì, analizziamo contratti revolving di tutte le società emittenti.",
+          "Sì: la revolving ruota su credito rateizzato con interessi. La differenza vera è nel costo totale e nella durata del debito.",
       },
     ],
 
-    related: ["carta-di-credito"],
+    related: ["carta-di-credito", "conto-corrente"],
   },
   //Contratto palestra
   "contratto-palestra": {
