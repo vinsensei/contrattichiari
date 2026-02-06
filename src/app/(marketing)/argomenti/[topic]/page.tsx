@@ -306,7 +306,7 @@ function Section({
               href={`/${slugNorm}`}
               className="block rounded-xl border border-zinc-200 bg-white p-4 hover:border-zinc-900 transition"
             >
-              <div className="text-sm font-medium text-zinc-900">
+              <div className="text-sm font-bold text-zinc-900">
                 {page.hero?.h1 ?? slugNorm}
               </div>
               {page.hero?.subtitle ? (

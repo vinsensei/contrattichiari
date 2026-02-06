@@ -233,7 +233,7 @@ function EditorialBlocks({ page }: { page: EditorialPage }) {
                     />
 
                     {/* Testo */}
-                    <p className="text-sm leading-relaxed text-[#0B1A4A]">
+                    <p className="text-sm leading-relaxed text-[#000000]">
                       {it}
                     </p>
                   </li>
@@ -597,7 +597,7 @@ export default async function LandingPage({
                         />
 
                         {/* Testo */}
-                        <p className="text-sm leading-relaxed text-[#0B1A4A]">
+                        <p className="text-sm leading-relaxed text-[#000000]">
                           {item}
                         </p>
                       </li>

@@ -86,3 +86,17 @@ body {
   animation: ripple 2.4s ease-out infinite;
   animation-delay: 0.4s;
 }
+
+.blue_moon {
+    position: absolute;
+    background: #26a6f44a;
+    width: 200%;
+    height: 230px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(173deg);
+    z-index: 0;
+    border-radius: 100%;
+    filter: blur(40px);
+    opacity: 0.3;
+}
