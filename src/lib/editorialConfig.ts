@@ -182,13 +182,14 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     kind: "clausola",
     seo: {
       title:
-        "Clausola di recesso nell’affitto: cosa significa e cosa controllare",
+        "Clausola di recesso nell’affitto: quando puoi uscire davvero e cosa rischi",
       description:
-        "Guida rapida al recesso nell’affitto: chi può recedere, preavviso, modalità e rischi quando la clausola è sbilanciata.",
+        "Clausola di recesso nell’affitto: chi può recedere, preavviso e modalità. Quando è sbilanciata e quali penali o costi può attivare.",
     },
     hero: {
-      h1: "Clausola di recesso",
-      subtitle: "Cos’è, quando è critica e cosa controllare prima di firmare.",
+      h1: "Clausola di recesso nell’affitto",
+      subtitle:
+        "I casi in cui uscire dal contratto è più difficile (o costoso) di quanto sembra.",
     },
     related: {
       editorial: [
@@ -203,17 +204,17 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "La clausola di recesso disciplina come e quando una parte può uscire dal contratto. Diventa rischiosa quando è sbilanciata (recesso “facile” per uno, difficile per l’altro), quando non è chiara su tempi e forma, o quando introduce penali eccessive.",
+        text: "La clausola di recesso stabilisce se, come e quando puoi uscire dal contratto prima della scadenza. Diventa critica quando è sbilanciata tra le parti, poco chiara su tempi e modalità o quando prevede penali elevate. Il rischio concreto è pensare di poter uscire facilmente e scoprire, invece, di dover pagare costi imprevisti o di non aver rispettato la forma corretta.",
       },
       {
         type: "bullets",
         title: "Segnali tipici di rischio",
         items: [
           "Recesso previsto solo per una delle parti",
-          "Preavviso non chiaro o troppo rigido",
-          "Modalità di comunicazione “impossibili” (solo PEC/raccomandata, indirizzi specifici)",
-          "Penali alte o calcolate in modo vago",
-          "Obblighi dopo il recesso poco chiari (pagamenti, restituzioni, spese)",
+          "Preavviso poco chiaro o eccessivamente lungo",
+          "Modalità di comunicazione rigide o facili da sbagliare (PEC, raccomandata, indirizzi specifici)",
+          "Penali elevate o calcolate in modo vago",
+          "Obblighi dopo il recesso poco definiti (pagamenti, spese, consegna dell’immobile)",
         ],
       },
       {
@@ -222,16 +223,16 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           "Chi può recedere? Entrambe le parti o solo una?",
           "Con quanto preavviso e da quando decorre?",
-          "Con quale forma (PEC, raccomandata, email)?",
-          "Ci sono penali? Sono proporzionate e calcolate chiaramente?",
+          "Qual è la forma richiesta (PEC, raccomandata, email)?",
+          "Sono previste penali? Sono proporzionate e calcolate chiaramente?",
           "Cosa succede dopo il recesso (spese, consegna immobile, conguagli)?",
         ],
       },
       {
         type: "cta",
         variant: "soft",
-        title: "Vuoi verificare come è scritto nel tuo contratto?",
-        text: "Caricalo e controlliamo se la clausola è sbilanciata o rischiosa.",
+        title: "Vuoi verificare se il recesso è davvero praticabile?",
+        text: "Carica il contratto e controlliamo se la clausola di recesso è sbilanciata o attiva penali e costi nascosti.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -240,11 +241,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           {
             q: "Recesso e disdetta sono la stessa cosa?",
-            a: "Non sempre. La disdetta spesso riguarda la comunicazione di fine rapporto a scadenza; il recesso è un’uscita anticipata o “prevista” dal contratto. Conta cosa prevede il testo.",
+            a: "No. La disdetta riguarda di solito la fine del contratto a scadenza; il recesso consente un’uscita anticipata. Conta sempre cosa è scritto nella clausola.",
           },
           {
-            q: "Se non c’è una clausola di recesso?",
-            a: "Dipende dal tipo di contratto e da quanto previsto nel testo e dalla disciplina applicabile. In pratica: va verificato caso per caso.",
+            q: "Se non c’è una clausola di recesso, posso comunque uscire?",
+            a: "Dipende dal tipo di contratto e dalle regole applicabili. In pratica va verificato caso per caso, perché l’assenza della clausola può limitare molto le possibilità di uscita.",
           },
         ],
       },
@@ -953,13 +954,14 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     kind: "clausola",
     seo: {
       title:
-        "Rinnovo automatico nel contratto di affitto: come funziona e cosa controllare",
+        "Rinnovo automatico nell’affitto: quando scatta e cosa rischi se sbagli",
       description:
-        "Guida rapida al rinnovo automatico nell’affitto: durata, scadenze, disdetta, rinnovi ‘taciti’ e clausole poco chiare.",
+        "Rinnovo automatico nel contratto di affitto: scadenze, disdetta e rischi dei rinnovi taciti che ti vincolano per altri mesi.",
     },
     hero: {
-      h1: "Rinnovo automatico (affitto)",
-      subtitle: "Scadenze, disdetta e rischi dei rinnovi ‘taciti’.",
+      h1: "Rinnovo automatico nell’affitto",
+      subtitle:
+        "Quando il contratto si rinnova da solo e ti vincola più a lungo.",
     },
     related: {
       editorial: [
@@ -973,33 +975,35 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "Nei contratti di affitto il rinnovo può essere previsto in automatico (anche ‘tacitamente’). Il rischio è non accorgersi delle scadenze, dei termini di disdetta o di clausole che rendono difficile uscire dal contratto.",
+        text: "Nei contratti di affitto il rinnovo automatico (spesso chiamato ‘tacito’) fa proseguire il rapporto se non invii la disdetta nei tempi e nei modi previsti. Il rischio concreto è dimenticare una scadenza o sbagliare la comunicazione e ritrovarsi vincolati al contratto per altri mesi, con costi che non avevi messo in conto.",
       },
       {
         type: "bullets",
         title: "Segnali tipici di rischio",
         items: [
-          "Scadenze non evidenti o disperse nel testo",
-          "Disdetta con tempi molto anticipati o modalità rigide",
-          "Rinnovi automatici senza spiegazione chiara",
-          "Penali o costi legati alla disdetta",
+          "Scadenze poco evidenti o disperse nel testo",
+          "Termini di disdetta molto anticipati rispetto alla scadenza",
+          "Modalità di disdetta rigide o facili da sbagliare",
+          "Rinnovi automatici spiegati in modo vago",
+          "Penali o costi collegati all’uscita dopo il rinnovo",
         ],
       },
       {
         type: "checklist",
         title: "Checklist (1 minuto)",
         items: [
-          "Qual è la durata e quando scade?",
-          "Quali sono i termini di disdetta (quando e come)?",
-          "Il rinnovo è automatico? Con quali condizioni?",
-          "Ci sono penali o costi in caso di uscita?",
+          "Qual è la durata effettiva del contratto e quando scade?",
+          "Entro quando va inviata la disdetta?",
+          "Con quale forma e a quale indirizzo?",
+          "Il rinnovo scatta automaticamente se non fai nulla?",
+          "Ci sono costi o penali se esci dopo il rinnovo?",
         ],
       },
       {
         type: "cta",
         variant: "soft",
-        title: "Vuoi capire quando puoi uscire dal contratto?",
-        text: "Caricalo e ti evidenziamo scadenze, disdetta e clausole critiche.",
+        title: "Vuoi sapere se rischi un rinnovo automatico?",
+        text: "Carica il contratto e individuiamo scadenze, disdetta e clausole che possono vincolarti più a lungo.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -1008,11 +1012,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           {
             q: "Rinnovo automatico e ‘tacito rinnovo’ sono la stessa cosa?",
-            a: "Spesso sì nella pratica: indica che il contratto prosegue se nessuno comunica la disdetta nei tempi previsti.",
+            a: "Nella pratica sì: indicano che il contratto prosegue se non comunichi la disdetta nei tempi e nei modi previsti.",
           },
           {
-            q: "Se sbaglio i tempi di disdetta cosa succede?",
-            a: "Dipende dal testo: può scattare il rinnovo o può rendere più difficile recedere. Per questo conviene verificare con precisione scadenze e modalità.",
+            q: "Se sbaglio i tempi o la forma della disdetta cosa succede?",
+            a: "Di solito scatta il rinnovo automatico o diventa più difficile uscire senza costi. Per questo è fondamentale verificare scadenze e modalità con precisione.",
           },
         ],
       },
@@ -3381,13 +3385,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/spese-forfettarie-affitto",
     kind: "clausola",
     seo: {
-      title: "Spese forfettarie nell’affitto: quando il forfait è scritto male",
+      title:
+        "Spese forfettarie nell’affitto: quando il forfait non è davvero bloccato",
       description:
-        "Guida alle spese forfettarie nell’affitto: cosa significa davvero “forfait”, quando può aumentare e quali clausole sono rischiose.",
+        "Spese forfettarie nell’affitto: quando il forfait può aumentare, se sono ammessi conguagli e quali clausole nascondono costi extra.",
     },
     hero: {
-      h1: "Spese forfettarie nell’affitto",
-      subtitle: "Quando “spese incluse” non significa costo bloccato.",
+      h1: "Spese forfettarie nell’affitto: quando il forfait è rischioso",
+      subtitle:
+        "Cosa controllare quando “spese incluse” non significa costo fisso.",
     },
     related: {
       editorial: [
@@ -3402,27 +3408,27 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "Nel contratto di affitto le spese possono essere indicate come “forfettarie” o “incluse”. Il problema nasce quando il forfait non è davvero fisso: senza criteri chiari, può aprire la porta a conguagli, aumenti o richieste extra.",
+        text: "Nel contratto di affitto le spese possono essere indicate come “forfettarie” o “incluse”. Il problema nasce quando il forfait non è davvero fisso: se mancano criteri chiari su cosa copre e se esclude i conguagli, il locatore può chiedere aumenti o importi extra nel tempo. Il rischio concreto è pagare più del previsto anche se pensavi di avere un costo bloccato.",
       },
       {
         type: "bullets",
         title: "Campanelli d’allarme",
         items: [
-          "Forfait senza elenco delle spese incluse",
-          "Assenza di una frase che escluda conguagli",
-          "Richiamo generico a regolamenti o allegati",
-          "Possibilità di revisione del forfait non spiegata",
-          "Forfait che copre anche spese variabili (utenze, servizi)",
+          "Forfait indicato senza elenco preciso delle spese incluse",
+          "Mancanza di una frase che escluda esplicitamente i conguagli",
+          "Richiamo generico a regolamenti, tabelle o allegati esterni",
+          "Possibilità di revisione del forfait senza criteri o limiti",
+          "Forfait che include anche spese variabili (utenze, servizi)",
         ],
       },
       {
         type: "checklist",
         title: "Checklist rapida",
         items: [
-          "Quali spese sono incluse nel forfait?",
-          "È esclusa esplicitamente la possibilità di conguagli?",
-          "Il forfait può essere aggiornato? Quando e come?",
-          "Sono richiamati regolamenti o tabelle spese?",
+          "Quali spese sono incluse in modo esplicito nel forfait?",
+          "È esclusa chiaramente la possibilità di conguagli a fine periodo?",
+          "Il forfait può essere aggiornato? In quali casi e con quali limiti?",
+          "Sono richiamati regolamenti o tabelle che incidono sulle spese?",
           "Le utenze sono davvero comprese o solo anticipate?",
         ],
       },
@@ -3430,7 +3436,7 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         type: "cta",
         variant: "soft",
         title: "Vuoi capire se il forfait è davvero bloccato?",
-        text: "Carica il contratto e verifichiamo se le spese sono scritte in modo chiaro.",
+        text: "Carica il contratto e verifichiamo se la clausola sulle spese è scritta in modo chiaro o lascia spazio a richieste extra.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -6706,13 +6712,14 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/esclusiva",
     kind: "clausola",
     seo: {
-      title: "Clausola di esclusiva: cosa significa e quando è rischiosa",
+      title: "Clausola di esclusiva: quando ti blocca davvero e cosa rischi",
       description:
-        "Guida rapida alla clausola di esclusiva nei contratti di lavoro e collaborazione: limiti, durata, ambito e rischi quando blocca altri incarichi.",
+        "Clausola di esclusiva nei contratti di lavoro e collaborazione: quando è legittima, quando è troppo ampia e perché può bloccare altri incarichi.",
     },
     hero: {
-      h1: "Clausola di esclusiva",
-      subtitle: "Quando ti impedisce (di fatto) di lavorare per altri.",
+      h1: "Clausola di esclusiva: quando diventa un vincolo",
+      subtitle:
+        "I casi in cui limita davvero la tua libertà di lavorare per altri.",
     },
     related: {
       editorial: [
@@ -6731,35 +6738,35 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "L’esclusiva significa che ti impegni a non lavorare per altri (o a non lavorare per alcuni soggetti/settori) mentre dura il rapporto. Diventa rischiosa quando è troppo ampia, non ha limiti chiari o non è compensata: può ridurre davvero le tue entrate e la tua libertà professionale.",
+        text: "La clausola di esclusiva ti impegna a non lavorare per altri clienti o settori mentre dura il rapporto. Diventa critica quando è troppo ampia, non ha limiti chiari o non è compensata: in questi casi può ridurre concretamente le tue entrate e limitare la tua libertà professionale, anche oltre ciò che è necessario per il contratto.",
       },
       {
         type: "bullets",
         title: "Campanelli d’allarme",
         items: [
-          "Esclusiva totale senza motivazione (anche su attività non in concorrenza)",
-          "Ambito vago (“attività simili” senza definizione)",
-          "Durata indefinita o che continua dopo la fine del rapporto",
-          "Divieto esteso a clienti/settori molto ampi",
-          "Nessun compenso o indennizzo per l’esclusiva",
+          "Esclusiva totale senza una motivazione legata al ruolo",
+          "Ambito vago (“attività simili” o “settori affini” senza definizione)",
+          "Durata indefinita o estesa anche dopo la fine del rapporto",
+          "Divieto applicato a clienti o settori molto ampi",
+          "Assenza di un compenso o indennizzo per l’esclusiva",
         ],
       },
       {
         type: "checklist",
         title: "Checklist (1 minuto)",
         items: [
-          "È esclusiva totale o limitata a un settore/cliente?",
-          "È definito cosa è “concorrenza” e cosa no?",
-          "Quanto dura (solo durante il rapporto o anche dopo)?",
-          "È prevista un’indennità/compenso per l’esclusiva?",
-          "Cosa succede se ricevi un incarico esterno (permesso scritto, eccezioni)?",
+          "L’esclusiva è totale o limitata a uno specifico settore o cliente?",
+          "È chiaro cosa rientra nella concorrenza e cosa no?",
+          "Quanto dura l’obbligo (solo durante il rapporto o anche dopo)?",
+          "È previsto un compenso o un’indennità per l’esclusiva?",
+          "Sono previste eccezioni o autorizzazioni per incarichi esterni?",
         ],
       },
       {
         type: "cta",
         variant: "soft",
         title: "Vuoi capire se l’esclusiva ti blocca troppo?",
-        text: "Carica il contratto: evidenziamo ampiezza, durata e squilibri della clausola.",
+        text: "Carica il contratto: analizziamo ampiezza, durata e squilibri della clausola di esclusiva.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -6768,11 +6775,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           {
             q: "Esclusiva e non concorrenza sono la stessa cosa?",
-            a: "No. L’esclusiva vale di solito durante il rapporto; la non concorrenza spesso opera anche dopo e dovrebbe avere limiti e condizioni specifiche. Conta cosa c’è scritto nel testo.",
+            a: "No. L’esclusiva opera di solito durante il rapporto; la non concorrenza può valere anche dopo. Conta sempre come è scritta la clausola nel contratto.",
           },
           {
-            q: "Se non è previsto un compenso, è automaticamente invalida?",
-            a: "Dipende dal tipo di rapporto e da come è formulata. In pratica: se è molto ampia e ti limita davvero, è un segnale di squilibrio da verificare bene.",
+            q: "Se non è previsto un compenso, l’esclusiva è automaticamente invalida?",
+            a: "Non sempre. Dipende dal tipo di rapporto e dall’ampiezza del vincolo. Se limita molto le tue possibilità di lavoro, è un segnale di squilibrio da valutare con attenzione.",
           },
         ],
       },
@@ -9954,13 +9961,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/ripartizione-spese-coinquilini",
     kind: "clausola",
     seo: {
-      title: "Ripartizione spese tra coinquilini: cosa deve essere scritto",
+      title:
+        "Ripartizione spese tra coinquilini: quando è ambigua e cosa rischi",
       description:
-        "Affitto studenti: come devono essere indicate spese e utenze, quote, criteri e conguagli per evitare contestazioni.",
+        "Ripartizione delle spese tra coinquilini: criteri, conguagli e prove. Quando la clausola è vaga e porta a litigi o costi extra.",
     },
     hero: {
-      h1: "Ripartizione spese",
-      subtitle: "Utenze e spese: dove nascono i litigi e i costi extra.",
+      h1: "Ripartizione spese tra coinquilini",
+      subtitle:
+        "I casi in cui utenze e spese diventano fonte di litigi e costi imprevisti.",
     },
     related: {
       editorial: [
@@ -9975,33 +9984,33 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "Nei contratti studenti le spese (utenze, condominio, extra) devono essere ripartite con criteri chiari. La clausola è rischiosa quando parla di spese “a consumo” senza prove, con forfait ingannevoli o con conguagli non verificabili.",
+        text: "Nei contratti di affitto per studenti la ripartizione delle spese tra coinquilini è uno dei punti più critici. La clausola diventa rischiosa quando prevede spese “a consumo” senza criteri verificabili, forfait poco chiari o conguagli senza documentazione. Il risultato concreto sono contestazioni, litigi tra coinquilini e richieste di importi extra difficili da controllare.",
       },
       {
         type: "bullets",
         title: "Segnali tipici di rischio",
         items: [
-          "Forfait spese senza dettaglio o senza limiti",
-          "Conguagli senza documentazione",
-          "Spese non previste “a carico degli inquilini” in modo generico",
-          "Nessun criterio di ripartizione tra coinquilini",
+          "Forfait spese senza dettaglio o senza un limite massimo",
+          "Conguagli richiesti senza bollette o rendiconti",
+          "Spese indicate genericamente “a carico degli inquilini”",
+          "Assenza di un criterio di ripartizione tra coinquilini",
         ],
       },
       {
         type: "checklist",
         title: "Checklist (30 secondi)",
         items: [
-          "Quali spese sono incluse e quali escluse?",
-          "Come si prova il consumo (bollette, letture, rendiconti)?",
-          "C’è un criterio di ripartizione (quote, metri, camere)?",
+          "Quali spese sono incluse e quali restano escluse?",
+          "Come viene provato il consumo (bollette, letture, rendiconti)?",
+          "È indicato un criterio di ripartizione (quote, metri, camere)?",
           "Quando avvengono i conguagli e con quali documenti?",
         ],
       },
       {
         type: "cta",
         variant: "soft",
-        title: "Vuoi verificare se le spese sono chiare e verificabili?",
-        text: "Carica il contratto: controlliamo criteri, conguagli e rischi di extra.",
+        title: "Vuoi verificare se la ripartizione è davvero chiara?",
+        text: "Carica il contratto: controlliamo criteri, conguagli e punti che possono generare costi extra o contestazioni.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -17281,13 +17290,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/durata-contratto",
     kind: "clausola",
     seo: {
-      title: "Durata del contratto: vincoli, rinnovi e rischi da controllare",
+      title:
+        "Durata del contratto: quanto resti vincolato e cosa rischi davvero",
       description:
-        "Durata contrattuale, vincoli minimi, rinnovi e penali: quando il tempo diventa un rischio e come evitarlo prima di firmare.",
+        "Durata del contratto, vincoli minimi e rinnovi: quando il tempo diventa un costo e perché uscire può essere più difficile del previsto.",
     },
     hero: {
       h1: "Durata del contratto",
-      subtitle: "Il vero costo spesso non è il prezzo, ma il tempo.",
+      subtitle:
+        "Il vero rischio spesso non è il prezzo, ma per quanto tempo resti bloccato.",
     },
     related: {
       editorial: [
@@ -17307,29 +17318,27 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
       {
         type: "intro",
         text:
-          "La durata del contratto stabilisce per quanto tempo sei vincolato a un rapporto contrattuale. È una delle clausole più sottovalutate, ma anche una delle più pericolose quando è scritta male.\n\n" +
-          "Il rischio nasce quando la durata è lunga, poco chiara o collegata a rinnovi automatici e penali di uscita. In questi casi puoi ritrovarti bloccato per mesi o anni, anche se il servizio non ti soddisfa più.",
+          "La durata del contratto stabilisce per quanto tempo sei vincolato a un rapporto contrattuale ed è una delle clausole più sottovalutate.\n\n" +
+          "Il rischio concreto nasce quando la durata è lunga, poco evidente o collegata a rinnovi automatici e penali di uscita. In questi casi puoi ritrovarti vincolato per mesi o anni, anche se il servizio non ti soddisfa più o non lo utilizzi.",
       },
-
       {
         type: "bullets",
         title: "Quando la durata diventa un rischio",
         items: [
-          "Durata iniziale molto lunga",
-          "Vincoli minimi non evidenziati",
+          "Durata iniziale molto lunga rispetto al servizio",
+          "Vincoli minimi non messi in evidenza",
           "Rinnovo automatico alla scadenza",
-          "Assenza di finestre di uscita",
-          "Penali elevate per recesso anticipato",
+          "Assenza di finestre di uscita intermedie",
+          "Penali elevate in caso di recesso anticipato",
         ],
       },
-
       {
         type: "examples",
         title: "Esempi frequenti",
         items: [
           {
             title: "Vincolo minimo",
-            text: "Contratto apparentemente mensile ma con durata minima di 12 mesi.",
+            text: "Contratto presentato come mensile, ma con durata minima di 12 mesi.",
           },
           {
             title: "Rinnovo silenzioso",
@@ -17337,61 +17346,57 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
           },
           {
             title: "Durata poco chiara",
-            text: "La durata è indicata in modo ambiguo o rinviata ad altri documenti.",
+            text: "La durata è indicata in modo ambiguo o rinviata a documenti esterni.",
           },
           {
             title: "Uscita costosa",
-            text: "Il recesso anticipato comporta il pagamento di tutte le mensilità residue.",
+            text: "Il recesso anticipato comporta il pagamento di molte mensilità residue.",
           },
         ],
       },
-
       {
         type: "bullets",
         title: "Segnali d’allarme nel testo",
         items: [
-          "Espressioni come ‘durata minima garantita’",
-          "Rinvii a condizioni generali o regolamenti",
-          "Assenza di una data di fine chiara",
+          "Espressioni come “durata minima garantita” o simili",
+          "Rinvii a condizioni generali o regolamenti esterni",
+          "Mancanza di una data di fine chiara",
           "Collegamento automatico a penali o costi di uscita",
         ],
       },
-
       {
         type: "checklist",
         title: "Checklist (30 secondi)",
         items: [
-          "Quanto dura il contratto inizialmente?",
-          "Esiste un vincolo minimo?",
-          "Cosa succede alla scadenza (si rinnova?)",
-          "È possibile recedere prima?",
-          "Quali costi o penali sono previsti?",
+          "Quanto dura realmente il contratto?",
+          "Esiste un vincolo minimo nascosto?",
+          "Cosa succede alla scadenza (si rinnova automaticamente)?",
+          "È possibile uscire prima?",
+          "Quali costi o penali sono previsti in caso di uscita?",
         ],
       },
-
       {
         type: "cta",
         variant: "soft",
         title: "Vuoi sapere per quanto tempo sei davvero vincolato?",
-        text: "Carica il contratto e analizziamo durata, rinnovi e costi di uscita.",
+        text: "Carica il contratto e analizziamo durata, rinnovi e costi di uscita prima che diventino un problema.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
-
       {
         type: "faq",
         items: [
           {
             q: "Durata e rinnovo automatico sono la stessa cosa?",
-            a: "No. La durata è il periodo iniziale, il rinnovo decide cosa succede dopo.",
+            a: "No. La durata indica il periodo iniziale; il rinnovo automatico stabilisce cosa succede alla scadenza.",
           },
           {
             q: "Un contratto può sembrare mensile ma non esserlo?",
-            a: "Sì. Spesso esiste un vincolo minimo nascosto nel testo.",
+            a: "Sì. Spesso esiste un vincolo minimo che non è immediatamente evidente.",
           },
           {
             q: "Posso uscire prima della scadenza?",
-            a: "Dipende dalla clausola. Senza una finestra di recesso, l’uscita può essere costosa.",
+            a: "Dipende dalla clausola. In assenza di una finestra di recesso, l’uscita può comportare costi elevati.",
           },
         ],
       },
@@ -20904,14 +20909,14 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     kind: "clausola",
     seo: {
       title:
-        "Clausola di rinnovo automatico: come funziona e quando diventa rischiosa",
+        "Clausola di rinnovo automatico: quando scatta e cosa rischi se non disdici",
       description:
-        "Rinnovo automatico e tacito rinnovo nei contratti: preavvisi, canali di disdetta, variazioni di prezzo e rischi nascosti.",
+        "Rinnovo automatico e tacito rinnovo: preavvisi, canali di disdetta e aumenti di prezzo. Quando il contratto continua senza che te ne accorgi.",
     },
     hero: {
       h1: "Clausola di rinnovo automatico",
       subtitle:
-        "Se non disdici nel modo giusto, il contratto continua da solo.",
+        "Se sbagli tempi o modalità di disdetta, il contratto continua da solo.",
     },
     related: {
       editorial: [
@@ -20932,22 +20937,20 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
       {
         type: "intro",
         text:
-          "La clausola di rinnovo automatico (o tacito rinnovo) prevede che il contratto si prolunghi automaticamente se non comunichi la disdetta entro un certo termine. È una clausola molto diffusa in abbonamenti, servizi digitali, telefonia e pay-TV.\n\n" +
-          "Il problema nasce quando il preavviso è poco visibile, quando i canali di disdetta sono limitati o quando il rinnovo comporta nuove condizioni economiche. In questi casi il rinnovo non è una scelta consapevole, ma una conseguenza automatica.",
+          "La clausola di rinnovo automatico (o tacito rinnovo) prevede che il contratto si prolunghi automaticamente se non comunichi la disdetta entro termini precisi. È molto diffusa in abbonamenti, servizi digitali, telefonia e pay-TV.\n\n" +
+          "Il rischio concreto nasce quando il preavviso è poco visibile, i canali di disdetta sono limitati o il rinnovo introduce nuove condizioni economiche. In questi casi il contratto non continua per scelta, ma perché hai sbagliato tempi o modalità.",
       },
-
       {
         type: "bullets",
         title: "Quando il rinnovo automatico diventa rischioso",
         items: [
-          "Preavviso lungo o poco evidente",
+          "Preavviso lungo o nascosto nel testo",
           "Canali di disdetta complessi o limitati",
           "Rinnovo con aumento di prezzo",
           "Nuova durata minima dopo il rinnovo",
-          "Penali se disdici dopo la scadenza",
+          "Penali o costi se disdici in ritardo",
         ],
       },
-
       {
         type: "examples",
         title: "Esempi tipici",
@@ -20970,39 +20973,35 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
           },
         ],
       },
-
       {
         type: "bullets",
         title: "Segnali d’allarme nel testo",
         items: [
           "Riferimenti a regolamenti o documenti esterni",
-          "Preavviso indicato in modo generico",
-          "Mancanza di una data di scadenza chiara",
-          "Rinnovo che modifica condizioni economiche",
+          "Preavviso indicato in modo generico o poco chiaro",
+          "Assenza di una data di scadenza evidente",
+          "Rinnovo che modifica prezzo o durata",
         ],
       },
-
       {
         type: "checklist",
         title: "Checklist (30 secondi)",
         items: [
-          "Quando scade il contratto?",
+          "Quando scade esattamente il contratto?",
           "Con quanto anticipo devi disdire?",
           "Quali canali sono validi per la disdetta?",
           "Il rinnovo cambia prezzo o durata?",
           "Cosa succede se disdici in ritardo?",
         ],
       },
-
       {
         type: "cta",
         variant: "soft",
         title: "Vuoi evitare un rinnovo non voluto?",
-        text: "Carica il contratto e controlliamo scadenze, preavvisi e conseguenze del rinnovo.",
+        text: "Carica il contratto e controlliamo scadenze, preavvisi e conseguenze del rinnovo automatico.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
-
       {
         type: "faq",
         items: [
@@ -21012,11 +21011,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
           },
           {
             q: "Possono cambiare il prezzo al rinnovo?",
-            a: "Solo se previsto dal contratto. Aumenti automatici sono un segnale di rischio.",
+            a: "Solo se previsto dal contratto. Aumenti automatici o poco chiari sono un segnale di rischio.",
           },
           {
             q: "Se dimentico di disdire, posso uscire subito?",
-            a: "Dipende dalle penali e dalla nuova durata prevista dopo il rinnovo.",
+            a: "Dipende dalla nuova durata e dalle penali previste dopo il rinnovo.",
           },
         ],
       },
@@ -21694,13 +21693,14 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     kind: "clausola",
     seo: {
       title:
-        "Risoluzione del contratto: quando il rapporto si chiude automaticamente",
+        "Risoluzione del contratto: quando scatta subito e cosa rischi davvero",
       description:
-        "Clausole di risoluzione del contratto: inadempimenti, automatismi, effetti economici e rischi di chiusura immediata.",
+        "Risoluzione del contratto: quando è legittima, quando è abusiva e quali rischi economici comporta la chiusura immediata.",
     },
     hero: {
-      h1: "Risoluzione del contratto",
-      subtitle: "Quando il rapporto può chiudersi all’improvviso.",
+      h1: "Risoluzione del contratto: quando è legittima e quando ti penalizza",
+      subtitle:
+        "I casi in cui il contratto può chiudersi subito, anche per errori minimi.",
     },
     related: {
       editorial: [
@@ -21718,7 +21718,7 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "La clausola di risoluzione stabilisce quando il contratto si chiude per inadempimento. Il rischio è una formulazione che consente la chiusura automatica anche per violazioni minime, senza possibilità di rimediare.",
+        text: "La clausola di risoluzione stabilisce quando il contratto può chiudersi prima del previsto per inadempimento. In molti casi è formulata in modo da consentire la chiusura immediata anche per violazioni minime, senza diffida e senza possibilità di rimediare. Il rischio concreto è perdere il rapporto — e talvolta il compenso — anche se l’errore è marginale.",
       },
       {
         type: "bullets",
@@ -21727,8 +21727,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
           "Quali inadempimenti fanno scattare la risoluzione",
           "Se è prevista una diffida o un termine per rimediare",
           "Se la risoluzione è automatica o discrezionale",
-          "Cosa succede ai compensi maturati",
-          "Se restano penali o obblighi post-contratto",
+          "Cosa succede ai compensi già maturati",
+          "Se restano penali o obblighi dopo la chiusura",
         ],
       },
       {
@@ -21737,15 +21737,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           {
             title: "Inadempimento minimo",
-            text: "Risoluzione per un singolo ritardo o una violazione formale.",
+            text: "Risoluzione prevista anche per un singolo ritardo o una violazione formale.",
           },
           {
             title: "Automatismo totale",
-            text: "Il contratto si risolve ‘di diritto’ senza avviso o possibilità di sanatoria.",
+            text: "Il contratto si risolve di diritto senza preavviso né possibilità di sanatoria.",
           },
           {
             title: "Effetti sbilanciati",
-            text: "Perdita del compenso anche per lavoro già svolto.",
+            text: "Perdita del compenso o mancato pagamento anche per lavoro già svolto.",
           },
         ],
       },
@@ -21754,17 +21754,17 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         title: "Checklist pratica",
         items: [
           "È prevista una diffida prima della risoluzione?",
-          "Gli inadempimenti sono gravi o anche marginali?",
-          "La risoluzione vale per entrambe le parti?",
-          "Il lavoro già svolto viene pagato?",
+          "Gli inadempimenti rilevanti sono gravi o anche marginali?",
+          "La clausola vale per entrambe le parti?",
+          "Il lavoro già svolto viene comunque pagato?",
           "Restano penali o obblighi dopo la chiusura?",
         ],
       },
       {
         type: "cta",
         variant: "mid",
-        title: "Vuoi capire se il contratto può saltare troppo facilmente?",
-        text: "Carica il contratto e individuiamo clausole che espongono a risoluzione immediata.",
+        title: "Vuoi capire se il contratto può chiudersi troppo facilmente?",
+        text: "Carica il contratto e individuiamo clausole che permettono una risoluzione immediata o sbilanciata.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -21856,14 +21856,14 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/sospensione-servizio",
     kind: "clausola",
     seo: {
-      title:
-        "Sospensione del servizio: quando può avvenire e perché è rischiosa",
+      title: "Sospensione del servizio: quando possono bloccarti e cosa rischi",
       description:
-        "Clausole di sospensione del servizio: quando il fornitore può bloccare l’uso, con quali limiti e quali tutele devono esserci.",
+        "Sospensione del servizio: quando il fornitore può bloccare l’accesso, anche se paghi, e quali limiti e tutele dovrebbero esserci.",
     },
     hero: {
       h1: "Sospensione del servizio",
-      subtitle: "Il servizio esiste, ma può essere bloccato.",
+      subtitle:
+        "I casi in cui il servizio può essere bloccato, anche se stai pagando.",
     },
     related: {
       editorial: [
@@ -21874,16 +21874,16 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "La sospensione del servizio è una clausola critica quando consente al fornitore di bloccare l’accesso in modo rapido o discrezionale. Il rischio è restare senza servizio anche se stai pagando regolarmente.",
+        text: "La clausola di sospensione del servizio è critica quando consente al fornitore di bloccare l’accesso in modo rapido o discrezionale. Il rischio concreto è restare senza servizio anche se stai pagando regolarmente, magari per una violazione contestata, un ritardo minimo o una verifica interna non chiarita.",
       },
       {
         type: "bullets",
         title: "Quando può scattare la sospensione",
         items: [
-          "Presunta violazione dei termini",
-          "Ritardi di pagamento minimi",
-          "Controlli interni o verifiche tecniche",
-          "Modifiche contrattuali non accettate",
+          "Presunta violazione dei termini contrattuali",
+          "Ritardi di pagamento anche minimi",
+          "Controlli interni o verifiche tecniche non specificate",
+          "Mancata accettazione di modifiche contrattuali",
         ],
       },
       {
@@ -21892,15 +21892,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           {
             title: "Sospensione discrezionale",
-            text: "Il servizio può essere sospeso ‘a insindacabile giudizio’ del fornitore.",
+            text: "Il servizio può essere sospeso a insindacabile giudizio del fornitore.",
           },
           {
             title: "Effetto immediato",
-            text: "Sospensione senza preavviso o possibilità di rimediare.",
+            text: "Sospensione senza preavviso né possibilità di rimediare.",
           },
           {
             title: "Nessuna responsabilità",
-            text: "Il fornitore esclude qualsiasi danno da interruzione.",
+            text: "Il fornitore esclude qualsiasi responsabilità per danni da interruzione.",
           },
         ],
       },
@@ -21910,15 +21910,16 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           "È previsto un preavviso prima della sospensione?",
           "Esiste un termine per rimediare (grace period)?",
-          "La sospensione è proporzionata alla violazione?",
-          "Il servizio può essere sospeso anche se paghi?",
-          "Sono previsti rimborsi o estensioni?",
+          "La sospensione è proporzionata alla violazione contestata?",
+          "Il servizio può essere sospeso anche se i pagamenti sono in regola?",
+          "Sono previsti rimborsi, sconti o estensioni del servizio?",
         ],
       },
       {
         type: "cta",
         variant: "soft",
-        title: "Vuoi capire quando possono bloccarti il servizio?",
+        title: "Vuoi sapere quando possono bloccarti il servizio?",
+        text: "Carica il contratto e verifichiamo se la clausola di sospensione è troppo ampia o discrezionale.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -22163,28 +22164,29 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     kind: "clausola",
     seo: {
       title:
-        "Clausola risolutiva espressa: quando il contratto può saltare subito",
+        "Clausola risolutiva espressa: quando il contratto salta subito e cosa rischi",
       description:
-        "Clausola risolutiva espressa: cos’è, come funziona e quando permette la risoluzione immediata del contratto anche per inadempimenti minimi.",
+        "Clausola risolutiva espressa: quando consente la risoluzione immediata, anche per inadempimenti minimi, e quali conseguenze economiche può attivare.",
     },
     hero: {
       h1: "Clausola risolutiva espressa",
-      subtitle: "Il contratto può finire all’istante.",
+      subtitle:
+        "I casi in cui il contratto può chiudersi all’istante, senza rimedio.",
     },
     blocks: [
       {
         type: "intro",
-        text: "La clausola risolutiva espressa consente di sciogliere il contratto automaticamente se una parte viola determinate obbligazioni. Il rischio è che venga applicata anche per inadempimenti minimi o formali, senza possibilità di rimediare.",
+        text: "La clausola risolutiva espressa consente a una parte di sciogliere il contratto immediatamente quando si verifica una determinata violazione. Diventa estremamente rischiosa quando è formulata in modo ampio o generico, perché può scattare anche per inadempimenti minimi o formali, senza possibilità di rimediare e con conseguenze economiche immediate.",
       },
       {
         type: "bullets",
         title: "Perché è una clausola critica",
         items: [
-          "Permette la risoluzione senza intervento del giudice",
-          "Può scattare anche per violazioni marginali",
-          "Non sempre prevede un termine per rimediare",
-          "È spesso scritta in modo generico o cumulativo",
-          "Sbilancia il potere contrattuale",
+          "Consente la risoluzione senza l’intervento di un giudice",
+          "Può scattare anche per violazioni non gravi",
+          "Spesso non prevede un termine per rimediare",
+          "È formulata in modo cumulativo o poco preciso",
+          "Attribuisce un forte squilibrio di potere contrattuale",
         ],
       },
       {
@@ -22193,7 +22195,7 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           {
             title: "Inadempimento generico",
-            text: "Qualsiasi violazione del presente contratto comporta risoluzione immediata.",
+            text: "Qualsiasi violazione del presente contratto comporta la risoluzione immediata.",
           },
           {
             title: "Obblighi formali",
@@ -22201,7 +22203,7 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
           },
           {
             title: "Assenza di rimedio",
-            text: "Nessun termine per sanare l’inadempimento prima della risoluzione.",
+            text: "Non è previsto alcun termine per sanare l’inadempimento prima della risoluzione.",
           },
         ],
       },
@@ -22209,18 +22211,18 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         type: "checklist",
         title: "Checklist (1 minuto)",
         items: [
-          "Quali obblighi attivano la risoluzione?",
-          "Sono violazioni gravi o anche formali?",
-          "È previsto un termine per rimediare?",
-          "La risoluzione è automatica o serve comunicazione?",
-          "Ci sono effetti economici immediati (penali, perdita compensi)?",
+          "Quali obblighi specifici attivano la risoluzione?",
+          "Si tratta di violazioni gravi o anche solo formali?",
+          "È previsto un termine per rimediare prima della risoluzione?",
+          "La risoluzione è automatica o richiede una comunicazione?",
+          "Scattano effetti economici immediati (penali, perdita dei compensi)?",
         ],
       },
       {
         type: "cta",
         variant: "mid",
-        title: "Vuoi sapere se questa clausola può farti perdere tutto?",
-        text: "Carica il contratto e individuiamo se la risoluzione è sproporzionata.",
+        title: "Vuoi capire se questa clausola può farti perdere tutto?",
+        text: "Carica il contratto e verifichiamo se la clausola risolutiva espressa è sproporzionata o troppo ampia.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -23326,7 +23328,7 @@ if (process.env.NODE_ENV !== "production") {
   }
   if (missing.size) {
     throw new Error(
-      `Broken related.editorial slugs:\n- ${[...missing].sort().join("\n- ")}`
+      `Broken related.editorial slugs:\n- ${[...missing].sort().join("\n- ")}`,
     );
   }
 }

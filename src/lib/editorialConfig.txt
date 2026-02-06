@@ -1,194 +1,17 @@
-// src/lib/editorialConfig.ts
-// EditorialKind: "index" is used for editorial listing/index pages (e.g., Argomenti/Clausole/Rischi) that are not a single clause/risk/hub.
-export type EditorialKind =
-  | "index" // pagine indice/listing (es: Argomenti/Clausole/Rischi)
-  | "hub" // pagina indice / cluster
-  | "guida" // guida pratica / overview
-  | "clausola" // singola clausola
-  | "rischio" // rischio concreto
-  | "contratto" // tipo di contratto (es: affitto, lavoro, vendita)
-  | "landing"; // pagina landing tool (es: contratto affitto, contratto lavoro)
 
-export type EditorialPage = {
-  slug: string; // es: "clausole/recesso"
-  kind: EditorialKind;
-
-  seo: {
-    title: string;
-    description: string;
-    ogImage?: string;
-  };
-
-  hero: {
-    h1: string;
-    subtitle?: string;
-  };
-
-  related?: {
-    editorial?: string[]; // slugs editoriali, es: "rischi/penali-sproporzionate"
-    landings?: string[]; // slugs landing tool, es: "contratto-affitto"
-  };
-
-  // stessa filosofia “a blocchi” delle landing: semplice, leggibile, scalabile
-  blocks: Array<
-    | { type: "intro"; text: string }
-    | { type: "bullets"; title?: string; items: string[] }
-    | {
-        type: "examples";
-        title?: string;
-        items: { title: string; text: string }[];
-      }
-    | {
-        type: "cards";
-        title?: string;
-        items: { title: string; text: string; href: string }[];
-      }
-    | { type: "checklist"; title?: string; items: string[] }
-    | {
-        type: "cta";
-        variant: "soft" | "mid" | "strong";
-        title: string;
-        text?: string;
-        buttonLabel: string;
-        buttonHref: string; // es: "/upload" o "/affitto" o la landing tool
-      }
-    | { type: "faq"; items: { q: string; a: string }[] }
-  >;
-};
-
-export const EDITORIAL_PAGES: EditorialPage[] = [
-  /*
-  {
-    slug: "debug/all-blocks",
-    kind: "clausola",
-    seo: {
-      title: "Debug UI – Tutti i blocchi editoriali | ContrattiChiari",
-      description:
-        "Pagina tecnica di anteprima per visualizzare tutti i blocchi editoriali disponibili nel template.",
-    },
-    hero: {
-      h1: "Tutti i blocchi editoriali",
-      subtitle:
-        "Questa pagina serve solo a visualizzare e rifinire tutti i componenti disponibili.",
-    },
-
-    related: {
-      editorial: [
-        "contratti/affitto",
-        "clausole/recesso",
-        "rischi/penali-sproporzionate",
-      ],
-      landings: ["contratto-affitto"],
-    },
-
-    blocks: [
-      {
-        type: "intro",
-        text: "Questo è il blocco introduttivo. Serve per dare contesto immediato, senza box, con testo continuo. È pensato per spiegazioni iniziali, definizioni o inquadramento del problema.",
-      },
-
-      {
-        type: "bullets",
-        title: "Elenco puntato (bullets)",
-        items: [
-          "Primo punto importante da evidenziare",
-          "Secondo punto critico o informativo",
-          "Terzo punto con dettaglio rilevante",
-          "Quarto punto che l’utente deve ricordare",
-        ],
-      },
-
-      {
-        type: "examples",
-        title: "Esempi concreti",
-        items: [
-          {
-            title: "Esempio 1",
-            text: "Un esempio pratico che mostra come una clausola può essere scritta in modo ambiguo.",
-          },
-          {
-            title: "Esempio 2",
-            text: "Un secondo esempio che evidenzia un rischio reale per chi firma senza controllare.",
-          },
-          {
-            title: "Esempio 3",
-            text: "Un caso tipico che porta a contenziosi o problemi successivi.",
-          },
-        ],
-      },
-      {
-        type: "checklist",
-        title: "Checklist di verifica",
-        items: [
-          "Il testo è chiaro e comprensibile?",
-          "Sono indicati tempi e modalità precise?",
-          "Ci sono penali o costi nascosti?",
-          "È specificato cosa succede in caso di problemi?",
-          "Sono citati allegati o documenti esterni?",
-        ],
-      },
-
-      {
-        type: "cta",
-        variant: "soft",
-        title: "CTA soft (non invasiva)",
-        text: "Usata quando vuoi suggerire l’azione senza forzare troppo la conversione.",
-        buttonLabel: "Analizza il mio contratto",
-        buttonHref: "/upload",
-      },
-
-      {
-        type: "cta",
-        variant: "mid",
-        title: "CTA intermedia",
-        text: "Questa CTA ha più peso visivo ed è utile a metà pagina.",
-        buttonLabel: "Carica il contratto",
-        buttonHref: "/upload",
-      },
-
-      {
-        type: "cta",
-        variant: "strong",
-        title: "CTA forte (conversione)",
-        text: "Questa è la CTA principale: va usata nei punti decisivi della pagina.",
-        buttonLabel: "Analizza ora il contratto",
-        buttonHref: "/upload",
-      },
-
-      {
-        type: "faq",
-        items: [
-          {
-            q: "Questa pagina verrà indicizzata?",
-            a: "No. È una pagina tecnica di debug. Può essere rimossa o esclusa dalla sitemap.",
-          },
-          {
-            q: "Serve anche per mobile?",
-            a: "Sì. È pensata proprio per verificare il comportamento dei blocchi su mobile e desktop.",
-          },
-          {
-            q: "Quando va eliminata?",
-            a: "Quando tutti i componenti sono validati visivamente e funzionalmente.",
-          },
-        ],
-      },
-    ],
-  },
-  */
-
-  // CLUSTER AFFITTI
   {
     slug: "clausole/recesso",
     kind: "clausola",
     seo: {
       title:
-        "Clausola di recesso nell’affitto: cosa significa e cosa controllare",
+        "Clausola di recesso nell’affitto: quando puoi uscire davvero e cosa rischi",
       description:
-        "Guida rapida al recesso nell’affitto: chi può recedere, preavviso, modalità e rischi quando la clausola è sbilanciata.",
+        "Clausola di recesso nell’affitto: chi può recedere, preavviso e modalità. Quando è sbilanciata e quali penali o costi può attivare.",
     },
     hero: {
-      h1: "Clausola di recesso",
-      subtitle: "Cos’è, quando è critica e cosa controllare prima di firmare.",
+      h1: "Clausola di recesso nell’affitto",
+      subtitle:
+        "I casi in cui uscire dal contratto è più difficile (o costoso) di quanto sembra.",
     },
     related: {
       editorial: [
@@ -203,17 +26,17 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "La clausola di recesso disciplina come e quando una parte può uscire dal contratto. Diventa rischiosa quando è sbilanciata (recesso “facile” per uno, difficile per l’altro), quando non è chiara su tempi e forma, o quando introduce penali eccessive.",
+        text: "La clausola di recesso stabilisce se, come e quando puoi uscire dal contratto prima della scadenza. Diventa critica quando è sbilanciata tra le parti, poco chiara su tempi e modalità o quando prevede penali elevate. Il rischio concreto è pensare di poter uscire facilmente e scoprire, invece, di dover pagare costi imprevisti o di non aver rispettato la forma corretta.",
       },
       {
         type: "bullets",
         title: "Segnali tipici di rischio",
         items: [
           "Recesso previsto solo per una delle parti",
-          "Preavviso non chiaro o troppo rigido",
-          "Modalità di comunicazione “impossibili” (solo PEC/raccomandata, indirizzi specifici)",
-          "Penali alte o calcolate in modo vago",
-          "Obblighi dopo il recesso poco chiari (pagamenti, restituzioni, spese)",
+          "Preavviso poco chiaro o eccessivamente lungo",
+          "Modalità di comunicazione rigide o facili da sbagliare (PEC, raccomandata, indirizzi specifici)",
+          "Penali elevate o calcolate in modo vago",
+          "Obblighi dopo il recesso poco definiti (pagamenti, spese, consegna dell’immobile)",
         ],
       },
       {
@@ -222,16 +45,16 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           "Chi può recedere? Entrambe le parti o solo una?",
           "Con quanto preavviso e da quando decorre?",
-          "Con quale forma (PEC, raccomandata, email)?",
-          "Ci sono penali? Sono proporzionate e calcolate chiaramente?",
+          "Qual è la forma richiesta (PEC, raccomandata, email)?",
+          "Sono previste penali? Sono proporzionate e calcolate chiaramente?",
           "Cosa succede dopo il recesso (spese, consegna immobile, conguagli)?",
         ],
       },
       {
         type: "cta",
         variant: "soft",
-        title: "Vuoi verificare come è scritto nel tuo contratto?",
-        text: "Caricalo e controlliamo se la clausola è sbilanciata o rischiosa.",
+        title: "Vuoi verificare se il recesso è davvero praticabile?",
+        text: "Carica il contratto e controlliamo se la clausola di recesso è sbilanciata o attiva penali e costi nascosti.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -240,11 +63,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           {
             q: "Recesso e disdetta sono la stessa cosa?",
-            a: "Non sempre. La disdetta spesso riguarda la comunicazione di fine rapporto a scadenza; il recesso è un’uscita anticipata o “prevista” dal contratto. Conta cosa prevede il testo.",
+            a: "No. La disdetta riguarda di solito la fine del contratto a scadenza; il recesso consente un’uscita anticipata. Conta sempre cosa è scritto nella clausola.",
           },
           {
-            q: "Se non c’è una clausola di recesso?",
-            a: "Dipende dal tipo di contratto e da quanto previsto nel testo e dalla disciplina applicabile. In pratica: va verificato caso per caso.",
+            q: "Se non c’è una clausola di recesso, posso comunque uscire?",
+            a: "Dipende dal tipo di contratto e dalle regole applicabili. In pratica va verificato caso per caso, perché l’assenza della clausola può limitare molto le possibilità di uscita.",
           },
         ],
       },
@@ -953,13 +776,14 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     kind: "clausola",
     seo: {
       title:
-        "Rinnovo automatico nel contratto di affitto: come funziona e cosa controllare",
+        "Rinnovo automatico nell’affitto: quando scatta e cosa rischi se sbagli",
       description:
-        "Guida rapida al rinnovo automatico nell’affitto: durata, scadenze, disdetta, rinnovi ‘taciti’ e clausole poco chiare.",
+        "Rinnovo automatico nel contratto di affitto: scadenze, disdetta e rischi dei rinnovi taciti che ti vincolano per altri mesi.",
     },
     hero: {
-      h1: "Rinnovo automatico (affitto)",
-      subtitle: "Scadenze, disdetta e rischi dei rinnovi ‘taciti’.",
+      h1: "Rinnovo automatico nell’affitto",
+      subtitle:
+        "Quando il contratto si rinnova da solo e ti vincola più a lungo.",
     },
     related: {
       editorial: [
@@ -973,33 +797,35 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "Nei contratti di affitto il rinnovo può essere previsto in automatico (anche ‘tacitamente’). Il rischio è non accorgersi delle scadenze, dei termini di disdetta o di clausole che rendono difficile uscire dal contratto.",
+        text: "Nei contratti di affitto il rinnovo automatico (spesso chiamato ‘tacito’) fa proseguire il rapporto se non invii la disdetta nei tempi e nei modi previsti. Il rischio concreto è dimenticare una scadenza o sbagliare la comunicazione e ritrovarsi vincolati al contratto per altri mesi, con costi che non avevi messo in conto.",
       },
       {
         type: "bullets",
         title: "Segnali tipici di rischio",
         items: [
-          "Scadenze non evidenti o disperse nel testo",
-          "Disdetta con tempi molto anticipati o modalità rigide",
-          "Rinnovi automatici senza spiegazione chiara",
-          "Penali o costi legati alla disdetta",
+          "Scadenze poco evidenti o disperse nel testo",
+          "Termini di disdetta molto anticipati rispetto alla scadenza",
+          "Modalità di disdetta rigide o facili da sbagliare",
+          "Rinnovi automatici spiegati in modo vago",
+          "Penali o costi collegati all’uscita dopo il rinnovo",
         ],
       },
       {
         type: "checklist",
         title: "Checklist (1 minuto)",
         items: [
-          "Qual è la durata e quando scade?",
-          "Quali sono i termini di disdetta (quando e come)?",
-          "Il rinnovo è automatico? Con quali condizioni?",
-          "Ci sono penali o costi in caso di uscita?",
+          "Qual è la durata effettiva del contratto e quando scade?",
+          "Entro quando va inviata la disdetta?",
+          "Con quale forma e a quale indirizzo?",
+          "Il rinnovo scatta automaticamente se non fai nulla?",
+          "Ci sono costi o penali se esci dopo il rinnovo?",
         ],
       },
       {
         type: "cta",
         variant: "soft",
-        title: "Vuoi capire quando puoi uscire dal contratto?",
-        text: "Caricalo e ti evidenziamo scadenze, disdetta e clausole critiche.",
+        title: "Vuoi sapere se rischi un rinnovo automatico?",
+        text: "Carica il contratto e individuiamo scadenze, disdetta e clausole che possono vincolarti più a lungo.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -1008,11 +834,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           {
             q: "Rinnovo automatico e ‘tacito rinnovo’ sono la stessa cosa?",
-            a: "Spesso sì nella pratica: indica che il contratto prosegue se nessuno comunica la disdetta nei tempi previsti.",
+            a: "Nella pratica sì: indicano che il contratto prosegue se non comunichi la disdetta nei tempi e nei modi previsti.",
           },
           {
-            q: "Se sbaglio i tempi di disdetta cosa succede?",
-            a: "Dipende dal testo: può scattare il rinnovo o può rendere più difficile recedere. Per questo conviene verificare con precisione scadenze e modalità.",
+            q: "Se sbaglio i tempi o la forma della disdetta cosa succede?",
+            a: "Di solito scatta il rinnovo automatico o diventa più difficile uscire senza costi. Per questo è fondamentale verificare scadenze e modalità con precisione.",
           },
         ],
       },
@@ -3381,13 +3207,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/spese-forfettarie-affitto",
     kind: "clausola",
     seo: {
-      title: "Spese forfettarie nell’affitto: quando il forfait è scritto male",
+      title:
+        "Spese forfettarie nell’affitto: quando il forfait non è davvero bloccato",
       description:
-        "Guida alle spese forfettarie nell’affitto: cosa significa davvero “forfait”, quando può aumentare e quali clausole sono rischiose.",
+        "Spese forfettarie nell’affitto: quando il forfait può aumentare, se sono ammessi conguagli e quali clausole nascondono costi extra.",
     },
     hero: {
-      h1: "Spese forfettarie nell’affitto",
-      subtitle: "Quando “spese incluse” non significa costo bloccato.",
+      h1: "Spese forfettarie nell’affitto: quando il forfait è rischioso",
+      subtitle:
+        "Cosa controllare quando “spese incluse” non significa costo fisso.",
     },
     related: {
       editorial: [
@@ -3402,27 +3230,27 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "Nel contratto di affitto le spese possono essere indicate come “forfettarie” o “incluse”. Il problema nasce quando il forfait non è davvero fisso: senza criteri chiari, può aprire la porta a conguagli, aumenti o richieste extra.",
+        text: "Nel contratto di affitto le spese possono essere indicate come “forfettarie” o “incluse”. Il problema nasce quando il forfait non è davvero fisso: se mancano criteri chiari su cosa copre e se esclude i conguagli, il locatore può chiedere aumenti o importi extra nel tempo. Il rischio concreto è pagare più del previsto anche se pensavi di avere un costo bloccato.",
       },
       {
         type: "bullets",
         title: "Campanelli d’allarme",
         items: [
-          "Forfait senza elenco delle spese incluse",
-          "Assenza di una frase che escluda conguagli",
-          "Richiamo generico a regolamenti o allegati",
-          "Possibilità di revisione del forfait non spiegata",
-          "Forfait che copre anche spese variabili (utenze, servizi)",
+          "Forfait indicato senza elenco preciso delle spese incluse",
+          "Mancanza di una frase che escluda esplicitamente i conguagli",
+          "Richiamo generico a regolamenti, tabelle o allegati esterni",
+          "Possibilità di revisione del forfait senza criteri o limiti",
+          "Forfait che include anche spese variabili (utenze, servizi)",
         ],
       },
       {
         type: "checklist",
         title: "Checklist rapida",
         items: [
-          "Quali spese sono incluse nel forfait?",
-          "È esclusa esplicitamente la possibilità di conguagli?",
-          "Il forfait può essere aggiornato? Quando e come?",
-          "Sono richiamati regolamenti o tabelle spese?",
+          "Quali spese sono incluse in modo esplicito nel forfait?",
+          "È esclusa chiaramente la possibilità di conguagli a fine periodo?",
+          "Il forfait può essere aggiornato? In quali casi e con quali limiti?",
+          "Sono richiamati regolamenti o tabelle che incidono sulle spese?",
           "Le utenze sono davvero comprese o solo anticipate?",
         ],
       },
@@ -3430,7 +3258,7 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         type: "cta",
         variant: "soft",
         title: "Vuoi capire se il forfait è davvero bloccato?",
-        text: "Carica il contratto e verifichiamo se le spese sono scritte in modo chiaro.",
+        text: "Carica il contratto e verifichiamo se la clausola sulle spese è scritta in modo chiaro o lascia spazio a richieste extra.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -6706,13 +6534,14 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/esclusiva",
     kind: "clausola",
     seo: {
-      title: "Clausola di esclusiva: cosa significa e quando è rischiosa",
+      title: "Clausola di esclusiva: quando ti blocca davvero e cosa rischi",
       description:
-        "Guida rapida alla clausola di esclusiva nei contratti di lavoro e collaborazione: limiti, durata, ambito e rischi quando blocca altri incarichi.",
+        "Clausola di esclusiva nei contratti di lavoro e collaborazione: quando è legittima, quando è troppo ampia e perché può bloccare altri incarichi.",
     },
     hero: {
-      h1: "Clausola di esclusiva",
-      subtitle: "Quando ti impedisce (di fatto) di lavorare per altri.",
+      h1: "Clausola di esclusiva: quando diventa un vincolo",
+      subtitle:
+        "I casi in cui limita davvero la tua libertà di lavorare per altri.",
     },
     related: {
       editorial: [
@@ -6731,35 +6560,35 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "L’esclusiva significa che ti impegni a non lavorare per altri (o a non lavorare per alcuni soggetti/settori) mentre dura il rapporto. Diventa rischiosa quando è troppo ampia, non ha limiti chiari o non è compensata: può ridurre davvero le tue entrate e la tua libertà professionale.",
+        text: "La clausola di esclusiva ti impegna a non lavorare per altri clienti o settori mentre dura il rapporto. Diventa critica quando è troppo ampia, non ha limiti chiari o non è compensata: in questi casi può ridurre concretamente le tue entrate e limitare la tua libertà professionale, anche oltre ciò che è necessario per il contratto.",
       },
       {
         type: "bullets",
         title: "Campanelli d’allarme",
         items: [
-          "Esclusiva totale senza motivazione (anche su attività non in concorrenza)",
-          "Ambito vago (“attività simili” senza definizione)",
-          "Durata indefinita o che continua dopo la fine del rapporto",
-          "Divieto esteso a clienti/settori molto ampi",
-          "Nessun compenso o indennizzo per l’esclusiva",
+          "Esclusiva totale senza una motivazione legata al ruolo",
+          "Ambito vago (“attività simili” o “settori affini” senza definizione)",
+          "Durata indefinita o estesa anche dopo la fine del rapporto",
+          "Divieto applicato a clienti o settori molto ampi",
+          "Assenza di un compenso o indennizzo per l’esclusiva",
         ],
       },
       {
         type: "checklist",
         title: "Checklist (1 minuto)",
         items: [
-          "È esclusiva totale o limitata a un settore/cliente?",
-          "È definito cosa è “concorrenza” e cosa no?",
-          "Quanto dura (solo durante il rapporto o anche dopo)?",
-          "È prevista un’indennità/compenso per l’esclusiva?",
-          "Cosa succede se ricevi un incarico esterno (permesso scritto, eccezioni)?",
+          "L’esclusiva è totale o limitata a uno specifico settore o cliente?",
+          "È chiaro cosa rientra nella concorrenza e cosa no?",
+          "Quanto dura l’obbligo (solo durante il rapporto o anche dopo)?",
+          "È previsto un compenso o un’indennità per l’esclusiva?",
+          "Sono previste eccezioni o autorizzazioni per incarichi esterni?",
         ],
       },
       {
         type: "cta",
         variant: "soft",
         title: "Vuoi capire se l’esclusiva ti blocca troppo?",
-        text: "Carica il contratto: evidenziamo ampiezza, durata e squilibri della clausola.",
+        text: "Carica il contratto: analizziamo ampiezza, durata e squilibri della clausola di esclusiva.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -6768,11 +6597,11 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           {
             q: "Esclusiva e non concorrenza sono la stessa cosa?",
-            a: "No. L’esclusiva vale di solito durante il rapporto; la non concorrenza spesso opera anche dopo e dovrebbe avere limiti e condizioni specifiche. Conta cosa c’è scritto nel testo.",
+            a: "No. L’esclusiva opera di solito durante il rapporto; la non concorrenza può valere anche dopo. Conta sempre come è scritta la clausola nel contratto.",
           },
           {
-            q: "Se non è previsto un compenso, è automaticamente invalida?",
-            a: "Dipende dal tipo di rapporto e da come è formulata. In pratica: se è molto ampia e ti limita davvero, è un segnale di squilibrio da verificare bene.",
+            q: "Se non è previsto un compenso, l’esclusiva è automaticamente invalida?",
+            a: "Non sempre. Dipende dal tipo di rapporto e dall’ampiezza del vincolo. Se limita molto le tue possibilità di lavoro, è un segnale di squilibrio da valutare con attenzione.",
           },
         ],
       },
@@ -9954,13 +9783,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     slug: "clausole/ripartizione-spese-coinquilini",
     kind: "clausola",
     seo: {
-      title: "Ripartizione spese tra coinquilini: cosa deve essere scritto",
+      title:
+        "Ripartizione spese tra coinquilini: quando è ambigua e cosa rischi",
       description:
-        "Affitto studenti: come devono essere indicate spese e utenze, quote, criteri e conguagli per evitare contestazioni.",
+        "Ripartizione delle spese tra coinquilini: criteri, conguagli e prove. Quando la clausola è vaga e porta a litigi o costi extra.",
     },
     hero: {
-      h1: "Ripartizione spese",
-      subtitle: "Utenze e spese: dove nascono i litigi e i costi extra.",
+      h1: "Ripartizione spese tra coinquilini",
+      subtitle:
+        "I casi in cui utenze e spese diventano fonte di litigi e costi imprevisti.",
     },
     related: {
       editorial: [
@@ -9975,33 +9806,33 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "Nei contratti studenti le spese (utenze, condominio, extra) devono essere ripartite con criteri chiari. La clausola è rischiosa quando parla di spese “a consumo” senza prove, con forfait ingannevoli o con conguagli non verificabili.",
+        text: "Nei contratti di affitto per studenti la ripartizione delle spese tra coinquilini è uno dei punti più critici. La clausola diventa rischiosa quando prevede spese “a consumo” senza criteri verificabili, forfait poco chiari o conguagli senza documentazione. Il risultato concreto sono contestazioni, litigi tra coinquilini e richieste di importi extra difficili da controllare.",
       },
       {
         type: "bullets",
         title: "Segnali tipici di rischio",
         items: [
-          "Forfait spese senza dettaglio o senza limiti",
-          "Conguagli senza documentazione",
-          "Spese non previste “a carico degli inquilini” in modo generico",
-          "Nessun criterio di ripartizione tra coinquilini",
+          "Forfait spese senza dettaglio o senza un limite massimo",
+          "Conguagli richiesti senza bollette o rendiconti",
+          "Spese indicate genericamente “a carico degli inquilini”",
+          "Assenza di un criterio di ripartizione tra coinquilini",
         ],
       },
       {
         type: "checklist",
         title: "Checklist (30 secondi)",
         items: [
-          "Quali spese sono incluse e quali escluse?",
-          "Come si prova il consumo (bollette, letture, rendiconti)?",
-          "C’è un criterio di ripartizione (quote, metri, camere)?",
+          "Quali spese sono incluse e quali restano escluse?",
+          "Come viene provato il consumo (bollette, letture, rendiconti)?",
+          "È indicato un criterio di ripartizione (quote, metri, camere)?",
           "Quando avvengono i conguagli e con quali documenti?",
         ],
       },
       {
         type: "cta",
         variant: "soft",
-        title: "Vuoi verificare se le spese sono chiare e verificabili?",
-        text: "Carica il contratto: controlliamo criteri, conguagli e rischi di extra.",
+        title: "Vuoi verificare se la ripartizione è davvero chiara?",
+        text: "Carica il contratto: controlliamo criteri, conguagli e punti che possono generare costi extra o contestazioni.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -21694,13 +21525,14 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     kind: "clausola",
     seo: {
       title:
-        "Risoluzione del contratto: quando il rapporto si chiude automaticamente",
+        "Risoluzione del contratto: quando scatta subito e cosa rischi davvero",
       description:
-        "Clausole di risoluzione del contratto: inadempimenti, automatismi, effetti economici e rischi di chiusura immediata.",
+        "Risoluzione del contratto: quando è legittima, quando è abusiva e quali rischi economici comporta la chiusura immediata.",
     },
     hero: {
-      h1: "Risoluzione del contratto",
-      subtitle: "Quando il rapporto può chiudersi all’improvviso.",
+      h1: "Risoluzione del contratto: quando è legittima e quando ti penalizza",
+      subtitle:
+        "I casi in cui il contratto può chiudersi subito, anche per errori minimi.",
     },
     related: {
       editorial: [
@@ -21718,7 +21550,7 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
     blocks: [
       {
         type: "intro",
-        text: "La clausola di risoluzione stabilisce quando il contratto si chiude per inadempimento. Il rischio è una formulazione che consente la chiusura automatica anche per violazioni minime, senza possibilità di rimediare.",
+        text: "La clausola di risoluzione stabilisce quando il contratto può chiudersi prima del previsto per inadempimento. In molti casi è formulata in modo da consentire la chiusura immediata anche per violazioni minime, senza diffida e senza possibilità di rimediare. Il rischio concreto è perdere il rapporto — e talvolta il compenso — anche se l’errore è marginale.",
       },
       {
         type: "bullets",
@@ -21727,8 +21559,8 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
           "Quali inadempimenti fanno scattare la risoluzione",
           "Se è prevista una diffida o un termine per rimediare",
           "Se la risoluzione è automatica o discrezionale",
-          "Cosa succede ai compensi maturati",
-          "Se restano penali o obblighi post-contratto",
+          "Cosa succede ai compensi già maturati",
+          "Se restano penali o obblighi dopo la chiusura",
         ],
       },
       {
@@ -21737,15 +21569,15 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         items: [
           {
             title: "Inadempimento minimo",
-            text: "Risoluzione per un singolo ritardo o una violazione formale.",
+            text: "Risoluzione prevista anche per un singolo ritardo o una violazione formale.",
           },
           {
             title: "Automatismo totale",
-            text: "Il contratto si risolve ‘di diritto’ senza avviso o possibilità di sanatoria.",
+            text: "Il contratto si risolve di diritto senza preavviso né possibilità di sanatoria.",
           },
           {
             title: "Effetti sbilanciati",
-            text: "Perdita del compenso anche per lavoro già svolto.",
+            text: "Perdita del compenso o mancato pagamento anche per lavoro già svolto.",
           },
         ],
       },
@@ -21754,17 +21586,17 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
         title: "Checklist pratica",
         items: [
           "È prevista una diffida prima della risoluzione?",
-          "Gli inadempimenti sono gravi o anche marginali?",
-          "La risoluzione vale per entrambe le parti?",
-          "Il lavoro già svolto viene pagato?",
+          "Gli inadempimenti rilevanti sono gravi o anche marginali?",
+          "La clausola vale per entrambe le parti?",
+          "Il lavoro già svolto viene comunque pagato?",
           "Restano penali o obblighi dopo la chiusura?",
         ],
       },
       {
         type: "cta",
         variant: "mid",
-        title: "Vuoi capire se il contratto può saltare troppo facilmente?",
-        text: "Carica il contratto e individuiamo clausole che espongono a risoluzione immediata.",
+        title: "Vuoi capire se il contratto può chiudersi troppo facilmente?",
+        text: "Carica il contratto e individuiamo clausole che permettono una risoluzione immediata o sbilanciata.",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
@@ -22158,108 +21990,1152 @@ export const EDITORIAL_PAGES: EditorialPage[] = [
       },
     ],
   },
+{
+  slug: "clausole/clausola-risolutiva-espressa",
+  kind: "clausola",
+  seo: {
+    title:
+      "Clausola risolutiva espressa: quando il contratto salta subito e cosa rischi",
+    description:
+      "Clausola risolutiva espressa: quando consente la risoluzione immediata, anche per inadempimenti minimi, e quali conseguenze economiche può attivare.",
+  },
+  hero: {
+    h1: "Clausola risolutiva espressa",
+    subtitle:
+      "I casi in cui il contratto può chiudersi all’istante, senza rimedio.",
+  },
+  blocks: [
+    {
+      type: "intro",
+      text: "La clausola risolutiva espressa consente a una parte di sciogliere il contratto immediatamente quando si verifica una determinata violazione. Diventa estremamente rischiosa quando è formulata in modo ampio o generico, perché può scattare anche per inadempimenti minimi o formali, senza possibilità di rimediare e con conseguenze economiche immediate.",
+    },
+    {
+      type: "bullets",
+      title: "Perché è una clausola critica",
+      items: [
+        "Consente la risoluzione senza l’intervento di un giudice",
+        "Può scattare anche per violazioni non gravi",
+        "Spesso non prevede un termine per rimediare",
+        "È formulata in modo cumulativo o poco preciso",
+        "Attribuisce un forte squilibrio di potere contrattuale",
+      ],
+    },
+    {
+      type: "examples",
+      title: "Formulazioni a rischio",
+      items: [
+        {
+          title: "Inadempimento generico",
+          text: "Qualsiasi violazione del presente contratto comporta la risoluzione immediata.",
+        },
+        {
+          title: "Obblighi formali",
+          text: "Ritardi minimi o irregolarità amministrative fanno scattare la risoluzione.",
+        },
+        {
+          title: "Assenza di rimedio",
+          text: "Non è previsto alcun termine per sanare l’inadempimento prima della risoluzione.",
+        },
+      ],
+    },
+    {
+      type: "checklist",
+      title: "Checklist (1 minuto)",
+      items: [
+        "Quali obblighi specifici attivano la risoluzione?",
+        "Si tratta di violazioni gravi o anche solo formali?",
+        "È previsto un termine per rimediare prima della risoluzione?",
+        "La risoluzione è automatica o richiede una comunicazione?",
+        "Scattano effetti economici immediati (penali, perdita dei compensi)?",
+      ],
+    },
+    {
+      type: "cta",
+      variant: "mid",
+      title: "Vuoi capire se questa clausola può farti perdere tutto?",
+      text: "Carica il contratto e verifichiamo se la clausola risolutiva espressa è sproporzionata o troppo ampia.",
+      buttonLabel: "Analizza il mio contratto",
+      buttonHref: "/upload",
+    },
+  ],
+},
   {
-    slug: "clausole/clausola-risolutiva-espressa",
-    kind: "clausola",
+    slug: "rischi/recesso-senza-preavviso",
+    kind: "rischio",
     seo: {
       title:
-        "Clausola risolutiva espressa: quando il contratto può saltare subito",
+        "Recesso senza preavviso: quando il contratto può finire all’improvviso",
       description:
-        "Clausola risolutiva espressa: cos’è, come funziona e quando permette la risoluzione immediata del contratto anche per inadempimenti minimi.",
+        "Recesso immediato senza preavviso: come riconoscere le clausole che permettono l’interruzione improvvisa del contratto e i rischi concreti.",
     },
     hero: {
-      h1: "Clausola risolutiva espressa",
-      subtitle: "Il contratto può finire all’istante.",
+      h1: "Recesso senza preavviso",
+      subtitle: "Il contratto può finire da un giorno all’altro.",
+    },
+    related: {
+      editorial: [
+        "clausole/recesso-rapporto-lavoro",
+        "rischi/recesso-unilaterale",
+      ],
+      landings: [
+        "contratto-lavoro",
+        "contratto-collaborazione",
+        "contratto-servizi",
+      ],
     },
     blocks: [
       {
         type: "intro",
-        text: "La clausola risolutiva espressa consente di sciogliere il contratto automaticamente se una parte viola determinate obbligazioni. Il rischio è che venga applicata anche per inadempimenti minimi o formali, senza possibilità di rimediare.",
+        text: "Il rischio nasce quando il contratto consente a una parte di recedere senza preavviso o con preavvisi simbolici. In questi casi puoi perdere lavoro, compenso e continuità senza il tempo minimo per organizzarti.",
       },
       {
         type: "bullets",
-        title: "Perché è una clausola critica",
+        title: "Segnali tipici di rischio",
         items: [
-          "Permette la risoluzione senza intervento del giudice",
-          "Può scattare anche per violazioni marginali",
-          "Non sempre prevede un termine per rimediare",
-          "È spesso scritta in modo generico o cumulativo",
-          "Sbilancia il potere contrattuale",
-        ],
-      },
-      {
-        type: "examples",
-        title: "Formulazioni a rischio",
-        items: [
-          {
-            title: "Inadempimento generico",
-            text: "Qualsiasi violazione del presente contratto comporta risoluzione immediata.",
-          },
-          {
-            title: "Obblighi formali",
-            text: "Ritardi minimi o irregolarità amministrative fanno scattare la risoluzione.",
-          },
-          {
-            title: "Assenza di rimedio",
-            text: "Nessun termine per sanare l’inadempimento prima della risoluzione.",
-          },
-        ],
-      },
-      {
-        type: "checklist",
-        title: "Checklist (1 minuto)",
-        items: [
-          "Quali obblighi attivano la risoluzione?",
-          "Sono violazioni gravi o anche formali?",
-          "È previsto un termine per rimediare?",
-          "La risoluzione è automatica o serve comunicazione?",
-          "Ci sono effetti economici immediati (penali, perdita compensi)?",
+          "Recesso ‘in qualsiasi momento’ senza motivazione",
+          "Preavviso assente o di pochi giorni",
+          "Asimmetria: una parte libera, l’altra vincolata",
+          "Nessuna indennità o pagamento del lavoro in corso",
         ],
       },
       {
         type: "cta",
         variant: "mid",
-        title: "Vuoi sapere se questa clausola può farti perdere tutto?",
-        text: "Carica il contratto e individuiamo se la risoluzione è sproporzionata.",
+        title: "Vuoi capire se il recesso è davvero equilibrato?",
         buttonLabel: "Analizza il mio contratto",
         buttonHref: "/upload",
       },
     ],
   },
+  {
+    slug: "rischi/pagamento-subordinato-approvazione",
+    kind: "rischio",
+    seo: {
+      title:
+        "Pagamento subordinato ad approvazione: lavori ma potresti non essere pagato",
+      description:
+        "Quando il pagamento dipende da approvazioni vaghe o discrezionali: il rischio più comune nei contratti di servizi e collaborazione.",
+    },
+    hero: {
+      h1: "Pagamento subordinato",
+      subtitle: "Lavori, consegni… ma qualcuno deve ‘approvare’.",
+    },
+    related: {
+      editorial: ["clausole/compenso-pagamenti", "rischi/compenso-non-pagato"],
+      landings: [
+        "contratto-servizi",
+        "contratto-consulenza",
+        "contratto-collaborazione",
+      ],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Il rischio è una clausola che lega il pagamento a un’‘approvazione’ non definita. Senza criteri oggettivi o tempi certi, l’approvazione può essere rinviata o negata, bloccando il compenso.",
+      },
+      {
+        type: "examples",
+        title: "Formulazioni tipiche a rischio",
+        items: [
+          {
+            title: "Approvazione discrezionale",
+            text: "Pagamento dovuto solo dopo ‘accettazione del cliente’.",
+          },
+          {
+            title: "Criteri assenti",
+            text: "Nessuna definizione di cosa renda il lavoro ‘accettabile’.",
+          },
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire se il pagamento è davvero garantito?",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/dipendenza-economica-committente",
+    kind: "rischio",
+    seo: {
+      title:
+        "Dipendenza economica dal committente: rischio nascosto nei contratti",
+      description:
+        "Quando un solo cliente controlla reddito, tempi e continuità: segnali di dipendenza economica nei contratti di collaborazione.",
+    },
+    hero: {
+      h1: "Dipendenza economica",
+      subtitle: "Un solo cliente decide tutto.",
+    },
+    related: {
+      editorial: [
+        "rischi/falsa-partita-iva",
+        "rischi/esclusiva-mascherata-collaborazione",
+      ],
+      landings: ["contratto-collaborazione", "contratto-partita-iva"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Il rischio emerge quando il contratto (e la pratica) ti rendono economicamente dipendente da un solo committente: compenso fisso, continuità imposta, limiti ad altri incarichi.",
+      },
+      {
+        type: "bullets",
+        title: "Segnali tipici",
+        items: [
+          "Compenso fisso mensile senza autonomia reale",
+          "Richiesta di disponibilità continua",
+          "Limitazioni ad altri clienti",
+          "Durata lunga senza tutele in uscita",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire se il rapporto è davvero autonomo?",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/spese-condominiali-forfettarie-non-trasparenti",
+    kind: "rischio",
+    seo: {
+      title:
+        "Spese condominiali forfettarie: quando paghi senza poter verificare",
+      description:
+        "Affitto: spese condominiali forfettarie senza rendiconto o documenti. Rischi, segnali nel contratto e cosa controllare.",
+    },
+    hero: {
+      h1: "Spese condominiali forfettarie",
+      subtitle: "Paghi una cifra fissa, ma non sai cosa copre.",
+    },
+    related: {
+      editorial: ["clausole/spese-condominiali", "rischi/spese-non-dovute"],
+      landings: ["contratto-affitto", "contratto-stanza"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Il rischio delle spese forfettarie è l’assenza di verifica: senza rendiconto o documenti, non puoi sapere se stai pagando il giusto o coprendo costi che non ti competono.",
+      },
+      {
+        type: "bullets",
+        title: "Segnali tipici di rischio",
+        items: [
+          "Importo fisso senza dettaglio delle voci",
+          "Assenza di rendiconto annuale",
+          "Inclusione di spese straordinarie",
+          "Nessun conguaglio a tuo favore",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire se le spese sono corrette?",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/manutenzione-a-carico-inquilino-clausola-ambigua",
+    kind: "rischio",
+    seo: {
+      title:
+        "Manutenzione a carico dell’inquilino: quando la clausola è ambigua",
+      description:
+        "Affitto: clausole di manutenzione scritte male che scaricano costi strutturali sull’inquilino.",
+    },
+    hero: {
+      h1: "Manutenzione ambigua",
+      subtitle: "Piccola riparazione o spesa strutturale?",
+    },
+    related: {
+      editorial: [
+        "clausole/manutenzione-riparazioni",
+        "rischi/spese-non-dovute",
+      ],
+      landings: ["contratto-affitto", "contratto-stanza"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Il rischio nasce quando la clausola non distingue tra manutenzione ordinaria e straordinaria. In questi casi, costi importanti possono essere scaricati sull’inquilino.",
+      },
+      {
+        type: "examples",
+        title: "Formulazioni tipiche a rischio",
+        items: [
+          {
+            title: "Formula generica",
+            text: "‘Tutte le manutenzioni sono a carico dell’inquilino’.",
+          },
+          {
+            title: "Rinvio a norme vaghe",
+            text: "Richiamo generico a ‘quanto previsto dalla legge’ senza dettaglio.",
+          },
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire cosa potresti dover pagare?",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/uscita-coinquilino-senza-sostituzione",
+    kind: "rischio",
+    seo: {
+      title:
+        "Coinquilino che esce senza sostituzione: quando paghi anche per lui",
+      description:
+        "Affitto condiviso: cosa succede se un coinquilino se ne va e il contratto non prevede sostituzione.",
+    },
+    hero: {
+      h1: "Uscita del coinquilino",
+      subtitle: "Se uno se ne va, il costo resta.",
+    },
+    related: {
+      editorial: [
+        "rischi/coinquilino-non-paga",
+        "clausole/responsabilita-solidale-coinquilini",
+      ],
+      landings: ["contratto-affitto-studenti", "contratto-stanza"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Se il contratto non regola l’uscita di un coinquilino, il rischio è che il canone resti invariato e ricada sugli altri, anche senza colpa.",
+      },
+      {
+        type: "bullets",
+        title: "Segnali di rischio",
+        items: [
+          "Responsabilità solidale piena",
+          "Nessuna procedura di sostituzione",
+          "Canone non riducibile",
+          "Penali per modifica del contratto",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire cosa succede se qualcuno esce?",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/ritardo-restituzione-cauzione-senza-termine",
+    kind: "rischio",
+    seo: {
+      title:
+        "Ritardo nella restituzione della cauzione: quando il contratto non fissa termini",
+      description:
+        "Affitto: restituzione cauzione senza una data precisa. Perché è un rischio concreto e cosa controllare nel testo.",
+    },
+    hero: {
+      h1: "Ritardo restituzione cauzione",
+      subtitle: "Se non c’è una scadenza, l’attesa può durare mesi.",
+    },
+    related: {
+      editorial: [
+        "rischi/cauzione-non-restituita",
+        "clausole/deposito-cauzionale",
+        "clausole/restituzione-immobile",
+      ],
+      landings: ["contratto-affitto", "contratto-stanza"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Molti contratti non indicano un termine preciso per la restituzione della cauzione. Il rischio è doverla sollecitare per mesi senza un appiglio contrattuale chiaro.",
+      },
+      {
+        type: "bullets",
+        title: "Segnali tipici",
+        items: [
+          "Restituzione ‘dopo verifica’ senza tempi",
+          "Assenza di scadenza massima",
+          "Restituzione subordinata a conguagli non documentati",
+          "Nessuna penale per il locatore in caso di ritardo",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi sapere se il termine è davvero chiaro?",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/divieto-ospitalita-non-limitato-affitto",
+    kind: "rischio",
+    seo: {
+      title:
+        "Divieto di ospitalità non limitato: quando anche una visita diventa un problema",
+      description:
+        "Affitto: clausole che vietano o limitano l’ospitalità senza criteri chiari. Rischi e segnali nel contratto.",
+    },
+    hero: {
+      h1: "Divieto di ospitalità",
+      subtitle: "Quando anche un ospite diventa una violazione.",
+    },
+    related: {
+      editorial: [
+        "rischi/decadenza-per-ospitalita",
+        "clausole/sublocazione-ospitalita",
+        "clausole/recesso",
+      ],
+      landings: ["contratto-affitto", "contratto-affitto-studenti"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Il rischio nasce quando il divieto di ospitalità non ha limiti di durata o definizione: anche una visita breve può essere contestata come violazione.",
+      },
+      {
+        type: "examples",
+        title: "Formule critiche",
+        items: [
+          {
+            title: "Divieto assoluto",
+            text: "Nessuna distinzione tra ospite occasionale e stabile.",
+          },
+          {
+            title: "Sanzione automatica",
+            text: "Penali o risoluzione senza possibilità di chiarimento.",
+          },
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire quanto è rigida la clausola?",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/consegna-immobile-non-dettagliata-affitto",
+    kind: "rischio",
+    seo: {
+      title:
+        "Consegna dell’immobile non dettagliata: il rischio che paghi danni non tuoi",
+      description:
+        "Affitto: mancanza di verbale di consegna e stato iniziale. Perché è uno dei rischi più sottovalutati.",
+    },
+    hero: {
+      h1: "Consegna non dettagliata",
+      subtitle: "Se l’inizio è vago, la fine è pericolosa.",
+    },
+    related: {
+      editorial: [
+        "rischi/addebiti-danni-senza-inventario",
+        "clausole/restituzione-immobile",
+        "clausole/deposito-cauzionale",
+      ],
+      landings: ["contratto-affitto", "contratto-affitto-studenti"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Senza un verbale di consegna dettagliato, è difficile dimostrare lo stato iniziale dell’immobile. Il rischio è che danni preesistenti vengano attribuiti a te.",
+      },
+      {
+        type: "bullets",
+        title: "Segnali di rischio",
+        items: [
+          "Assenza di verbale di consegna",
+          "Inventario non allegato",
+          "Descrizioni generiche (‘in buono stato’)",
+          "Foto non firmate o non richiamate nel contratto",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi sapere se sei coperto a fine affitto?",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/modifica-unilaterale-tassi-conto-corrente",
+    kind: "rischio",
+    seo: {
+      title:
+        "Modifica unilaterale dei tassi sul conto corrente: quando il costo cambia",
+      description:
+        "Conto corrente: variazioni di tassi, spese e condizioni decise dalla banca. Segnali nel contratto e rischi reali.",
+    },
+    hero: {
+      h1: "Modifica unilaterale dei tassi",
+      subtitle: "Il conto resta lo stesso, il costo no.",
+    },
+    related: {
+      editorial: [
+        "clausole/variazione-unilaterale-condizioni-mutuo",
+        "rischi/rimodulazione-imprevista",
+      ],
+      landings: ["conto-corrente"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Molti contratti di conto consentono alla banca di modificare tassi e condizioni con una semplice comunicazione. Il rischio è accorgersene solo dopo aver pagato di più.",
+      },
+      {
+        type: "bullets",
+        title: "Segnali di rischio",
+        items: [
+          "Variazione per ‘giustificato motivo’ non definito",
+          "Comunicazioni solo in area clienti",
+          "Mancanza di esempi sull’impatto economico",
+          "Recesso teorico ma poco praticabile",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire quanto può aumentare davvero?",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/blocco-conto-per-verifiche-antiriciclaggio",
+    kind: "rischio",
+    seo: {
+      title:
+        "Blocco del conto per verifiche antiriciclaggio: cosa può succedere",
+      description:
+        "Banche e antiriciclaggio: quando il conto viene bloccato, per quanto tempo e con quali conseguenze pratiche.",
+    },
+    hero: {
+      h1: "Blocco del conto",
+      subtitle: "I soldi ci sono, ma non puoi usarli.",
+    },
+    related: {
+      editorial: [
+        "rischi/servizio-non-disponibile",
+        "clausole/sospensione-servizio",
+      ],
+      landings: ["conto-corrente"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Le verifiche antiriciclaggio possono portare al blocco temporaneo del conto. Il rischio nasce quando il contratto non chiarisce tempi, limiti e comunicazioni.",
+      },
+      {
+        type: "bullets",
+        title: "Problemi tipici",
+        items: [
+          "Blocco senza preavviso",
+          "Tempi di sblocco non indicati",
+          "Impossibilità di fare pagamenti urgenti",
+          "Assenza di canali rapidi di assistenza",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "soft",
+        title: "Vuoi capire cosa può bloccare il conto?",
+        buttonLabel: "Analizza il contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/commissioni-nascoste-prelievi-pagamenti",
+    kind: "rischio",
+    seo: {
+      title:
+        "Commissioni nascoste su prelievi e pagamenti: il costo che non vedi",
+      description:
+        "Banche e carte: commissioni su prelievi, pagamenti esteri e cambi valuta spesso poco visibili nel contratto.",
+    },
+    hero: {
+      h1: "Commissioni nascoste",
+      subtitle: "Paghi poco alla volta, ma sempre.",
+    },
+    related: {
+      editorial: [
+        "rischi/costi-nascosti",
+        "rischi/addebiti-extra-non-previsti",
+      ],
+      landings: ["conto-corrente", "carta-revolving"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Il rischio non è la singola commissione, ma la somma nel tempo: prelievi, pagamenti in valuta estera, commissioni minime e spread non evidenziati.",
+      },
+      {
+        type: "bullets",
+        title: "Dove si nascondono",
+        items: [
+          "Prelievi fuori circuito",
+          "Pagamenti extra-UE",
+          "Commissioni minime fisse",
+          "Cambio valuta con spread",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire quanto stai pagando davvero?",
+        buttonLabel: "Analizza il mio contratto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/surroga-mutuo-spese-non-trasferibili",
+    kind: "rischio",
+    seo: {
+      title:
+        "Surroga del mutuo: spese che restano a tuo carico (quando succede)",
+      description:
+        "Surroga mutuo: non tutte le spese si trasferiscono. Quando rischi costi extra anche se la surroga è “gratuita”.",
+    },
+    hero: {
+      h1: "Surroga con spese residue",
+      subtitle: "La surroga è gratuita, ma non sempre a costo zero.",
+    },
+    related: {
+      editorial: [
+        "contratto-mutuo",
+        "rischi/spese-accessorie-estinzione-mutuo",
+      ],
+      landings: ["contratto-mutuo"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "La legge prevede la gratuità della surroga, ma alcune spese possono restare a tuo carico: assicurazioni, perizie non riutilizzabili, costi accessori. Il rischio è scoprirlo solo dopo aver avviato la pratica.",
+      },
+      {
+        type: "bullets",
+        title: "Spese che possono restare",
+        items: [
+          "Assicurazioni non trasferibili",
+          "Nuove perizie richieste",
+          "Costi tecnici o amministrativi",
+          "Polizze collegate al mutuo originario",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi sapere se la surroga è davvero a costo zero?",
+        buttonLabel: "Analizza il mio mutuo",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/mutuo-variabile-aumenti-immediati-senza-soglie",
+    kind: "rischio",
+    seo: {
+      title: "Mutuo variabile: aumenti immediati senza soglie di protezione",
+      description:
+        "Mutuo a tasso variabile: quando il contratto non prevede limiti agli aumenti e la rata può salire subito.",
+    },
+    hero: {
+      h1: "Aumenti senza soglie",
+      subtitle: "La rata cambia, senza freni.",
+    },
+    related: {
+      editorial: [
+        "clausole/variazione-unilaterale-condizioni-mutuo",
+        "rischi/rimodulazione-imprevista",
+      ],
+      landings: ["contratto-mutuo"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Nel mutuo variabile il rischio più sottovalutato è l’assenza di soglie: se il contratto non prevede cap, limiti o gradualità, l’aumento può essere immediato e consistente.",
+      },
+      {
+        type: "bullets",
+        title: "Segnali di rischio",
+        items: [
+          "Assenza di cap massimo",
+          "Adeguamento immediato senza soglia",
+          "Indice poco spiegato",
+          "Nessuna simulazione di scenario",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire quanto può salire la rata?",
+        buttonLabel: "Analizza il mio mutuo",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/estinzione-parziale-mutuo-ricalcolo-sfavorevole",
+    kind: "rischio",
+    seo: {
+      title: "Estinzione parziale del mutuo: quando il ricalcolo ti penalizza",
+      description:
+        "Estinzione parziale: rata o durata? Quando il ricalcolo è sfavorevole e non conviene come sembra.",
+    },
+    hero: {
+      h1: "Estinzione parziale penalizzante",
+      subtitle: "Paghi prima, ma non risparmi come pensi.",
+    },
+    related: {
+      editorial: [
+        "contratto-mutuo",
+        "rischi/spese-accessorie-estinzione-mutuo",
+      ],
+      landings: ["contratto-mutuo"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "L’estinzione parziale sembra sempre conveniente, ma il contratto può imporre ricalcoli che riducono il beneficio reale: riduzione durata invece della rata, interessi residui poco trasparenti, costi indiretti.",
+      },
+      {
+        type: "bullets",
+        title: "Problemi tipici",
+        items: [
+          "Ricalcolo imposto dalla banca",
+          "Riduzione durata invece della rata",
+          "Interessi residui non evidenti",
+          "Costi tecnici non spiegati",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire se l’estinzione conviene davvero?",
+        buttonLabel: "Analizza il mio mutuo",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/esclusioni-polizza-scritte-negli-allegati",
+    kind: "rischio",
+    seo: {
+      title: "Esclusioni assicurative negli allegati: il rischio che non vedi",
+      description:
+        "Polizze assicurative: esclusioni scritte solo negli allegati o fascicolo informativo. Come riconoscerle prima del sinistro.",
+    },
+    hero: {
+      h1: "Esclusioni nascoste negli allegati",
+      subtitle: "La copertura c’è, ma non quando serve.",
+    },
+    related: {
+      editorial: [
+        "rischi/esclusioni-poco-visibili-polizza",
+        "rischi/costi-nascosti",
+      ],
+      landings: [
+        "assicurazione-auto",
+        "assicurazione-casa",
+        "assicurazione-sanitaria",
+      ],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Molte polizze mostrano le garanzie nel frontespizio, ma relegano le esclusioni reali negli allegati o nel fascicolo informativo. Il rischio è scoprire di non essere coperti solo dopo il sinistro.",
+      },
+      {
+        type: "bullets",
+        title: "Segnali tipici",
+        items: [
+          "Richiami generici a “condizioni generali”",
+          "Esclusioni non riassunte nel contratto principale",
+          "Rinvii a PDF o documenti separati",
+          "Esclusioni formulate in modo tecnico o vago",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "soft",
+        title: "Vuoi sapere cosa è davvero escluso?",
+        text: "Carica la polizza completa e individuiamo le esclusioni che contano davvero.",
+        buttonLabel: "Analizza la polizza",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/ritardi-rimborso-assicurazione-senza-termini",
+    kind: "rischio",
+    seo: {
+      title:
+        "Ritardi nel rimborso assicurativo: quando non ci sono termini certi",
+      description:
+        "Rimborsi assicurativi lenti: clausole senza tempi, richieste infinite di documenti e liquidazioni che slittano.",
+    },
+    hero: {
+      h1: "Rimborsi senza scadenza",
+      subtitle: "Paghi il premio, aspetti il rimborso.",
+    },
+    related: {
+      editorial: [
+        "rischi/ritardi-rimborso-recesso-assicurazione",
+        "rischi/costi-nascosti",
+      ],
+      landings: [
+        "assicurazione-sanitaria",
+        "assicurazione-casa",
+        "assicurazione-auto",
+      ],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Il rischio non è solo il rimborso negato, ma quello che non arriva mai. Se la polizza non indica tempi certi di liquidazione, il rimborso può slittare per mesi con continue richieste di integrazione.",
+      },
+      {
+        type: "bullets",
+        title: "Campanelli d’allarme",
+        items: [
+          "Nessun termine massimo per il rimborso",
+          "Liquidazione subordinata a documenti non definiti",
+          "Facoltà di sospendere l’istruttoria",
+          "Richieste ripetute di integrazioni",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire quanto possono allungare i tempi?",
+        buttonLabel: "Analizza la polizza",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/recesso-polizza-per-sinistro",
+    kind: "rischio",
+    seo: {
+      title:
+        "Recesso dell’assicurazione dopo un sinistro: quando possono chiudere",
+      description:
+        "Alcune polizze permettono alla compagnia di recedere dopo un sinistro. Quando succede e perché è un rischio.",
+    },
+    hero: {
+      h1: "Recesso dopo il sinistro",
+      subtitle: "Ti serve la copertura, ma il contratto può chiudersi.",
+    },
+    related: {
+      editorial: [
+        "rischi/ritardi-rimborso-recesso-assicurazione",
+        "rischi/costi-nascosti",
+      ],
+      landings: [
+        "assicurazione-auto",
+        "assicurazione-casa",
+        "assicurazione-sanitaria",
+      ],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Alcune polizze consentono alla compagnia di recedere dopo un sinistro o dopo il pagamento del rimborso. Il rischio è perdere la copertura proprio quando diventi ‘più rischioso’.",
+      },
+      {
+        type: "bullets",
+        title: "Segnali da cercare",
+        items: [
+          "Recesso libero dopo il sinistro",
+          "Preavviso breve o generico",
+          "Nessun obbligo di rinnovo",
+          "Effetti non chiari sul premio già pagato",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi sapere se possono disdirti dopo un sinistro?",
+        buttonLabel: "Analizza la polizza",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/beneficiario-assicurazione-vita-non-aggiornato",
+    kind: "rischio",
+    seo: {
+      title:
+        "Beneficiario assicurazione vita non aggiornato: chi riceve davvero",
+      description:
+        "Assicurazione vita: cosa succede se il beneficiario non è aggiornato dopo separazioni, matrimoni o cambi familiari.",
+    },
+    hero: {
+      h1: "Beneficiario non aggiornato",
+      subtitle: "I soldi vanno a chi è scritto. Non a chi pensi.",
+    },
+    related: {
+      editorial: [
+        "rischi/esclusioni-poco-visibili-polizza",
+        "rischi/costi-nascosti",
+      ],
+      landings: ["assicurazione-vita"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Nell’assicurazione vita conta solo ciò che è scritto nella designazione del beneficiario. Il rischio è non aggiornarla dopo eventi comuni (separazione, nuovo partner, figli) e lasciare il capitale a chi non vorresti.",
+      },
+      {
+        type: "bullets",
+        title: "Errori frequenti",
+        items: [
+          "Beneficiario indicato anni prima",
+          "Formule vaghe (“eredi legittimi”)",
+          "Assenza di indicazioni su quote",
+          "Designazione non coerente con il testamento",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "soft",
+        title: "Vuoi verificare chi è davvero il beneficiario?",
+        buttonLabel: "Analizza la polizza",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/esclusione-suicidio-assicurazione-vita",
+    kind: "rischio",
+    seo: {
+      title:
+        "Esclusione suicidio nell’assicurazione vita: cosa significa davvero",
+      description:
+        "Assicurazione vita: esclusione per suicidio, termini temporali e formulazioni che riducono o annullano il capitale.",
+    },
+    hero: {
+      h1: "Esclusione suicidio",
+      subtitle: "Una clausola delicata, spesso poco chiara.",
+    },
+    related: {
+      editorial: [
+        "rischi/esclusioni-poco-visibili-polizza",
+        "rischi/costi-nascosti",
+      ],
+      landings: ["assicurazione-vita"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Molte polizze vita prevedono un’esclusione per suicidio nei primi anni o in determinate condizioni. Il rischio è non capire quando l’esclusione si applica davvero e cosa succede al capitale.",
+      },
+      {
+        type: "bullets",
+        title: "Cose da controllare",
+        items: [
+          "Durata temporale dell’esclusione",
+          "Definizione giuridica di suicidio",
+          "Differenza tra dolo e stato patologico",
+          "Rimborso dei premi vs capitale",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi capire quando scatta l’esclusione?",
+        buttonLabel: "Analizza la polizza",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/esclusioni-malattie-preesistenti-polizza-vita",
+    kind: "rischio",
+    seo: {
+      title: "Malattie preesistenti nell’assicurazione vita: quando non pagano",
+      description:
+        "Polizza vita e salute pregressa: dichiarazioni, esclusioni e rischi se la patologia non è definita chiaramente.",
+    },
+    hero: {
+      h1: "Malattie preesistenti",
+      subtitle: "Dichiarazioni vaghe = rischio di mancato pagamento.",
+    },
+    related: {
+      editorial: [
+        "rischi/esclusioni-poco-visibili-polizza",
+        "rischi/costi-nascosti",
+      ],
+      landings: ["assicurazione-vita"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Il rischio più comune è una definizione ampia di ‘malattia preesistente’. In caso di sinistro, la compagnia può contestare anche condizioni mai diagnosticate formalmente.",
+      },
+      {
+        type: "bullets",
+        title: "Segnali di rischio",
+        items: [
+          "Definizioni generiche di preesistenza",
+          "Rinvii a questionari sanitari",
+          "Clausole di reticenza molto estese",
+          "Onere della prova a carico dell’assicurato",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi sapere cosa possono contestare?",
+        buttonLabel: "Analizza la polizza",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/rivalsa-assicurazione-rc-auto",
+    kind: "rischio",
+    seo: {
+      title: "Rivalsa RC Auto: quando l’assicurazione può chiederti i soldi",
+      description:
+        "RC Auto: cos’è la rivalsa, quando scatta e perché può diventare un debito enorme.",
+    },
+    hero: {
+      h1: "Rivalsa assicurativa",
+      subtitle: "Pagano il danno, poi vengono da te.",
+    },
+    related: {
+      editorial: [
+        "rischi/costi-nascosti",
+        "rischi/esclusioni-poco-visibili-polizza",
+      ],
+      landings: ["assicurazione-auto"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Con la rivalsa, l’assicurazione risarcisce il terzo ma poi chiede a te il rimborso totale o parziale. Il rischio è non sapere in quali casi può succedere.",
+      },
+      {
+        type: "bullets",
+        title: "Casi tipici",
+        items: [
+          "Guida in stato di ebbrezza",
+          "Violazioni gravi del contratto",
+          "Uso non dichiarato del veicolo",
+          "Conducente non autorizzato",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi sapere quando scatta la rivalsa?",
+        buttonLabel: "Analizza la polizza RC Auto",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/guida-non-dichiarata-rc-auto",
+    kind: "rischio",
+    seo: {
+      title: "Guida non dichiarata nella RC Auto: cosa rischi davvero",
+      description:
+        "RC Auto: cosa succede se guida qualcuno non indicato in polizza o fuori dalle condizioni dichiarate.",
+    },
+    hero: {
+      h1: "Guida non dichiarata",
+      subtitle: "Un dettaglio che può costare moltissimo.",
+    },
+    related: {
+      editorial: [
+        "rischi/costi-nascosti",
+        "rischi/esclusioni-poco-visibili-polizza",
+      ],
+      landings: ["assicurazione-auto"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Limitazioni sulla guida (esclusiva, esperta, età minima) sono tra le clausole più pericolose. Il rischio è scoprirle solo dopo un incidente.",
+      },
+      {
+        type: "bullets",
+        title: "Situazioni comuni",
+        items: [
+          "Familiare non indicato",
+          "Neopatentato escluso",
+          "Guida occasionale non ammessa",
+          "Condizioni diverse da quelle dichiarate",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "soft",
+        title: "Vuoi capire chi può guidare davvero?",
+        buttonLabel: "Analizza la polizza",
+        buttonHref: "/upload",
+      },
+    ],
+  },
+  {
+    slug: "rischi/esclusioni-uso-veicolo-polizza-auto",
+    kind: "rischio",
+    seo: {
+      title: "Uso del veicolo escluso dalla RC Auto: quando non sei coperto",
+      description:
+        "RC Auto: uso privato, lavoro, consegne, car sharing. Quando l’assicurazione può non coprire il sinistro.",
+    },
+    hero: {
+      h1: "Uso del veicolo escluso",
+      subtitle: "Stai guidando, ma non sei coperto.",
+    },
+    related: {
+      editorial: [
+        "rischi/esclusioni-poco-visibili-polizza",
+        "rischi/costi-nascosti",
+      ],
+      landings: ["assicurazione-auto"],
+    },
+    blocks: [
+      {
+        type: "intro",
+        text: "Molte polizze RC Auto coprono solo un uso specifico del veicolo. Il rischio è utilizzare l’auto in modo diverso (anche occasionale) e perdere la copertura.",
+      },
+      {
+        type: "bullets",
+        title: "Usi spesso esclusi",
+        items: [
+          "Uso lavorativo non dichiarato",
+          "Trasporto merci o persone",
+          "Attività occasionali retribuite",
+          "Condivisione del veicolo",
+        ],
+      },
+      {
+        type: "cta",
+        variant: "mid",
+        title: "Vuoi verificare se il tuo uso è coperto?",
+        buttonLabel: "Analizza la polizza",
+        buttonHref: "/upload",
+      },
+    ],
+  },
 ];
-
-export function getEditorialBySlug(slug: string) {
-  return EDITORIAL_PAGES.find((p) => p.slug === slug) ?? null;
-}
-
-export const editorialSlugs = EDITORIAL_PAGES.map((p) => p.slug);
-
-// ✅ dev-only: fail fast se qualcuno duplica uno slug
-if (process.env.NODE_ENV !== "production") {
-  const slugs = new Set<string>();
-  const missing = new Set<string>();
-
-  for (const p of EDITORIAL_PAGES) {
-    if (slugs.has(p.slug)) {
-      throw new Error(`Duplicated editorial slug: ${p.slug}`);
-    }
-    slugs.add(p.slug);
-  }
-  if (missing.size) {
-    throw new Error(
-      `Broken related.editorial slugs:\n- ${[...missing].sort().join("\n- ")}`
-    );
-  }
-}
-
-const bySlug = new Set(EDITORIAL_PAGES.map((p) => p.slug));
-
-const missingRelated = EDITORIAL_PAGES.flatMap((p) => {
-  const rel = p.related?.editorial ?? [];
-  return rel
-    .filter((s) => !bySlug.has(s))
-    .map((s) => ({ from: p.slug, missing: s }));
-});
-
-console.log("Pagine totali:", EDITORIAL_PAGES.length);
-console.log("Related mancanti:", missingRelated);
