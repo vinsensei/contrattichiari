@@ -17,7 +17,7 @@ export default function Home() {
       {/* MAIN */}
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-12 sm:px-6 sm:py-16">
         {/* HERO */}
-        <section className="relative left-1/2 right-1/2 -mx-[50vw] w-screen pb-10 overflow-hidden">
+        <section className="relative left-1/2 right-1/2 -mx-[50vw] w-screen pb-10 pt-10 overflow-hidden">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 relative z-10">
             <div className="flex flex-1 flex-col gap-8 md:flex-row md:items-center">
               <div className="flex-1 text-center md:text-left">
